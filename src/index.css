@@ -1,0 +1,154 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+    --background: 220 16% 96%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 225 73% 57%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+
+    --accent: 220 14% 96%;
+    --accent-foreground: 222 47% 11%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 225 73% 57%;
+
+    --radius: 0.5rem;
+
+    /* Dark nav bar */
+    --nav-dark: 220 50% 14%;
+    --nav-dark-foreground: 0 0% 100%;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 225 73% 57%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 96%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 225 73% 57%;
+    --sidebar-muted: 220 9% 46%;
+
+    --nav-item-height: 34px;
+    --sidebar-width: 252px;
+  }
+
+  .dark {
+    --background: 220 25% 10%;
+    --foreground: 216 18% 82%;
+    --card: 220 24% 13%;
+    --card-foreground: 216 18% 82%;
+    --popover: 220 24% 13%;
+    --popover-foreground: 216 18% 82%;
+    --primary: 225 68% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 22% 18%;
+    --secondary-foreground: 216 18% 82%;
+    --muted: 220 22% 18%;
+    --muted-foreground: 215 16% 56%;
+    --accent: 220 22% 20%;
+    --accent-foreground: 216 18% 82%;
+    --destructive: 0 58% 42%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 220 20% 20%;
+    --input: 220 20% 20%;
+    --ring: 225 68% 60%;
+    --nav-dark: 220 28% 8%;
+    --nav-dark-foreground: 216 18% 88%;
+    --sidebar-background: 220 24% 11%;
+    --sidebar-foreground: 216 18% 82%;
+    --sidebar-primary: 225 68% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 22% 18%;
+    --sidebar-accent-foreground: 216 18% 82%;
+    --sidebar-border: 220 20% 20%;
+    --sidebar-ring: 225 68% 60%;
+    --sidebar-muted: 215 16% 56%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-sans);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer utilities {
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .nav-section-label {
+    @apply text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60 px-3 py-2;
+  }
+
+  .nav-item {
+    @apply flex items-center gap-2.5 px-2.5 text-[13px] font-normal text-foreground/65 rounded-md cursor-pointer transition-all duration-150;
+    height: var(--nav-item-height);
+  }
+
+  .nav-item:hover {
+    @apply bg-secondary/80 text-foreground;
+  }
+
+  .nav-item-active {
+    @apply bg-primary/10 font-medium text-primary;
+  }
+
+  .nav-item-active:hover {
+    @apply bg-primary/10;
+  }
+
+  .nav-sub-item {
+    @apply pl-10;
+  }
+
+  .sidebar-shadow {
+    box-shadow: 1px 0 0 0 hsl(var(--border));
+  }
+
+  .stat-card {
+    @apply bg-card rounded-xl border border-border/80 p-5 transition-all duration-200;
+  }
+
+  .stat-card:hover {
+    box-shadow: 0 1px 3px 0 hsl(var(--foreground) / 0.04), 0 4px 12px -2px hsl(var(--foreground) / 0.06);
+  }
+
+  /* Dark top nav bar */
+  .nav-dark-bar {
+    background: hsl(var(--nav-dark));
+    color: hsl(var(--nav-dark-foreground));
+  }
+}
