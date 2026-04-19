@@ -10,37 +10,25 @@ export interface RowActionItem {
 }
 
 interface RowActionsProps {
-  /** Optional primary "approve & next" style action — rendered as a filled icon button. */
   primary?: { label: string; onClick: () => void; icon?: ReactNode };
-  /** Optional review/view action — rendered as an outlined icon button. */
   review?: { label: string; onClick: () => void; icon?: ReactNode };
-  /** Items shown in the overflow ⋯ menu. */
   more?: RowActionItem[];
 }
 
 /**
- * Compact, icon-only row actions used across all DataTables.
- * Keeps the actions cell narrow & uniform so the sticky column stays
- * visually aligned with the "Actions" header.
+ * Compact, icon-only row actions used by every DataTable.
+ * Renders inline so it sits perfectly inside the centered Actions column.
  */
 export default function RowActions({ primary, review, more }: RowActionsProps) {
   return (
-    <div className="inline-flex items-center justify-center gap-1" data-no-row-click>
+    <div className="inline-flex items-center gap-1" data-no-row-click>
       {review && (
-        <IconButton
-          title={review.label}
-          onClick={review.onClick}
-          variant="ghost"
-        >
+        <IconButton title={review.label} onClick={review.onClick} variant="ghost">
           {review.icon ?? <Eye className="h-3.5 w-3.5" />}
         </IconButton>
       )}
       {primary && (
-        <IconButton
-          title={primary.label}
-          onClick={primary.onClick}
-          variant="primary"
-        >
+        <IconButton title={primary.label} onClick={primary.onClick} variant="primary">
           {primary.icon ?? <Check className="h-3.5 w-3.5" />}
         </IconButton>
       )}
@@ -69,10 +57,10 @@ function IconButton({
         onClick();
       }}
       className={cn(
-        "h-7 w-7 rounded-md flex items-center justify-center transition-colors shrink-0",
+        "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors",
         variant === "primary"
           ? "bg-primary text-primary-foreground hover:bg-primary/90"
-          : "text-muted-foreground hover:text-foreground hover:bg-secondary border border-border",
+          : "border border-border text-muted-foreground hover:bg-secondary hover:text-foreground",
       )}
     >
       {children}
@@ -94,7 +82,7 @@ function MoreMenu({ items }: { items: RowActionItem[] }) {
   }, [open]);
 
   return (
-    <div className="relative" ref={ref}>
+    <div className="relative inline-flex" ref={ref}>
       <button
         title="More actions"
         aria-label="More actions"
@@ -102,12 +90,12 @@ function MoreMenu({ items }: { items: RowActionItem[] }) {
           e.stopPropagation();
           setOpen((v) => !v);
         }}
-        className="h-7 w-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors shrink-0"
+        className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
       >
         <MoreHorizontal className="h-3.5 w-3.5" />
       </button>
       {open && (
-        <div className="absolute right-0 top-full mt-1 w-44 bg-card rounded-lg shadow-xl border border-border overflow-hidden z-50 py-1">
+        <div className="absolute right-0 top-full z-50 mt-1 w-44 overflow-hidden rounded-lg border border-border bg-card py-1 shadow-xl">
           {items.map((item, i) => (
             <button
               key={i}
@@ -117,7 +105,7 @@ function MoreMenu({ items }: { items: RowActionItem[] }) {
                 item.onClick();
               }}
               className={cn(
-                "w-full flex items-center gap-2 px-3 py-2 text-sm text-left transition-colors",
+                "flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors",
                 item.destructive
                   ? "text-destructive hover:bg-destructive/10"
                   : "text-foreground hover:bg-secondary",
