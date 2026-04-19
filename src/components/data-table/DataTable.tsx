@@ -113,6 +113,7 @@ function getStickyStyle<T>(
   visibleColumns: DataTableColumn<T>[],
   state: ColumnState,
   selectable: boolean,
+  hasActions: boolean,
 ): React.CSSProperties | undefined {
   if (!pinned) return undefined;
 
@@ -127,7 +128,7 @@ function getStickyStyle<T>(
     return { left: offset, boxShadow: "1px 0 0 0 hsl(var(--border))" };
   }
 
-  let offset = 0;
+  let offset = hasActions ? ACTIONS_COLUMN_WIDTH : 0;
   for (let i = visibleColumns.length - 1; i >= 0; i--) {
     const col = visibleColumns[i];
     if (col.key === key) break;
@@ -135,7 +136,6 @@ function getStickyStyle<T>(
       offset += getWidthValue(col.width);
     }
   }
-  // Account for the trailing actions column when present
   return { right: offset, boxShadow: "-1px 0 0 0 hsl(var(--border))" };
 }
 
