@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect, ReactNode } from "react";
+import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import {
   DndContext,
   PointerSensor,
@@ -27,18 +27,19 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-/* ---------------- Types ---------------- */
+const DEFAULT_COLUMN_WIDTH = 160;
+const SELECT_COLUMN_WIDTH = 44;
+const ACTIONS_COLUMN_WIDTH = 132;
+
 export interface DataTableColumn<T> {
   key: string;
   label: string;
   defaultVisible?: boolean;
-  /** Render the cell. If editable=true and onCellSave is provided, the table renders an inline editor instead. */
   render?: (row: T, rowIndex: number) => ReactNode;
-  /** Plain string accessor (used for inline editing default value when render is omitted) */
   accessor?: (row: T) => string;
   editable?: boolean;
   align?: "left" | "right" | "center";
-  width?: string; // e.g. "w-32" or inline style
+  width?: number | string;
   className?: string;
 }
 
@@ -47,27 +48,19 @@ export interface DataTableProps<T> {
   columns: DataTableColumn<T>[];
   data: T[];
   rowKey: (row: T, index: number) => string | number;
-  /** Right-side actions cell (sticky). */
   renderRowActions?: (row: T, rowIndex: number) => ReactNode;
-  /** Inline cell editing (only when columns are editable=true). */
   onCellSave?: (rowIndex: number, columnKey: string, value: string) => void;
-  /** Optional row click handler (skipped when clicking on inputs/buttons inside) */
   onRowClick?: (row: T, rowIndex: number) => void;
-  /** Selection */
   selectable?: boolean;
   selectedRows?: Set<number>;
   onToggleRow?: (rowIndex: number) => void;
   onToggleAll?: () => void;
-  /** Custom toolbar items rendered next to the column manager */
   toolbarLeft?: ReactNode;
   toolbarRight?: ReactNode;
-  /** Empty state */
   emptyState?: ReactNode;
-  /** Outer container className */
   className?: string;
 }
 
-/* ---------------- Persistence ---------------- */
 interface ColumnState {
   order: string[];
   visible: string[];
@@ -90,7 +83,45 @@ function saveState(key: string, state: ColumnState) {
   } catch {}
 }
 
-/* ---------------- Inline edit ---------------- */
+function unique(items: string[]) {
+  return [...new Set(items)];
+}
+
+function arraysEqual(a: string[], b: string[]) {
+  return a.length === b.length && a.every((item, index) => item === b[index]);
+}
+
+function sanitizeState(state: ColumnState, defaultState: ColumnState, validKeys: string[]): ColumnState {
+  const validSet = new Set(validKeys);
+  const ordered = unique([...state.order.filter((key) => validSet.has(key)), ...validKeys]);
+  const visible = unique([
+    ...state.visible.filter((key) => validSet.has(key)),
+    ...defaultState.visible.filter((key) => !state.visible.includes(key) && validSet.has(key)),
+  ]);
+  const pinnedStart = unique(state.pinnedStart.filter((key) => validSet.has(key)));
+  const pinnedEnd = unique(
+    state.pinnedEnd.filter((key) => validSet.has(key) && !pinnedStart.includes(key)),
+  );
+
+  return {
+    order: ordered,
+    visible,
+    pinnedStart,
+    pinnedEnd,
+  };
+}
+
+function getWidthValue(width?: number | string) {
+  if (typeof width === "number") return width;
+  return DEFAULT_COLUMN_WIDTH;
+}
+
+function getWidthStyle(width?: number | string) {
+  if (typeof width === "number") return { width, minWidth: width };
+  if (typeof width === "string") return { width, minWidth: width };
+  return { width: DEFAULT_COLUMN_WIDTH, minWidth: DEFAULT_COLUMN_WIDTH };
+}
+
 function InlineEditCell({
   value,
   onCommit,
@@ -126,13 +157,14 @@ function InlineEditCell({
           if (e.key === "Enter") {
             onCommit(draft);
             setEditing(false);
-          } else if (e.key === "Escape") {
+          }
+          if (e.key === "Escape") {
             setDraft(value);
             setEditing(false);
           }
         }}
         className={cn(
-          "w-full min-w-[60px] px-2 py-1 text-sm rounded border-2 border-primary bg-background text-foreground outline-none",
+          "w-full rounded-md border border-primary/40 bg-background px-2 py-1 text-sm text-foreground outline-none ring-2 ring-primary/10",
           align === "right" && "text-right tabular-nums",
           align === "center" && "text-center",
         )}
@@ -141,23 +173,23 @@ function InlineEditCell({
   }
 
   return (
-    <div
-      className={cn(
-        "cursor-text rounded px-1.5 py-0.5 -mx-1.5 -my-0.5 hover:bg-primary/5 transition-colors text-foreground",
-        align === "right" && "text-right tabular-nums",
-        align === "center" && "text-center",
-      )}
+    <button
+      type="button"
       onClick={(e) => {
         e.stopPropagation();
         setEditing(true);
       }}
+      className={cn(
+        "w-full rounded px-1.5 py-0.5 text-left text-foreground transition-colors hover:bg-secondary",
+        align === "right" && "text-right tabular-nums",
+        align === "center" && "text-center",
+      )}
     >
       {value || <span className="text-muted-foreground">—</span>}
-    </div>
+    </button>
   );
 }
 
-/* ---------------- Column manager popover ---------------- */
 function ColumnManager({
   columns,
   state,
@@ -189,80 +221,87 @@ function ColumnManager({
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
-  const ordered = state.order
-    .map((k) => columns.find((c) => c.key === k))
+  const orderedColumns = state.order
+    .map((key) => columns.find((col) => col.key === key))
     .filter(Boolean) as DataTableColumn<unknown>[];
 
   return (
     <div className="relative" ref={ref}>
       <button
-        onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 text-sm font-medium border border-border rounded-lg px-3.5 py-2 hover:bg-secondary transition-colors text-foreground"
+        onClick={() => setOpen((value) => !value)}
+        className="flex items-center gap-2 rounded-lg border border-border px-3.5 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
       >
         <Settings2 className="h-3.5 w-3.5 text-muted-foreground" />
         Columns
         <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
       </button>
+
       {open && (
-        <div className="absolute right-0 top-full mt-1 w-80 bg-card rounded-xl shadow-xl border border-border overflow-hidden z-50">
-          <div className="px-3 py-2 border-b border-border flex items-center justify-between">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Manage columns</span>
+        <div className="absolute right-0 top-full z-50 mt-1 w-80 overflow-hidden rounded-xl border border-border bg-card shadow-xl">
+          <div className="flex items-center justify-between border-b border-border px-3 py-2">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Manage columns
+            </span>
             <span className="text-[10px] text-muted-foreground">Drag to reorder</span>
           </div>
+
           <div className="max-h-96 overflow-y-auto py-1">
-            {ordered.map((col, idx) => {
+            {orderedColumns.map((col, index) => {
               const visible = state.visible.includes(col.key);
               const pinnedStart = state.pinnedStart.includes(col.key);
               const pinnedEnd = state.pinnedEnd.includes(col.key);
+
               return (
                 <div
                   key={col.key}
                   draggable
-                  onDragStart={(e) => e.dataTransfer.setData("text/plain", String(idx))}
+                  onDragStart={(e) => e.dataTransfer.setData("text/plain", String(index))}
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={(e) => {
                     e.preventDefault();
                     const from = parseInt(e.dataTransfer.getData("text/plain"), 10);
-                    if (!Number.isNaN(from) && from !== idx) onReorder(from, idx);
+                    if (!Number.isNaN(from) && from !== index) onReorder(from, index);
                   }}
-                  className="group flex items-center gap-2 px-3 py-1.5 hover:bg-secondary/60 transition-colors"
+                  className="group flex items-center gap-2 px-3 py-1.5 transition-colors hover:bg-secondary/70"
                 >
-                  <GripVertical className="h-3.5 w-3.5 text-muted-foreground/40 cursor-grab shrink-0" />
+                  <GripVertical className="h-3.5 w-3.5 shrink-0 cursor-grab text-muted-foreground/50" />
+
                   <button
                     onClick={() => onToggleVisible(col.key)}
-                    className="flex items-center gap-2 flex-1 min-w-0 text-left"
+                    className="flex min-w-0 flex-1 items-center gap-2 text-left"
                   >
-                    <div
+                    <span
                       className={cn(
-                        "h-4 w-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors",
-                        visible ? "bg-primary border-primary" : "border-border",
+                        "flex h-4 w-4 shrink-0 items-center justify-center rounded border-2 transition-colors",
+                        visible ? "border-primary bg-primary" : "border-border",
                       )}
                     >
                       {visible && <Check className="h-3 w-3 text-primary-foreground" />}
-                    </div>
-                    <span className="text-sm text-foreground truncate">{col.label}</span>
+                    </span>
+                    <span className="truncate text-sm text-foreground">{col.label}</span>
                   </button>
-                  <div className="flex items-center gap-0.5 shrink-0">
+
+                  <div className="flex shrink-0 items-center gap-0.5">
                     <button
                       onClick={() => (pinnedStart ? onUnpin(col.key) : onPinStart(col.key))}
-                      title={pinnedStart ? "Unpin from start" : "Pin to start"}
+                      title={pinnedStart ? "Remove beginning pin" : "Move to beginning"}
                       className={cn(
-                        "h-6 w-6 rounded flex items-center justify-center transition-colors",
+                        "flex h-6 w-6 items-center justify-center rounded transition-colors",
                         pinnedStart
                           ? "bg-primary/10 text-primary"
-                          : "text-muted-foreground/60 hover:bg-secondary hover:text-foreground",
+                          : "text-muted-foreground hover:bg-secondary hover:text-foreground",
                       )}
                     >
                       <ChevronsLeft className="h-3.5 w-3.5" />
                     </button>
                     <button
                       onClick={() => (pinnedEnd ? onUnpin(col.key) : onPinEnd(col.key))}
-                      title={pinnedEnd ? "Unpin from end" : "Pin to end"}
+                      title={pinnedEnd ? "Remove end pin" : "Move to end"}
                       className={cn(
-                        "h-6 w-6 rounded flex items-center justify-center transition-colors",
+                        "flex h-6 w-6 items-center justify-center rounded transition-colors",
                         pinnedEnd
                           ? "bg-primary/10 text-primary"
-                          : "text-muted-foreground/60 hover:bg-secondary hover:text-foreground",
+                          : "text-muted-foreground hover:bg-secondary hover:text-foreground",
                       )}
                     >
                       <ChevronsRight className="h-3.5 w-3.5" />
@@ -271,7 +310,7 @@ function ColumnManager({
                       <button
                         onClick={() => onUnpin(col.key)}
                         title="Unpin"
-                        className="h-6 w-6 rounded flex items-center justify-center text-muted-foreground/60 hover:bg-secondary hover:text-foreground"
+                        className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
                       >
                         <PinOff className="h-3 w-3" />
                       </button>
@@ -281,10 +320,11 @@ function ColumnManager({
               );
             })}
           </div>
+
           <div className="border-t border-border p-2">
             <button
               onClick={onReset}
-              className="w-full flex items-center justify-center gap-2 text-sm font-medium text-primary hover:bg-primary/5 rounded-lg px-3 py-2 transition-colors"
+              className="flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/5"
             >
               <RotateCcw className="h-3.5 w-3.5" />
               Reset to default
@@ -296,7 +336,6 @@ function ColumnManager({
   );
 }
 
-/* ---------------- Sortable header ---------------- */
 function SortableHeader({
   id,
   label,
@@ -311,48 +350,47 @@ function SortableHeader({
   isLast: boolean;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.4 : 1,
+    opacity: isDragging ? 0.45 : 1,
   };
+
   return (
     <th
       ref={setNodeRef}
       style={style}
       className={cn(
-        "group/th relative py-3 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap select-none bg-secondary/60 border-b border-border",
+        "bg-secondary/60 px-3 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground border-b border-border select-none",
         !isLast && "border-r border-border/40",
         align === "right" && "text-right",
         align === "center" && "text-center",
-        align === "left" && "text-left",
       )}
     >
       <div
         className={cn(
-          "flex items-center gap-1.5",
+          "flex min-w-0 items-center gap-2",
           align === "right" && "justify-end",
           align === "center" && "justify-center",
         )}
       >
-        {/* Drag handle — always visible to indicate draggability */}
         <button
           {...attributes}
           {...listeners}
           aria-label="Drag to reorder column"
           title="Drag to reorder"
           className={cn(
-            "cursor-grab active:cursor-grabbing rounded p-0.5 text-muted-foreground/50 hover:text-foreground hover:bg-secondary transition-colors shrink-0",
+            "shrink-0 rounded p-0.5 text-muted-foreground/60 transition-colors hover:bg-secondary hover:text-foreground cursor-grab active:cursor-grabbing",
             isDragging && "cursor-grabbing",
           )}
         >
           <GripVertical className="h-3.5 w-3.5" />
         </button>
 
-        <span className="flex-1 truncate">{label}</span>
+        <span className="truncate">{label}</span>
 
-        {/* Reserved-space pin slot — prevents layout shift */}
-        <span className="inline-flex items-center justify-center w-3 h-3 shrink-0">
+        <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center">
           {pinned && (
             <Pin
               className={cn(
@@ -367,7 +405,6 @@ function SortableHeader({
   );
 }
 
-/* ---------------- Main DataTable ---------------- */
 export function DataTable<T>({
   storageKey,
   columns,
@@ -387,8 +424,8 @@ export function DataTable<T>({
 }: DataTableProps<T>) {
   const defaultState = useMemo<ColumnState>(
     () => ({
-      order: columns.map((c) => c.key),
-      visible: columns.filter((c) => c.defaultVisible !== false).map((c) => c.key),
+      order: columns.map((col) => col.key),
+      visible: columns.filter((col) => col.defaultVisible !== false).map((col) => col.key),
       pinnedStart: [],
       pinnedEnd: [],
     }),
@@ -398,68 +435,92 @@ export function DataTable<T>({
   const [state, setState] = useState<ColumnState>(() => loadState(storageKey) ?? defaultState);
 
   useEffect(() => {
+    const sanitized = sanitizeState(state, defaultState, columns.map((col) => col.key));
+    if (
+      !arraysEqual(sanitized.order, state.order) ||
+      !arraysEqual(sanitized.visible, state.visible) ||
+      !arraysEqual(sanitized.pinnedStart, state.pinnedStart) ||
+      !arraysEqual(sanitized.pinnedEnd, state.pinnedEnd)
+    ) {
+      setState(sanitized);
+    }
+  }, [columns, defaultState, state]);
+
+  useEffect(() => {
     saveState(storageKey, state);
   }, [storageKey, state]);
 
-  const updateState = (updater: (s: ColumnState) => ColumnState) => setState((s) => updater(s));
+  const updateState = (updater: (previous: ColumnState) => ColumnState) => {
+    setState((previous) => updater(previous));
+  };
 
-  const toggleVisible = (key: string) =>
-    updateState((s) => ({
-      ...s,
-      visible: s.visible.includes(key) ? s.visible.filter((k) => k !== key) : [...s.visible, key],
+  const toggleVisible = (key: string) => {
+    updateState((previous) => ({
+      ...previous,
+      visible: previous.visible.includes(key)
+        ? previous.visible.filter((item) => item !== key)
+        : [...previous.visible, key],
     }));
+  };
 
-  const pinStart = (key: string) =>
-    updateState((s) => ({
-      ...s,
-      pinnedStart: [...s.pinnedStart.filter((k) => k !== key), key],
-      pinnedEnd: s.pinnedEnd.filter((k) => k !== key),
+  const pinStart = (key: string) => {
+    updateState((previous) => ({
+      ...previous,
+      pinnedStart: [...previous.pinnedStart.filter((item) => item !== key), key],
+      pinnedEnd: previous.pinnedEnd.filter((item) => item !== key),
     }));
+  };
 
-  const pinEnd = (key: string) =>
-    updateState((s) => ({
-      ...s,
-      pinnedEnd: [...s.pinnedEnd.filter((k) => k !== key), key],
-      pinnedStart: s.pinnedStart.filter((k) => k !== key),
+  const pinEnd = (key: string) => {
+    updateState((previous) => ({
+      ...previous,
+      pinnedEnd: [...previous.pinnedEnd.filter((item) => item !== key), key],
+      pinnedStart: previous.pinnedStart.filter((item) => item !== key),
     }));
+  };
 
-  const unpin = (key: string) =>
-    updateState((s) => ({
-      ...s,
-      pinnedStart: s.pinnedStart.filter((k) => k !== key),
-      pinnedEnd: s.pinnedEnd.filter((k) => k !== key),
+  const unpin = (key: string) => {
+    updateState((previous) => ({
+      ...previous,
+      pinnedStart: previous.pinnedStart.filter((item) => item !== key),
+      pinnedEnd: previous.pinnedEnd.filter((item) => item !== key),
     }));
+  };
 
   const reset = () => setState(defaultState);
 
-  const reorder = (from: number, to: number) =>
-    updateState((s) => ({ ...s, order: arrayMove(s.order, from, to) }));
+  const reorder = (from: number, to: number) => {
+    updateState((previous) => ({
+      ...previous,
+      order: arrayMove(previous.order, from, to),
+    }));
+  };
 
-  // Build effective column order: pinnedStart first, then ordered (excluding pinned), then pinnedEnd
   const orderedKeys = useMemo(() => {
     const middle = state.order.filter(
-      (k) => !state.pinnedStart.includes(k) && !state.pinnedEnd.includes(k),
+      (key) => !state.pinnedStart.includes(key) && !state.pinnedEnd.includes(key),
     );
     return [...state.pinnedStart, ...middle, ...state.pinnedEnd];
-  }, [state]);
+  }, [state.order, state.pinnedEnd, state.pinnedStart]);
 
-  const visibleCols = useMemo(
+  const visibleColumns = useMemo(
     () =>
       orderedKeys
-        .filter((k) => state.visible.includes(k))
-        .map((k) => columns.find((c) => c.key === k))
+        .filter((key) => state.visible.includes(key))
+        .map((key) => columns.find((col) => col.key === key))
         .filter(Boolean) as DataTableColumn<T>[],
-    [orderedKeys, state.visible, columns],
+    [columns, orderedKeys, state.visible],
   );
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
 
-  const handleHeaderDragEnd = (e: DragEndEvent) => {
-    const { active, over } = e;
+  const handleHeaderDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
     if (!over || active.id === over.id) return;
+
     const fromKey = String(active.id);
     const toKey = String(over.id);
-    // Only allow reorder within the same pin group
+
     const inStart = state.pinnedStart.includes(fromKey) && state.pinnedStart.includes(toKey);
     const inEnd = state.pinnedEnd.includes(fromKey) && state.pinnedEnd.includes(toKey);
     const inMiddle =
@@ -467,18 +528,25 @@ export function DataTable<T>({
       !state.pinnedEnd.includes(fromKey) &&
       !state.pinnedStart.includes(toKey) &&
       !state.pinnedEnd.includes(toKey);
+
     if (!inStart && !inEnd && !inMiddle) return;
+
     const from = state.order.indexOf(fromKey);
     const to = state.order.indexOf(toKey);
     if (from < 0 || to < 0) return;
+
     reorder(from, to);
   };
 
   const allSelected = selectable && selectedRows && data.length > 0 && selectedRows.size === data.length;
 
+  const tableMinWidth =
+    visibleColumns.reduce((sum, col) => sum + getWidthValue(col.width), 0) +
+    (selectable ? SELECT_COLUMN_WIDTH : 0) +
+    (renderRowActions ? ACTIONS_COLUMN_WIDTH : 0);
+
   return (
     <div className={cn("space-y-3", className)}>
-      {/* Toolbar */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">{toolbarLeft}</div>
         <div className="flex items-center gap-2">
@@ -496,23 +564,22 @@ export function DataTable<T>({
         </div>
       </div>
 
-      {/* Table */}
-      <div className="relative overflow-x-auto border border-border rounded-lg bg-card">
-        <table
-          className="w-full table-fixed text-sm border-collapse"
-          style={{ minWidth: `${visibleCols.length * 150 + (selectable ? 44 : 0) + (renderRowActions ? 120 : 0)}px` }}
-        >
+      <div className="overflow-x-auto rounded-lg border border-border bg-card">
+        <table className="w-full table-fixed border-collapse text-sm" style={{ minWidth: tableMinWidth }}>
           <colgroup>
-            {selectable && <col style={{ width: 44 }} />}
-            {visibleCols.map((c) => (
-              <col key={c.key} style={{ width: 150 }} />
+            {selectable && <col style={{ width: SELECT_COLUMN_WIDTH, minWidth: SELECT_COLUMN_WIDTH }} />}
+            {visibleColumns.map((col) => (
+              <col key={col.key} style={getWidthStyle(col.width)} />
             ))}
-            {renderRowActions && <col style={{ width: 120 }} />}
+            {renderRowActions && (
+              <col style={{ width: ACTIONS_COLUMN_WIDTH, minWidth: ACTIONS_COLUMN_WIDTH }} />
+            )}
           </colgroup>
+
           <thead>
             <tr>
               {selectable && (
-                <th className="sticky left-0 z-30 bg-secondary py-3 px-3 text-left w-10 border-b border-r border-border">
+                <th className="border-b border-r border-border bg-secondary/60 px-3 py-3 text-left">
                   <input
                     type="checkbox"
                     checked={!!allSelected}
@@ -521,14 +588,16 @@ export function DataTable<T>({
                   />
                 </th>
               )}
+
               <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleHeaderDragEnd}>
-                <SortableContext items={visibleCols.map((c) => c.key)} strategy={horizontalListSortingStrategy}>
-                  {visibleCols.map((col, idx) => {
+                <SortableContext items={visibleColumns.map((col) => col.key)} strategy={horizontalListSortingStrategy}>
+                  {visibleColumns.map((col, index) => {
                     const pinned: "start" | "end" | null = state.pinnedStart.includes(col.key)
                       ? "start"
                       : state.pinnedEnd.includes(col.key)
                         ? "end"
                         : null;
+
                     return (
                       <SortableHeader
                         key={col.key}
@@ -536,80 +605,69 @@ export function DataTable<T>({
                         label={col.label}
                         align={col.align}
                         pinned={pinned}
-                        isLast={idx === visibleCols.length - 1 && !renderRowActions}
+                        isLast={index === visibleColumns.length - 1 && !renderRowActions}
                       />
                     );
                   })}
                 </SortableContext>
               </DndContext>
+
               {renderRowActions && (
-                <th
-                  className="bg-secondary py-3 px-3 text-center text-[11px] font-medium text-muted-foreground uppercase tracking-wider border-b border-l border-border whitespace-nowrap"
-                  style={{ width: 120, minWidth: 120 }}
-                >
+                <th className="border-b border-l border-border bg-secondary/60 px-3 py-3 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Actions
                 </th>
               )}
             </tr>
           </thead>
+
           <tbody>
             {data.length === 0 ? (
               <tr>
                 <td
-                  colSpan={visibleCols.length + (selectable ? 1 : 0) + (renderRowActions ? 1 : 0)}
-                  className="px-4 py-12 text-center text-sm text-muted-foreground bg-card"
+                  colSpan={visibleColumns.length + (selectable ? 1 : 0) + (renderRowActions ? 1 : 0)}
+                  className="bg-card px-4 py-12 text-center text-sm text-muted-foreground"
                 >
                   {emptyState ?? "No records to display"}
                 </td>
               </tr>
             ) : (
-              data.map((row, i) => {
-                // Single solid background for ALL rows — eliminates sticky-cell bleed-through entirely.
-                // Selection and hover override with primary tint / secondary.
-                const isSelected = !!selectedRows?.has(i);
-                const baseBg = isSelected
-                  ? "bg-[hsl(var(--primary)/0.08)]"
-                  : "bg-[hsl(var(--card))]";
-                const hoverBg = "group-hover/row:bg-[hsl(var(--secondary)/0.6)]";
+              data.map((row, rowIndex) => {
+                const isSelected = !!selectedRows?.has(rowIndex);
+                const rowBackground = isSelected ? "bg-primary/5" : "bg-card";
+                const hoverBackground = "group-hover/row:bg-secondary/50";
+
                 return (
                   <tr
-                    key={rowKey(row, i)}
-                    className={cn(
-                      "group/row border-b border-border last:border-b-0",
-                      onRowClick && "cursor-pointer",
-                    )}
-                    onClick={(e) => {
-                      const target = e.target as HTMLElement;
-                      if (target.closest("input, button, a, [data-no-row-click]")) return;
-                      onRowClick?.(row, i);
+                    key={rowKey(row, rowIndex)}
+                    className={cn("group/row border-b border-border last:border-b-0", onRowClick && "cursor-pointer")}
+                    onClick={(event) => {
+                      const target = event.target as HTMLElement;
+                      if (target.closest("button, input, a, [data-no-row-click]")) return;
+                      onRowClick?.(row, rowIndex);
                     }}
                   >
                     {selectable && (
-                      <td
-                        className={cn(
-                          "sticky left-0 z-20 py-3.5 px-3 border-r border-border transition-colors",
-                          baseBg,
-                          hoverBg,
-                        )}
-                      >
+                      <td className={cn("border-r border-border px-3 py-3.5 align-middle", rowBackground, hoverBackground)}>
                         <input
                           type="checkbox"
                           checked={isSelected}
-                          onChange={() => onToggleRow?.(i)}
+                          onChange={() => onToggleRow?.(rowIndex)}
                           className="h-4 w-4 rounded border-border text-primary accent-primary"
                         />
                       </td>
                     )}
-                    {visibleCols.map((col, idx) => {
-                      const isLastBeforeActions = idx === visibleCols.length - 1;
+
+                    {visibleColumns.map((col, columnIndex) => {
                       const value = col.accessor ? col.accessor(row) : "";
+                      const isLastBeforeActions = columnIndex === visibleColumns.length - 1;
+
                       return (
                         <td
                           key={col.key}
                           className={cn(
-                            "py-3.5 px-3 whitespace-nowrap overflow-hidden transition-colors",
-                            baseBg,
-                            hoverBg,
+                            "overflow-hidden px-3 py-3.5 align-middle whitespace-nowrap transition-colors",
+                            rowBackground,
+                            hoverBackground,
                             !isLastBeforeActions && "border-r border-border/40",
                             col.align === "right" && "text-right tabular-nums",
                             col.align === "center" && "text-center",
@@ -620,27 +678,27 @@ export function DataTable<T>({
                             <InlineEditCell
                               value={col.render ? "" : value}
                               align={col.align}
-                              onCommit={(val) => onCellSave(i, col.key, val)}
+                              onCommit={(nextValue) => onCellSave(rowIndex, col.key, nextValue)}
                             />
                           ) : col.render ? (
-                            col.render(row, i)
+                            col.render(row, rowIndex)
                           ) : (
-                            <span className="text-foreground">{value || "—"}</span>
+                            <span className="block truncate text-foreground">{value || "—"}</span>
                           )}
                         </td>
                       );
                     })}
+
                     {renderRowActions && (
                       <td
                         className={cn(
-                          "py-2 px-3 border-l border-border transition-colors",
-                          baseBg,
-                          hoverBg,
+                          "border-l border-border px-3 py-2 align-middle text-center",
+                          rowBackground,
+                          hoverBackground,
                         )}
-                        style={{ width: 120, minWidth: 120 }}
                         data-no-row-click
                       >
-                        <div className="flex w-full items-center justify-center">{renderRowActions(row, i)}</div>
+                        <div className="flex items-center justify-center">{renderRowActions(row, rowIndex)}</div>
                       </td>
                     )}
                   </tr>
