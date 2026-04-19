@@ -7,7 +7,7 @@ import {
   Building2, Hash, DollarSign, Clock,
   CheckCircle2, AlertCircle, Globe, Cpu, FileType, Package,
   User, Receipt, Layers, History, Check, Link2, GitBranch, X,
-  ExternalLink, Plus, Trash2,
+  ExternalLink, Plus, Trash2, Save, MoreHorizontal,
 } from "lucide-react";
 
 import POMatchingSheet from "@/components/POMatchingSheet";
@@ -15,6 +15,13 @@ import WorkflowSheet from "@/components/WorkflowSheet";
 import TopBar from "@/components/TopBar";
 import { pendingDocs } from "./PendingReviewTable";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
@@ -349,6 +356,21 @@ export default function DocumentDetailContent() {
 
   const handleFinalize = () => {
     toast({ title: "Document finalized", description: "This document has been approved and is ready for processing." });
+  };
+
+  const handleSave = () => {
+    toast({ title: "Saved", description: "Your changes have been saved." });
+  };
+
+  const handleApproveAndNext = () => {
+    toast({ title: "Approved", description: "Document approved. Moving to next." });
+    if (hasNext) {
+      setTimeout(() => goToNext(), 250);
+    }
+  };
+
+  const handleReject = () => {
+    toast({ title: "Rejected", description: "Document has been rejected.", variant: "destructive" });
   };
 
   const statusLabel = doc.approvalStatus === "approved" ? "Approved" : doc.approvalStatus === "rejected" ? "Rejected" : "Needs Review";
