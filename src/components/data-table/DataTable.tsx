@@ -554,14 +554,13 @@ export function DataTable<T>({
               </tr>
             ) : (
               data.map((row, i) => {
-                // Solid (opaque) backgrounds so sticky cells match exactly and don't show bleed-through
+                // Single solid background for ALL rows — eliminates sticky-cell bleed-through entirely.
+                // Selection and hover override with primary tint / secondary.
                 const isSelected = !!selectedRows?.has(i);
                 const baseBg = isSelected
                   ? "bg-[hsl(var(--primary)/0.08)]"
-                  : i % 2 === 0
-                    ? "bg-[hsl(var(--card))]"
-                    : "bg-[hsl(var(--muted)/0.4)]";
-                const hoverBg = "group-hover/row:bg-[hsl(var(--secondary))]";
+                  : "bg-[hsl(var(--card))]";
+                const hoverBg = "group-hover/row:bg-[hsl(var(--secondary)/0.6)]";
                 return (
                   <tr
                     key={rowKey(row, i)}
