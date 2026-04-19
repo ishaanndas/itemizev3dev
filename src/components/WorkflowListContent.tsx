@@ -78,22 +78,22 @@ export default function WorkflowListContent() {
       <div className="max-w-5xl mx-auto px-8 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Approval Policies</h1>
-            <p className="text-sm text-muted-foreground mt-1">Define how documents get routed and approved</p>
+            <h1 className="text-2xl font-bold text-foreground">Workflows</h1>
+            <p className="text-sm text-muted-foreground mt-1">Define how documents are routed, reviewed, and processed</p>
           </div>
           <button
             onClick={() => navigate("/workflows/new")}
             className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors"
           >
             <Plus className="h-4 w-4" />
-            New Policy
+            New Workflow
           </button>
         </div>
 
         <div className="relative mb-5">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search policies..."
+            placeholder="Search workflows..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -105,14 +105,14 @@ export default function WorkflowListContent() {
             <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-4">
               <ShieldCheck className="h-6 w-6 text-muted-foreground" />
             </div>
-            <h3 className="text-base font-semibold text-foreground mb-1">No approval policies yet</h3>
-            <p className="text-sm text-muted-foreground mb-5">Create a policy to define how documents are approved</p>
+            <h3 className="text-base font-semibold text-foreground mb-1">No workflows yet</h3>
+            <p className="text-sm text-muted-foreground mb-5">Create a workflow to define how documents are processed</p>
             <button
               onClick={() => navigate("/workflows/new")}
               className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors"
             >
               <Plus className="h-4 w-4" />
-              New Policy
+              New Workflow
             </button>
           </div>
         ) : (

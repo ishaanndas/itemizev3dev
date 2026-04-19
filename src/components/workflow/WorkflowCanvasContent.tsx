@@ -104,8 +104,8 @@ function CanvasInner({ workflowId }: { workflowId?: string }) {
   const [edges, setEdges] = useState<Edge[]>(isNew ? [] : defaultEdges);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [showSettings, setShowSettings] = useState(false);
-  const [workflowName, setWorkflowName] = useState(isNew ? "" : "Standard Approval");
-  const [workflowSettings, setWorkflowSettings] = useState({ ...defaultWorkflowSettings, name: isNew ? "" : "Standard Approval" });
+  const [workflowName, setWorkflowName] = useState(isNew ? "" : "Standard Workflow");
+  const [workflowSettings, setWorkflowSettings] = useState({ ...defaultWorkflowSettings, name: isNew ? "" : "Standard Workflow" });
   const [viewMode, setViewMode] = useState<"canvas" | "linear">("canvas");
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; flowPos: { x: number; y: number } } | null>(null);
   const { screenToFlowPosition } = useReactFlow();
@@ -239,10 +239,10 @@ function CanvasInner({ workflowId }: { workflowId?: string }) {
 
   const handleSave = () => {
     if (!workflowName.trim()) {
-      toast.error("Please enter a policy name");
+      toast.error("Please enter a workflow name");
       return;
     }
-    toast.success("Approval policy saved");
+    toast.success("Workflow saved");
   };
 
   const nodeTypes = useMemo(() => nodeTypeComponents, []);
@@ -269,7 +269,7 @@ function CanvasInner({ workflowId }: { workflowId?: string }) {
               setWorkflowName(e.target.value);
               setWorkflowSettings((s) => ({ ...s, name: e.target.value }));
             }}
-            placeholder="Policy name..."
+            placeholder="Workflow name..."
             className="h-8 text-sm font-semibold border-none bg-transparent shadow-none focus-visible:ring-0 w-[260px] px-0"
           />
         </div>
