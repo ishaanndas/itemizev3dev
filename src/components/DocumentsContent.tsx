@@ -1,12 +1,13 @@
 import {
-  FileText, Upload, RefreshCw, Bell, HelpCircle, User,
-  Download, ArrowUpDown, Settings2, MoreHorizontal, Search,
+  Upload, RefreshCw, Bell, HelpCircle, User,
+  ArrowUpDown, MoreHorizontal, Search,
   ChevronDown, Settings, Plug, BookOpen, Users2,
   Filter, Eye, Clock, ChevronRight, X, LogOut, Home,
 } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import UploadSheet from "./UploadSheet";
 import { useNavigate } from "react-router-dom";
+import { DataTable, DataTableColumn } from "@/components/data-table/DataTable";
 
 type DocType = "All" | "Invoice" | "Purchase Order" | "Receipt" | "Document";
 type DocStatus = "All" | "Completed" | "Pending" | "Needs Review" | "In Review";
@@ -14,13 +15,13 @@ type DocStatus = "All" | "Completed" | "Pending" | "Needs Review" | "In Review";
 interface Document {
   vendor: string;
   uploadedAt: string;
-  type: DocType;
+  type: Exclude<DocType, "All">;
   docNumber: string;
   amount: string;
   status: Exclude<DocStatus, "All">;
 }
 
-const documents: Document[] = [
+const initialDocuments: Document[] = [
   { vendor: "Unknown Vendor", uploadedAt: "March 16, 2026 at 3:21 PM", type: "Invoice", docNumber: "—", amount: "-", status: "Completed" },
   { vendor: "Unknown Vendor", uploadedAt: "March 10, 2026 at 6:19 PM", type: "Invoice", docNumber: "—", amount: "-", status: "Completed" },
   { vendor: "Apple", uploadedAt: "March 10, 2026 at 5:44 PM", type: "Document", docNumber: "AF32656303", amount: "$1,402.29", status: "Completed" },
@@ -32,20 +33,6 @@ const documents: Document[] = [
   { vendor: "CloudHost Co", uploadedAt: "March 7, 2026 at 9:30 AM", type: "Receipt", docNumber: "REC-0055", amount: "$17,000.00", status: "Pending" },
   { vendor: "Office Depot", uploadedAt: "March 6, 2026 at 4:45 PM", type: "Purchase Order", docNumber: "PO-2024-0124", amount: "$3,250.00", status: "Completed" },
 ];
-
-const statusColors: Record<string, string> = {
-  Completed: "text-emerald-600",
-  Pending: "text-amber-600",
-  "Needs Review": "text-rose-600",
-  "In Review": "text-blue-600",
-};
-
-const statusDot: Record<string, string> = {
-  Completed: "bg-emerald-500",
-  Pending: "bg-amber-500",
-  "Needs Review": "bg-rose-500",
-  "In Review": "bg-blue-500",
-};
 
 const docTypeOptions: Exclude<DocType, "All">[] = ["Invoice", "Purchase Order", "Receipt", "Document"];
 const docStatuses: DocStatus[] = ["All", "Completed", "Pending", "Needs Review", "In Review"];
@@ -231,14 +218,28 @@ function MultiSelectDropdown({ selected, options, onChange, label }: { selected:
   );
 }
 
+const statusBadgeClass = (status: string) =>
+  status === "Completed" ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
+  status === "Pending" ? "bg-amber-50 text-amber-700 border-amber-200" :
+  status === "Needs Review" ? "bg-destructive/10 text-destructive border-destructive/20" :
+  "bg-blue-50 text-blue-700 border-blue-200";
+
+const typeBadgeClass = (t: string) =>
+  t === "Invoice" ? "bg-blue-50 text-blue-700 border-blue-200" :
+  t === "Purchase Order" ? "bg-orange-50 text-orange-700 border-orange-200" :
+  t === "Receipt" ? "bg-cyan-50 text-cyan-700 border-cyan-200" :
+  "bg-violet-50 text-violet-700 border-violet-200";
+
 export default function DocumentsContent() {
   const [cmdOpen, setCmdOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilters, setTypeFilters] = useState<string[]>([]);
-  const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState<DocStatus>("All");
+  const [documents, setDocuments] = useState<Document[]>(initialDocuments);
+  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -256,6 +257,59 @@ export default function DocumentsContent() {
   });
 
   const activeFilters = (typeFilters.length > 0 ? 1 : 0) + (statusFilter !== "All" ? 1 : 0);
+
+  const toggleRow = useCallback((i: number) => {
+    setSelectedRows((prev) => {
+      const next = new Set(prev);
+      if (next.has(i)) next.delete(i);
+      else next.add(i);
+      return next;
+    });
+  }, []);
+  const toggleAll = useCallback(() => {
+    if (selectedRows.size === filteredDocs.length) setSelectedRows(new Set());
+    else setSelectedRows(new Set(filteredDocs.map((_, i) => i)));
+  }, [selectedRows.size, filteredDocs]);
+
+  const handleCellSave = useCallback((rowIndex: number, columnKey: string, val: string) => {
+    // rowIndex refers to filteredDocs index; map to documents index
+    const target = filteredDocs[rowIndex];
+    if (!target) return;
+    setDocuments((prev) => {
+      const docIdx = prev.indexOf(target);
+      if (docIdx < 0) return prev;
+      const next = [...prev];
+      next[docIdx] = { ...next[docIdx], [columnKey]: val } as Document;
+      return next;
+    });
+  }, [filteredDocs]);
+
+  const columns: DataTableColumn<Document>[] = [
+    { key: "vendor", label: "Vendor Name", accessor: (d) => d.vendor, editable: true },
+    { key: "uploadedAt", label: "Uploaded At", accessor: (d) => d.uploadedAt },
+    {
+      key: "type",
+      label: "Document Type",
+      accessor: (d) => d.type,
+      render: (d) => (
+        <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border ${typeBadgeClass(d.type)}`}>
+          {d.type}
+        </span>
+      ),
+    },
+    { key: "docNumber", label: "Document #", accessor: (d) => d.docNumber, editable: true },
+    { key: "amount", label: "Amount", accessor: (d) => d.amount, align: "right", editable: true },
+    {
+      key: "status",
+      label: "Processing",
+      accessor: (d) => d.status,
+      render: (d) => (
+        <span className={`text-[11px] font-medium px-2.5 py-1 rounded-full border ${statusBadgeClass(d.status)}`}>
+          {d.status}
+        </span>
+      ),
+    },
+  ];
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-background">
@@ -313,12 +367,12 @@ export default function DocumentsContent() {
           <div className="flex items-start justify-between mb-6">
             <div>
               <h1 className="text-2xl font-bold text-foreground tracking-tight">Documents</h1>
-              <p className="text-sm text-muted-foreground mt-1">View and manage all your documents (invoices, receipts, purchase orders, and more)</p>
+              <p className="text-sm text-muted-foreground mt-1">View and manage all your documents. Click any cell to edit inline.</p>
             </div>
             <div className="flex items-center gap-2">
               <button className="flex items-center gap-2 text-sm font-medium border border-border rounded-lg px-3.5 py-2 hover:bg-secondary transition-colors text-foreground">
                 <ArrowUpDown className="h-3.5 w-3.5" />
-                Assign Workflow (0)
+                Assign Workflow ({selectedRows.size})
               </button>
               <button onClick={() => setUploadOpen(true)} className="flex items-center gap-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg px-4 py-2 hover:opacity-90 transition-all shadow-sm">
                 <Upload className="h-3.5 w-3.5" />
@@ -382,90 +436,43 @@ export default function DocumentsContent() {
           )}
 
           {/* Documents Table */}
-          <div className="bg-card rounded-xl border border-border overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm border-collapse">
-                <thead>
-                  <tr className="bg-secondary/40 border-b border-border">
-                    <th className="text-left px-3 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider w-10 border-r border-border">
-                      <input type="checkbox" className="h-4 w-4 rounded border-border text-primary accent-primary" />
-                    </th>
-                    <th className="text-left px-3 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap border-r border-border/40">Vendor Name</th>
-                    <th className="text-left px-3 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap border-r border-border/40">Uploaded At</th>
-                    <th className="text-left px-3 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap border-r border-border/40">Document Type</th>
-                    <th className="text-left px-3 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap border-r border-border/40">Document #</th>
-                    <th className="text-right px-3 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap border-r border-border/40">Amount</th>
-                    <th className="text-left px-3 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap border-r border-border/40">Processing</th>
-                    <th className="w-20 border-l border-border"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredDocs.length === 0 ? (
-                    <tr>
-                      <td colSpan={8} className="px-4 py-12 text-center text-sm text-muted-foreground">
-                        No documents match your filters
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredDocs.map((doc, i) => {
-                      const rowBg = i % 2 === 0 ? "bg-background" : "bg-muted/30";
-                      return (
-                        <tr key={i} className={`border-b border-border last:border-b-0 transition-colors ${rowBg} hover:bg-secondary/50 group cursor-pointer`} onClick={() => navigate(`/documents/${doc.docNumber !== "—" ? doc.docNumber : doc.vendor.replace(/\s/g, "-").toLowerCase()}`)}>
-                          <td className={`px-3 py-3.5 border-r border-border ${rowBg}`}>
-                            <input type="checkbox" className="h-4 w-4 rounded border-border text-primary accent-primary" />
-                          </td>
-                          <td className="px-3 py-3.5 font-medium text-foreground whitespace-nowrap border-r border-border/40">{doc.vendor}</td>
-                          <td className="px-3 py-3.5 text-foreground whitespace-nowrap border-r border-border/40">{doc.uploadedAt}</td>
-                          <td className="px-3 py-3.5 whitespace-nowrap border-r border-border/40">
-                            <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border ${
-                              doc.type === "Invoice" ? "bg-blue-50 text-blue-700 border-blue-200" :
-                              doc.type === "Purchase Order" ? "bg-orange-50 text-orange-700 border-orange-200" :
-                              doc.type === "Receipt" ? "bg-cyan-50 text-cyan-700 border-cyan-200" :
-                              "bg-violet-50 text-violet-700 border-violet-200"
-                            }`}>
-                              {doc.type}
-                            </span>
-                          </td>
-                          <td className="px-3 py-3.5 text-foreground whitespace-nowrap border-r border-border/40">{doc.docNumber}</td>
-                          <td className="px-3 py-3.5 text-right tabular-nums font-medium text-foreground whitespace-nowrap border-r border-border/40">{doc.amount}</td>
-                          <td className="px-3 py-3.5 whitespace-nowrap border-r border-border/40">
-                            <span className={`text-[11px] font-medium px-2.5 py-1 rounded-full border ${
-                              doc.status === "Completed" ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
-                              doc.status === "Pending" ? "bg-amber-50 text-amber-700 border-amber-200" :
-                              doc.status === "Needs Review" ? "bg-destructive/10 text-destructive border-destructive/20" :
-                              "bg-blue-50 text-blue-700 border-blue-200"
-                            }`}>
-                              {doc.status}
-                            </span>
-                          </td>
-                          <td className={`px-3 py-3.5 border-l border-border ${rowBg}`}>
-                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button className="h-7 w-7 rounded flex items-center justify-center hover:bg-secondary transition-colors">
-                                <Eye className="h-3.5 w-3.5 text-muted-foreground" />
-                              </button>
-                              <button className="h-7 w-7 rounded flex items-center justify-center hover:bg-secondary transition-colors">
-                                <MoreHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
+          <DataTable<Document>
+            storageKey="documents"
+            columns={columns}
+            data={filteredDocs}
+            rowKey={(d, i) => `${d.docNumber}-${d.uploadedAt}-${i}`}
+            selectable
+            selectedRows={selectedRows}
+            onToggleRow={toggleRow}
+            onToggleAll={toggleAll}
+            onCellSave={handleCellSave}
+            onRowClick={(doc) => navigate(`/documents/${doc.docNumber !== "—" ? doc.docNumber : doc.vendor.replace(/\s/g, "-").toLowerCase()}`)}
+            emptyState="No documents match your filters"
+            renderRowActions={(doc) => (
+              <>
+                <button
+                  onClick={() => navigate(`/documents/${doc.docNumber !== "—" ? doc.docNumber : doc.vendor.replace(/\s/g, "-").toLowerCase()}`)}
+                  className="h-7 w-7 rounded flex items-center justify-center hover:bg-secondary transition-colors"
+                  title="View"
+                >
+                  <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+                <button className="h-7 w-7 rounded flex items-center justify-center hover:bg-secondary transition-colors" title="More">
+                  <MoreHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+              </>
+            )}
+          />
 
-            {/* Table footer */}
-            <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-secondary/20">
-              <span className="text-xs text-muted-foreground">
-                Showing {filteredDocs.length} of {documents.length} documents
-              </span>
-              <div className="flex items-center gap-2">
-                <button className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded hover:bg-secondary transition-colors">Previous</button>
-                <span className="text-xs font-medium text-foreground bg-primary/10 rounded px-2 py-1">1</span>
-                <button className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded hover:bg-secondary transition-colors">Next</button>
-              </div>
+          {/* Footer */}
+          <div className="flex items-center justify-between px-1 py-3 mt-2">
+            <span className="text-xs text-muted-foreground">
+              Showing {filteredDocs.length} of {documents.length} documents
+            </span>
+            <div className="flex items-center gap-2">
+              <button className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded hover:bg-secondary transition-colors">Previous</button>
+              <span className="text-xs font-medium text-foreground bg-primary/10 rounded px-2 py-1">1</span>
+              <button className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded hover:bg-secondary transition-colors">Next</button>
             </div>
           </div>
         </div>
