@@ -375,7 +375,17 @@ export function DataTable<T>({
   toolbarRight,
   emptyState,
   className,
+  searchable = false,
+  searchValue,
+  onSearchChange,
+  searchPlaceholder = "Search...",
 }: DataTableProps<T>) {
+  const [internalSearch, setInternalSearch] = useState("");
+  const search = searchValue !== undefined ? searchValue : internalSearch;
+  const setSearch = (v: string) => {
+    if (onSearchChange) onSearchChange(v);
+    else setInternalSearch(v);
+  };
   const defaultState = useMemo<ColumnState>(
     () => ({
       order: columns.map((col) => col.key),
