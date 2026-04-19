@@ -7,7 +7,7 @@ import {
   Building2, Hash, DollarSign, Clock,
   CheckCircle2, AlertCircle, Globe, Cpu, FileType, Package,
   User, Receipt, Layers, History, Check, Link2, GitBranch, X,
-  ExternalLink, Plus, Trash2, Save, MoreHorizontal,
+  ExternalLink, Plus, Trash2, MoreHorizontal,
 } from "lucide-react";
 
 import POMatchingSheet from "@/components/POMatchingSheet";
@@ -358,9 +358,6 @@ export default function DocumentDetailContent() {
     toast({ title: "Document finalized", description: "This document has been approved and is ready for processing." });
   };
 
-  const handleSave = () => {
-    toast({ title: "Saved", description: "Your changes have been saved." });
-  };
 
   const handleApproveAndNext = () => {
     toast({ title: "Approved", description: "Document approved. Moving to next." });
@@ -685,9 +682,6 @@ export default function DocumentDetailContent() {
 
           {/* Right: action cluster */}
           <div className="flex items-center gap-1.5">
-            <Button onClick={handleSave} size="sm" className="gap-1.5 text-xs h-8">
-              <Save className="h-3.5 w-3.5" />Save
-            </Button>
             <Button
               onClick={handleApproveAndNext}
               size="sm"
