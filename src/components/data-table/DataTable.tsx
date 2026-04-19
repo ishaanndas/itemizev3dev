@@ -533,6 +533,7 @@ export function DataTable<T>({
                   visibleColumns,
                   state,
                   selectable,
+                  !!renderRowActions,
                 );
 
                 return (
