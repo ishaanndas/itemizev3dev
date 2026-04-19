@@ -668,26 +668,61 @@ export default function DocumentDetailContent() {
         </div>
       </div>
 
-        {/* Bottom bar — right-aligned over preview area */}
+        {/* Bottom action bar */}
         <div className="absolute bottom-0 right-0 left-[55%] border-t border-border bg-card px-4 py-2.5 flex items-center justify-between shadow-[0_-2px_8px_-2px_hsl(var(--foreground)/0.06)]">
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-              <Download className="h-3.5 w-3.5" />Download
+          {/* Left: Prev / Next nav */}
+          <div className="flex items-center gap-1.5">
+            <Button onClick={goToPrev} disabled={!hasPrev} size="sm" className="gap-1 text-xs h-8">
+              <ChevronLeft className="h-3.5 w-3.5" />Previous
             </Button>
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs border-destructive/40 text-destructive hover:bg-destructive hover:text-destructive-foreground">
-              <Ban className="h-3.5 w-3.5" />Void
+            <Button onClick={goToNext} disabled={!hasNext} size="sm" className="gap-1 text-xs h-8">
+              Next<ChevronRight className="h-3.5 w-3.5" />
             </Button>
+            <span className="text-[11px] font-medium text-muted-foreground ml-2 tabular-nums">
+              {currentIndex + 1} of {allDocs.length}
+            </span>
           </div>
-          <div className="flex items-center gap-2">
-            <button onClick={goToPrev} disabled={!hasPrev}
-              className="flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 disabled:text-muted-foreground disabled:opacity-40 transition-colors px-3 py-1.5 rounded-md hover:bg-primary/5 disabled:hover:bg-transparent border border-primary/20 disabled:border-border">
-              <ChevronLeft className="h-4 w-4" />Prev
-            </button>
-            <span className="text-xs font-medium text-muted-foreground">{currentIndex + 1}/{allDocs.length}</span>
-            <button onClick={goToNext} disabled={!hasNext}
-              className="flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 disabled:text-muted-foreground disabled:opacity-40 transition-colors px-3 py-1.5 rounded-md hover:bg-primary/5 disabled:hover:bg-transparent border border-primary/20 disabled:border-border">
-              Next<ChevronRight className="h-4 w-4" />
-            </button>
+
+          {/* Right: action cluster */}
+          <div className="flex items-center gap-1.5">
+            <Button onClick={handleSave} size="sm" className="gap-1.5 text-xs h-8">
+              <Save className="h-3.5 w-3.5" />Save
+            </Button>
+            <Button
+              onClick={handleApproveAndNext}
+              size="sm"
+              className="gap-1.5 text-xs h-8 bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              <Check className="h-3.5 w-3.5" />
+              Approve & Next
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" className="gap-1 text-xs h-8">
+                  More<ChevronDown className="h-3.5 w-3.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={handleFinalize}>
+                  <Check className="h-3.5 w-3.5 mr-2" />
+                  Approve only
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleReject} className="text-destructive focus:text-destructive">
+                  <X className="h-3.5 w-3.5 mr-2" />
+                  Reject
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  <Download className="h-3.5 w-3.5 mr-2" />
+                  Download
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive focus:text-destructive">
+                  <Ban className="h-3.5 w-3.5 mr-2" />
+                  Void document
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
           </div>
         </div>
     </div>
