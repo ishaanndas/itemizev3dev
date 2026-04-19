@@ -143,6 +143,8 @@ export default function MyTasksContent() {
               data={tasks}
               rowKey={(t, i) => `${t.docNumber}-${i}`}
               selectable
+              searchable
+              searchPlaceholder="Search tasks..."
               selectedRows={selectedRows}
               onToggleRow={toggleRow}
               onToggleAll={toggleAll}
