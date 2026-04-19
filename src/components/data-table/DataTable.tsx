@@ -554,19 +554,14 @@ export function DataTable<T>({
               </tr>
             ) : (
               data.map((row, i) => {
-                // Use OPAQUE backgrounds so sticky cells don't bleed
+                // Solid (opaque) backgrounds so sticky cells match exactly and don't show bleed-through
                 const isSelected = !!selectedRows?.has(i);
-                const rowBgClass = isSelected
-                  ? "bg-[hsl(var(--primary)/0.06)]"
+                const baseBg = isSelected
+                  ? "bg-[hsl(var(--primary)/0.08)]"
                   : i % 2 === 0
-                    ? "bg-card"
-                    : "bg-secondary/40";
-                // For sticky cells we need a fully opaque match
-                const stickyBgClass = isSelected
-                  ? "bg-[hsl(var(--primary)/0.06)]"
-                  : i % 2 === 0
-                    ? "bg-card"
-                    : "bg-[hsl(var(--secondary))]";
+                    ? "bg-[hsl(var(--card))]"
+                    : "bg-[hsl(var(--secondary)/0.5)]";
+                const hoverBg = "group-hover/row:bg-[hsl(var(--secondary))]";
                 return (
                   <tr
                     key={rowKey(row, i)}
@@ -584,8 +579,8 @@ export function DataTable<T>({
                       <td
                         className={cn(
                           "sticky left-0 z-20 py-3.5 px-3 border-r border-border transition-colors",
-                          stickyBgClass,
-                          "group-hover/row:bg-[hsl(var(--secondary))]",
+                          baseBg,
+                          hoverBg,
                         )}
                       >
                         <input
@@ -604,8 +599,8 @@ export function DataTable<T>({
                           key={col.key}
                           className={cn(
                             "py-3.5 px-3 whitespace-nowrap transition-colors",
-                            rowBgClass,
-                            "group-hover/row:bg-[hsl(var(--secondary))]",
+                            baseBg,
+                            hoverBg,
                             !isLastBeforeActions && "border-r border-border/40",
                             col.align === "right" && "text-right tabular-nums",
                             col.align === "center" && "text-center",
@@ -630,9 +625,8 @@ export function DataTable<T>({
                       <td
                         className={cn(
                           "sticky right-0 z-20 py-3.5 px-3 border-l border-border transition-colors",
-                          stickyBgClass,
-                          "group-hover/row:bg-[hsl(var(--secondary))]",
-                          "shadow-[-8px_0_8px_-8px_hsl(var(--border))]",
+                          baseBg,
+                          hoverBg,
                         )}
                         data-no-row-click
                       >
