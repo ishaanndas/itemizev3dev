@@ -4,6 +4,7 @@ import {
   ChevronDown,
   ChevronsLeft,
   ChevronsRight,
+  GripVertical,
   Pin,
   PinOff,
   RotateCcw,
@@ -317,75 +318,6 @@ function ColumnManager({
         </div>
       )}
     </div>
-  );
-}
-
-function SortableHeader({
-  id,
-  label,
-  align = "left",
-  pinned,
-  isLast,
-}: {
-  id: string;
-  label: ReactNode;
-  align?: "left" | "right" | "center";
-  pinned: "start" | "end" | null;
-  isLast: boolean;
-}) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
-
-  const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.45 : 1,
-  };
-
-  return (
-    <th
-      ref={setNodeRef}
-      style={style}
-      className={cn(
-        "bg-secondary/60 px-3 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground border-b border-border select-none",
-        !isLast && "border-r border-border/40",
-        align === "right" && "text-right",
-        align === "center" && "text-center",
-      )}
-    >
-      <div
-        className={cn(
-          "flex min-w-0 items-center gap-2",
-          align === "right" && "justify-end",
-          align === "center" && "justify-center",
-        )}
-      >
-        <button
-          {...attributes}
-          {...listeners}
-          aria-label="Drag to reorder column"
-          title="Drag to reorder"
-          className={cn(
-            "shrink-0 rounded p-0.5 text-muted-foreground/60 transition-colors hover:bg-secondary hover:text-foreground cursor-grab active:cursor-grabbing",
-            isDragging && "cursor-grabbing",
-          )}
-        >
-          <GripVertical className="h-3.5 w-3.5" />
-        </button>
-
-        <span className="truncate">{label}</span>
-
-        <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center">
-          {pinned && (
-            <Pin
-              className={cn(
-                "h-3 w-3 text-primary",
-                pinned === "start" ? "-rotate-45" : "rotate-45",
-              )}
-            />
-          )}
-        </span>
-      </div>
-    </th>
   );
 }
 
