@@ -685,9 +685,6 @@ export default function DocumentDetailContent() {
 
           {/* Right: action cluster */}
           <div className="flex items-center gap-1.5">
-            <Button onClick={handleSave} size="sm" className="gap-1.5 text-xs h-8">
-              <Save className="h-3.5 w-3.5" />Save
-            </Button>
             <Button
               onClick={handleApproveAndNext}
               size="sm"
