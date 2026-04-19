@@ -698,7 +698,7 @@ export function DataTable<T>({
           </thead>
 
           <tbody>
-            {data.length === 0 ? (
+            {filteredData.length === 0 ? (
               <tr>
                 <td
                   colSpan={visibleColumns.length + (selectable ? 1 : 0) + (renderRowActions ? 1 : 0)}
@@ -708,7 +708,7 @@ export function DataTable<T>({
                 </td>
               </tr>
             ) : (
-              data.map((row, rowIndex) => {
+              filteredData.map((row, rowIndex) => {
                 const isSelected = !!selectedRows?.has(rowIndex);
                 const rowBackground = isSelected ? "bg-primary/5" : "bg-card";
                 const hoverBackground = "group-hover/row:bg-secondary/50";
