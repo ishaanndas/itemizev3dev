@@ -560,7 +560,7 @@ export function DataTable<T>({
                   ? "bg-[hsl(var(--primary)/0.08)]"
                   : i % 2 === 0
                     ? "bg-[hsl(var(--card))]"
-                    : "bg-[hsl(var(--secondary)/0.5)]";
+                    : "bg-[hsl(var(--muted)/0.4)]";
                 const hoverBg = "group-hover/row:bg-[hsl(var(--secondary))]";
                 return (
                   <tr
