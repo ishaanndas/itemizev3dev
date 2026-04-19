@@ -1,6 +1,8 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { Download, Eye, FileX, Flag } from "lucide-react";
 import { DataTable, DataTableColumn } from "@/components/data-table/DataTable";
+import RowActions from "@/components/data-table/RowActions";
 
 const docTypeStyles: Record<string, string> = {
   "Invoice": "bg-blue-50 text-blue-700 border-blue-200",
