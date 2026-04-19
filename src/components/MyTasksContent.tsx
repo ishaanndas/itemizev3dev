@@ -155,17 +155,16 @@ export default function MyTasksContent() {
                 ) : null
               }
               renderRowActions={(t) => (
-                <>
-                  <button
-                    onClick={() => goToDoc(t)}
-                    className="text-xs font-medium px-3 py-1.5 rounded-md border border-border text-foreground hover:bg-secondary transition-colors"
-                  >
-                    Review
-                  </button>
-                  <button className="text-xs font-medium px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors whitespace-nowrap">
-                    Approve & Next
-                  </button>
-                </>
+                <RowActions
+                  review={{ label: "Review", onClick: () => goToDoc(t), icon: <Eye className="h-3.5 w-3.5" /> }}
+                  primary={{ label: "Approve & Next", onClick: () => goToDoc(t) }}
+                  more={[
+                    { label: "Approve only", onClick: () => goToDoc(t) },
+                    { label: "Flag for review", onClick: () => {}, icon: <Flag className="h-3.5 w-3.5" /> },
+                    { label: "Download", onClick: () => {}, icon: <Download className="h-3.5 w-3.5" /> },
+                    { label: "Reject", onClick: () => {}, icon: <FileX className="h-3.5 w-3.5" />, destructive: true },
+                  ]}
+                />
               )}
             />
           </div>
