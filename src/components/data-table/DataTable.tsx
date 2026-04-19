@@ -607,7 +607,13 @@ export function DataTable<T>({
                     }}
                   >
                     {selectable && (
-                      <td className={cn("border-r border-border px-3 py-3.5 align-middle", rowBackground, hoverBackground)}>
+                      <td
+                        className={cn(
+                          "sticky left-0 z-20 border-r border-border px-3 py-3.5 align-middle",
+                          isSelected ? "bg-primary/5" : "bg-card",
+                        )}
+                        style={{ boxShadow: "1px 0 0 0 hsl(var(--border))" }}
+                      >
                         <input
                           type="checkbox"
                           checked={isSelected}
@@ -620,19 +626,34 @@ export function DataTable<T>({
                     {visibleColumns.map((col, columnIndex) => {
                       const value = col.accessor ? col.accessor(row) : "";
                       const isLastBeforeActions = columnIndex === visibleColumns.length - 1;
+                      const pinned: "start" | "end" | null = state.pinnedStart.includes(col.key)
+                        ? "start"
+                        : state.pinnedEnd.includes(col.key)
+                          ? "end"
+                          : null;
+                      const stickyStyle = getStickyStyle(
+                        col.key,
+                        pinned,
+                        visibleColumns,
+                        state,
+                        selectable,
+                        !!renderRowActions,
+                      );
 
                       return (
                         <td
                           key={col.key}
                           className={cn(
                             "overflow-hidden px-3 py-3.5 align-middle whitespace-nowrap transition-colors",
-                            rowBackground,
-                            hoverBackground,
+                            pinned ? (isSelected ? "bg-primary/5" : "bg-card") : rowBackground,
+                            !pinned && hoverBackground,
+                            pinned && "sticky z-10",
                             !isLastBeforeActions && "border-r border-border/40",
                             col.align === "right" && "text-right tabular-nums",
                             col.align === "center" && "text-center",
                             col.className,
                           )}
+                          style={stickyStyle}
                         >
                           {col.editable && onCellSave ? (
                             <InlineEditCell
@@ -652,10 +673,10 @@ export function DataTable<T>({
                     {renderRowActions && (
                       <td
                         className={cn(
-                          "border-l border-border px-3 py-2 align-middle text-center",
-                          rowBackground,
-                          hoverBackground,
+                          "sticky right-0 z-20 border-l border-border px-3 py-2 align-middle text-center",
+                          isSelected ? "bg-primary/5" : "bg-card",
                         )}
+                        style={{ boxShadow: "-1px 0 0 0 hsl(var(--border))" }}
                         data-no-row-click
                       >
                         <div className="flex items-center justify-center">{renderRowActions(row, rowIndex)}</div>
