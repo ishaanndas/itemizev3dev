@@ -107,6 +107,38 @@ function getWidthStyle(width?: number | string) {
   return { width: DEFAULT_COLUMN_WIDTH, minWidth: DEFAULT_COLUMN_WIDTH };
 }
 
+function getStickyStyle<T>(
+  key: string,
+  pinned: "start" | "end" | null,
+  visibleColumns: DataTableColumn<T>[],
+  state: ColumnState,
+  selectable: boolean,
+): React.CSSProperties | undefined {
+  if (!pinned) return undefined;
+
+  if (pinned === "start") {
+    let offset = selectable ? SELECT_COLUMN_WIDTH : 0;
+    for (const col of visibleColumns) {
+      if (col.key === key) break;
+      if (state.pinnedStart.includes(col.key)) {
+        offset += getWidthValue(col.width);
+      }
+    }
+    return { left: offset, boxShadow: "1px 0 0 0 hsl(var(--border))" };
+  }
+
+  let offset = 0;
+  for (let i = visibleColumns.length - 1; i >= 0; i--) {
+    const col = visibleColumns[i];
+    if (col.key === key) break;
+    if (state.pinnedEnd.includes(col.key)) {
+      offset += getWidthValue(col.width);
+    }
+  }
+  // Account for the trailing actions column when present
+  return { right: offset, boxShadow: "-1px 0 0 0 hsl(var(--border))" };
+}
+
 function InlineEditCell({
   value,
   onCommit,
