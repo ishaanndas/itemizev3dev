@@ -538,9 +538,9 @@ export function DataTable<T>({
           style={{ minWidth: `${visibleCols.length * 150 + (selectable ? 60 : 0) + (renderRowActions ? 140 : 0)}px` }}
         >
           <thead>
-            <tr className="bg-secondary/40 border-b border-border">
+            <tr>
               {selectable && (
-                <th className="sticky left-0 z-20 bg-secondary/95 backdrop-blur-sm py-3 px-3 text-left w-10 border-r border-border">
+                <th className="sticky left-0 z-30 bg-secondary py-3 px-3 text-left w-10 border-b border-r border-border">
                   <input
                     type="checkbox"
                     checked={!!allSelected}
@@ -551,23 +551,30 @@ export function DataTable<T>({
               )}
               <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleHeaderDragEnd}>
                 <SortableContext items={visibleCols.map((c) => c.key)} strategy={horizontalListSortingStrategy}>
-                  {visibleCols.map((col, idx) => (
-                    <SortableHeader
-                      key={col.key}
-                      id={col.key}
-                      className={cn(
-                        idx < visibleCols.length - 1 && "border-r border-border/40",
-                        col.align === "right" && "text-right",
-                        col.align === "center" && "text-center",
-                      )}
-                    >
-                      {col.label}
-                    </SortableHeader>
-                  ))}
+                  {visibleCols.map((col, idx) => {
+                    const pinned: "start" | "end" | null = state.pinnedStart.includes(col.key)
+                      ? "start"
+                      : state.pinnedEnd.includes(col.key)
+                        ? "end"
+                        : null;
+                    return (
+                      <SortableHeader
+                        key={col.key}
+                        id={col.key}
+                        label={col.label}
+                        align={col.align}
+                        pinned={pinned}
+                        isLast={idx === visibleCols.length - 1 && !renderRowActions}
+                        onPinStart={() => pinStart(col.key)}
+                        onPinEnd={() => pinEnd(col.key)}
+                        onUnpin={() => unpin(col.key)}
+                      />
+                    );
+                  })}
                 </SortableContext>
               </DndContext>
               {renderRowActions && (
-                <th className="sticky right-0 z-20 bg-secondary/95 backdrop-blur-sm py-3 px-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider border-l border-border">
+                <th className="sticky right-0 z-30 bg-secondary py-3 px-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider border-b border-l border-border whitespace-nowrap">
                   Actions
                 </th>
               )}
@@ -578,53 +585,66 @@ export function DataTable<T>({
               <tr>
                 <td
                   colSpan={visibleCols.length + (selectable ? 1 : 0) + (renderRowActions ? 1 : 0)}
-                  className="px-4 py-12 text-center text-sm text-muted-foreground"
+                  className="px-4 py-12 text-center text-sm text-muted-foreground bg-card"
                 >
                   {emptyState ?? "No records to display"}
                 </td>
               </tr>
             ) : (
               data.map((row, i) => {
-                const rowBg = selectedRows?.has(i)
-                  ? "bg-primary/5"
+                // Use OPAQUE backgrounds so sticky cells don't bleed
+                const isSelected = !!selectedRows?.has(i);
+                const rowBgClass = isSelected
+                  ? "bg-[hsl(var(--primary)/0.06)]"
                   : i % 2 === 0
-                    ? "bg-background"
-                    : "bg-muted/30";
+                    ? "bg-card"
+                    : "bg-secondary/40";
+                // For sticky cells we need a fully opaque match
+                const stickyBgClass = isSelected
+                  ? "bg-[hsl(var(--primary)/0.06)]"
+                  : i % 2 === 0
+                    ? "bg-card"
+                    : "bg-[hsl(var(--secondary))]";
                 return (
                   <tr
                     key={rowKey(row, i)}
                     className={cn(
-                      "transition-colors border-b border-border last:border-b-0",
-                      rowBg,
-                      "hover:bg-secondary/50",
+                      "group/row border-b border-border last:border-b-0",
                       onRowClick && "cursor-pointer",
                     )}
                     onClick={(e) => {
-                      // ignore clicks on inputs/buttons
                       const target = e.target as HTMLElement;
                       if (target.closest("input, button, a, [data-no-row-click]")) return;
                       onRowClick?.(row, i);
                     }}
                   >
                     {selectable && (
-                      <td className={cn("sticky left-0 z-10 py-3.5 px-3 border-r border-border", rowBg)}>
+                      <td
+                        className={cn(
+                          "sticky left-0 z-20 py-3.5 px-3 border-r border-border transition-colors",
+                          stickyBgClass,
+                          "group-hover/row:bg-[hsl(var(--secondary))]",
+                        )}
+                      >
                         <input
                           type="checkbox"
-                          checked={!!selectedRows?.has(i)}
+                          checked={isSelected}
                           onChange={() => onToggleRow?.(i)}
                           className="h-4 w-4 rounded border-border text-primary accent-primary"
                         />
                       </td>
                     )}
                     {visibleCols.map((col, idx) => {
-                      const isLast = idx === visibleCols.length - 1;
+                      const isLastBeforeActions = idx === visibleCols.length - 1;
                       const value = col.accessor ? col.accessor(row) : "";
                       return (
                         <td
                           key={col.key}
                           className={cn(
-                            "py-3.5 px-3 whitespace-nowrap",
-                            !isLast && "border-r border-border/40",
+                            "py-3.5 px-3 whitespace-nowrap transition-colors",
+                            rowBgClass,
+                            "group-hover/row:bg-[hsl(var(--secondary))]",
+                            !isLastBeforeActions && "border-r border-border/40",
                             col.align === "right" && "text-right tabular-nums",
                             col.align === "center" && "text-center",
                             col.className,
@@ -647,8 +667,10 @@ export function DataTable<T>({
                     {renderRowActions && (
                       <td
                         className={cn(
-                          "sticky right-0 z-10 py-3.5 px-3 border-l border-border shadow-[-8px_0_8px_-8px_hsl(var(--border))]",
-                          rowBg,
+                          "sticky right-0 z-20 py-3.5 px-3 border-l border-border transition-colors",
+                          stickyBgClass,
+                          "group-hover/row:bg-[hsl(var(--secondary))]",
+                          "shadow-[-8px_0_8px_-8px_hsl(var(--border))]",
                         )}
                         data-no-row-click
                       >
