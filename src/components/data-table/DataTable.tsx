@@ -8,7 +8,9 @@ import {
   Pin,
   PinOff,
   RotateCcw,
+  Search,
   Settings2,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -44,6 +46,10 @@ export interface DataTableProps<T> {
   toolbarRight?: ReactNode;
   emptyState?: ReactNode;
   className?: string;
+  searchable?: boolean;
+  searchValue?: string;
+  onSearchChange?: (value: string) => void;
+  searchPlaceholder?: string;
 }
 
 interface ColumnState {
