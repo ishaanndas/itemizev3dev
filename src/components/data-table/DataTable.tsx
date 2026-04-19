@@ -1,20 +1,5 @@
 import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import {
-  DndContext,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  closestCenter,
-  DragEndEvent,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  horizontalListSortingStrategy,
-  useSortable,
-  arrayMove,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import {
   Check,
   ChevronDown,
   ChevronsLeft,
@@ -336,75 +321,6 @@ function ColumnManager({
   );
 }
 
-function SortableHeader({
-  id,
-  label,
-  align = "left",
-  pinned,
-  isLast,
-}: {
-  id: string;
-  label: ReactNode;
-  align?: "left" | "right" | "center";
-  pinned: "start" | "end" | null;
-  isLast: boolean;
-}) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
-
-  const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.45 : 1,
-  };
-
-  return (
-    <th
-      ref={setNodeRef}
-      style={style}
-      className={cn(
-        "bg-secondary/60 px-3 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground border-b border-border select-none",
-        !isLast && "border-r border-border/40",
-        align === "right" && "text-right",
-        align === "center" && "text-center",
-      )}
-    >
-      <div
-        className={cn(
-          "flex min-w-0 items-center gap-2",
-          align === "right" && "justify-end",
-          align === "center" && "justify-center",
-        )}
-      >
-        <button
-          {...attributes}
-          {...listeners}
-          aria-label="Drag to reorder column"
-          title="Drag to reorder"
-          className={cn(
-            "shrink-0 rounded p-0.5 text-muted-foreground/60 transition-colors hover:bg-secondary hover:text-foreground cursor-grab active:cursor-grabbing",
-            isDragging && "cursor-grabbing",
-          )}
-        >
-          <GripVertical className="h-3.5 w-3.5" />
-        </button>
-
-        <span className="truncate">{label}</span>
-
-        <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center">
-          {pinned && (
-            <Pin
-              className={cn(
-                "h-3 w-3 text-primary",
-                pinned === "start" ? "-rotate-45" : "rotate-45",
-              )}
-            />
-          )}
-        </span>
-      </div>
-    </th>
-  );
-}
-
 export function DataTable<T>({
   storageKey,
   columns,
@@ -490,10 +406,16 @@ export function DataTable<T>({
   const reset = () => setState(defaultState);
 
   const reorder = (from: number, to: number) => {
-    updateState((previous) => ({
-      ...previous,
-      order: arrayMove(previous.order, from, to),
-    }));
+    updateState((previous) => {
+      const nextOrder = [...previous.order];
+      const [moved] = nextOrder.splice(from, 1);
+      nextOrder.splice(to, 0, moved);
+
+      return {
+        ...previous,
+        order: nextOrder,
+      };
+    });
   };
 
   const orderedKeys = useMemo(() => {
@@ -511,32 +433,6 @@ export function DataTable<T>({
         .filter(Boolean) as DataTableColumn<T>[],
     [columns, orderedKeys, state.visible],
   );
-
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
-
-  const handleHeaderDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-
-    const fromKey = String(active.id);
-    const toKey = String(over.id);
-
-    const inStart = state.pinnedStart.includes(fromKey) && state.pinnedStart.includes(toKey);
-    const inEnd = state.pinnedEnd.includes(fromKey) && state.pinnedEnd.includes(toKey);
-    const inMiddle =
-      !state.pinnedStart.includes(fromKey) &&
-      !state.pinnedEnd.includes(fromKey) &&
-      !state.pinnedStart.includes(toKey) &&
-      !state.pinnedEnd.includes(toKey);
-
-    if (!inStart && !inEnd && !inMiddle) return;
-
-    const from = state.order.indexOf(fromKey);
-    const to = state.order.indexOf(toKey);
-    if (from < 0 || to < 0) return;
-
-    reorder(from, to);
-  };
 
   const allSelected = selectable && selectedRows && data.length > 0 && selectedRows.size === data.length;
 
@@ -589,28 +485,43 @@ export function DataTable<T>({
                 </th>
               )}
 
-              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleHeaderDragEnd}>
-                <SortableContext items={visibleColumns.map((col) => col.key)} strategy={horizontalListSortingStrategy}>
-                  {visibleColumns.map((col, index) => {
-                    const pinned: "start" | "end" | null = state.pinnedStart.includes(col.key)
-                      ? "start"
-                      : state.pinnedEnd.includes(col.key)
-                        ? "end"
-                        : null;
+              {visibleColumns.map((col, index) => {
+                const pinned: "start" | "end" | null = state.pinnedStart.includes(col.key)
+                  ? "start"
+                  : state.pinnedEnd.includes(col.key)
+                    ? "end"
+                    : null;
 
-                    return (
-                      <SortableHeader
-                        key={col.key}
-                        id={col.key}
-                        label={col.label}
-                        align={col.align}
-                        pinned={pinned}
-                        isLast={index === visibleColumns.length - 1 && !renderRowActions}
-                      />
-                    );
-                  })}
-                </SortableContext>
-              </DndContext>
+                return (
+                  <th
+                    key={col.key}
+                    className={cn(
+                      "border-b bg-secondary/60 px-3 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground",
+                      index < visibleColumns.length - 1 && "border-r border-border/40",
+                      col.align === "right" && "text-right",
+                      col.align === "center" && "text-center",
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "flex min-w-0 items-center gap-2",
+                        col.align === "right" && "justify-end",
+                        col.align === "center" && "justify-center",
+                      )}
+                    >
+                      <span className="truncate">{col.label}</span>
+                      {pinned && (
+                        <Pin
+                          className={cn(
+                            "h-3 w-3 shrink-0 text-primary",
+                            pinned === "start" ? "-rotate-45" : "rotate-45",
+                          )}
+                        />
+                      )}
+                    </div>
+                  </th>
+                );
+              })}
 
               {renderRowActions && (
                 <th className="border-b border-l border-border bg-secondary/60 px-3 py-3 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">
