@@ -536,7 +536,10 @@ export function DataTable<T>({
                 </SortableContext>
               </DndContext>
               {renderRowActions && (
-                <th className="sticky right-0 z-30 bg-secondary py-3 px-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider border-b border-l border-border whitespace-nowrap">
+                <th
+                  className="sticky right-0 z-30 bg-secondary py-3 px-3 text-right text-[11px] font-medium text-muted-foreground uppercase tracking-wider border-b border-l border-border whitespace-nowrap w-[120px]"
+                  style={{ width: 120, minWidth: 120 }}
+                >
                   Actions
                 </th>
               )}
