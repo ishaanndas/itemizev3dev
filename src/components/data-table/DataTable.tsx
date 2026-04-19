@@ -499,9 +499,16 @@ export function DataTable<T>({
       {/* Table */}
       <div className="relative overflow-x-auto border border-border rounded-lg bg-card">
         <table
-          className="w-full text-sm border-collapse table-fixed-actions"
-          style={{ minWidth: `${visibleCols.length * 150 + (selectable ? 56 : 0) + (renderRowActions ? 120 : 0)}px` }}
+          className="w-full text-sm border-collapse"
+          style={{ minWidth: `${visibleCols.length * 150 + (selectable ? 44 : 0) + (renderRowActions ? 120 : 0)}px` }}
         >
+          <colgroup>
+            {selectable && <col style={{ width: 44 }} />}
+            {visibleCols.map((c) => (
+              <col key={c.key} />
+            ))}
+            {renderRowActions && <col style={{ width: 120 }} />}
+          </colgroup>
           <thead>
             <tr>
               {selectable && (
