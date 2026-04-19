@@ -1,8 +1,9 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Clock, DollarSign } from "lucide-react";
+import { Clock, DollarSign, Download, Eye, FileX, Flag } from "lucide-react";
 import TopBar from "./TopBar";
 import { DataTable, DataTableColumn } from "@/components/data-table/DataTable";
+import RowActions from "@/components/data-table/RowActions";
 
 interface MyTask {
   vendor: string;
