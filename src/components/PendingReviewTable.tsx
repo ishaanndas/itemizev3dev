@@ -1,6 +1,8 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { Download, Eye, FileX, Flag } from "lucide-react";
 import { DataTable, DataTableColumn } from "@/components/data-table/DataTable";
+import RowActions from "@/components/data-table/RowActions";
 
 const docTypeStyles: Record<string, string> = {
   "Invoice": "bg-blue-50 text-blue-700 border-blue-200",
@@ -159,17 +161,16 @@ export default function PendingReviewTable({ viewAllHref, compact }: PendingRevi
           ) : null
         }
         renderRowActions={(doc) => (
-          <>
-            <button
-              onClick={() => goToDoc(doc)}
-              className="text-xs font-medium px-3 py-1.5 rounded-md border border-border text-foreground hover:bg-secondary transition-colors"
-            >
-              Review
-            </button>
-            <button className="text-xs font-medium px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors whitespace-nowrap">
-              Approve & Next
-            </button>
-          </>
+          <RowActions
+            review={{ label: "Review", onClick: () => goToDoc(doc), icon: <Eye className="h-3.5 w-3.5" /> }}
+            primary={{ label: "Approve & Next", onClick: () => goToDoc(doc) }}
+            more={[
+              { label: "Approve only", onClick: () => goToDoc(doc) },
+              { label: "Flag for review", onClick: () => {}, icon: <Flag className="h-3.5 w-3.5" /> },
+              { label: "Download", onClick: () => {}, icon: <Download className="h-3.5 w-3.5" /> },
+              { label: "Reject", onClick: () => {}, icon: <FileX className="h-3.5 w-3.5" />, destructive: true },
+            ]}
+          />
         )}
       />
     </div>

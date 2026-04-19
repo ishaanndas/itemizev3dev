@@ -499,8 +499,8 @@ export function DataTable<T>({
       {/* Table */}
       <div className="relative overflow-x-auto border border-border rounded-lg bg-card">
         <table
-          className="w-full text-sm border-collapse"
-          style={{ minWidth: `${visibleCols.length * 150 + (selectable ? 60 : 0) + (renderRowActions ? 140 : 0)}px` }}
+          className="w-full text-sm border-collapse table-fixed-actions"
+          style={{ minWidth: `${visibleCols.length * 150 + (selectable ? 56 : 0) + (renderRowActions ? 120 : 0)}px` }}
         >
           <thead>
             <tr>
@@ -536,7 +536,10 @@ export function DataTable<T>({
                 </SortableContext>
               </DndContext>
               {renderRowActions && (
-                <th className="sticky right-0 z-30 bg-secondary py-3 px-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider border-b border-l border-border whitespace-nowrap">
+                <th
+                  className="sticky right-0 z-30 bg-secondary py-3 px-3 text-right text-[11px] font-medium text-muted-foreground uppercase tracking-wider border-b border-l border-border whitespace-nowrap w-[120px]"
+                  style={{ width: 120, minWidth: 120 }}
+                >
                   Actions
                 </th>
               )}
@@ -623,13 +626,14 @@ export function DataTable<T>({
                     {renderRowActions && (
                       <td
                         className={cn(
-                          "sticky right-0 z-20 py-3.5 px-3 border-l border-border transition-colors",
+                          "sticky right-0 z-20 py-2 px-3 border-l border-border transition-colors",
                           baseBg,
                           hoverBg,
                         )}
+                        style={{ width: 120, minWidth: 120 }}
                         data-no-row-click
                       >
-                        <div className="flex items-center justify-end gap-1.5">{renderRowActions(row, i)}</div>
+                        <div className="flex items-center justify-end gap-1">{renderRowActions(row, i)}</div>
                       </td>
                     )}
                   </tr>
