@@ -25,7 +25,7 @@ interface RowActionsProps {
  */
 export default function RowActions({ primary, review, more }: RowActionsProps) {
   return (
-    <div className="ml-auto flex w-full items-center justify-end gap-1" data-no-row-click>
+    <div className="inline-flex items-center justify-center gap-1" data-no-row-click>
       {review && (
         <IconButton
           title={review.label}

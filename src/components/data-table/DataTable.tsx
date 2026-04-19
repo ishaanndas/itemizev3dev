@@ -499,13 +499,13 @@ export function DataTable<T>({
       {/* Table */}
       <div className="relative overflow-x-auto border border-border rounded-lg bg-card">
         <table
-          className="w-full text-sm border-collapse"
+          className="w-full table-fixed text-sm border-collapse"
           style={{ minWidth: `${visibleCols.length * 150 + (selectable ? 44 : 0) + (renderRowActions ? 120 : 0)}px` }}
         >
           <colgroup>
             {selectable && <col style={{ width: 44 }} />}
             {visibleCols.map((c) => (
-              <col key={c.key} />
+              <col key={c.key} style={{ width: 150 }} />
             ))}
             {renderRowActions && <col style={{ width: 120 }} />}
           </colgroup>
@@ -544,7 +544,7 @@ export function DataTable<T>({
               </DndContext>
               {renderRowActions && (
                 <th
-                  className="bg-secondary py-3 px-3 text-right text-[11px] font-medium text-muted-foreground uppercase tracking-wider border-b border-l border-border whitespace-nowrap"
+                  className="bg-secondary py-3 px-3 text-center text-[11px] font-medium text-muted-foreground uppercase tracking-wider border-b border-l border-border whitespace-nowrap"
                   style={{ width: 120, minWidth: 120 }}
                 >
                   Actions
@@ -607,7 +607,7 @@ export function DataTable<T>({
                         <td
                           key={col.key}
                           className={cn(
-                            "py-3.5 px-3 whitespace-nowrap transition-colors",
+                            "py-3.5 px-3 whitespace-nowrap overflow-hidden transition-colors",
                             baseBg,
                             hoverBg,
                             !isLastBeforeActions && "border-r border-border/40",
@@ -640,7 +640,7 @@ export function DataTable<T>({
                         style={{ width: 120, minWidth: 120 }}
                         data-no-row-click
                       >
-                        <div className="flex w-full items-center justify-end">{renderRowActions(row, i)}</div>
+                        <div className="flex w-full items-center justify-center">{renderRowActions(row, i)}</div>
                       </td>
                     )}
                   </tr>
