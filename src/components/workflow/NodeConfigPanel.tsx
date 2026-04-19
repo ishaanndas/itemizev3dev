@@ -46,7 +46,7 @@ export default function NodeConfigPanel({ node, onUpdate, onDelete, onClose }: N
   const stepMode = formData.stepMode || "approval";
 
   const typeLabel: Record<string, string> = {
-    trigger: "Document / Object",
+    trigger: "Trigger",
     step: "Step",
     condition: "Condition",
   };
@@ -91,7 +91,7 @@ export default function NodeConfigPanel({ node, onUpdate, onDelete, onClose }: N
         {/* ── Trigger config ── */}
         {nodeType === "trigger" && (
           <>
-            <SectionHeader title="1. Object / Document Type" hint="What document triggers this policy" />
+            <SectionHeader title="1. Document Type" hint="What type of document triggers this workflow" />
             <Field label="Document Type">
               <Select value={formData.objectType || "invoice"} onValueChange={(v) => update("objectType", v)}>
                 <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
@@ -118,7 +118,7 @@ export default function NodeConfigPanel({ node, onUpdate, onDelete, onClose }: N
               </Select>
             </Field>
 
-            <SectionHeader title="2. Matching Conditions" hint="Define when this policy applies" />
+            <SectionHeader title="2. Matching Conditions" hint="Define when this workflow applies" />
             <div className="flex items-center gap-2 mb-1">
               <label className="text-xs font-medium text-muted-foreground">Logic</label>
               <Select value={formData.ruleLogic || "and"} onValueChange={(v) => update("ruleLogic", v)}>
@@ -138,12 +138,12 @@ export default function NodeConfigPanel({ node, onUpdate, onDelete, onClose }: N
         {nodeType === "step" && (
           <>
             <SectionHeader title="Step Type" hint="Choose what this step does" />
-            <Field label="Mode">
+            <Field label="Action">
               <Select value={stepMode} onValueChange={(v) => update("stepMode", v)}>
                 <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="approval">Approval</SelectItem>
-                  <SelectItem value="auto_approve">Auto-Approve</SelectItem>
+                  <SelectItem value="approval">Require Approval</SelectItem>
+                  <SelectItem value="auto_approve">Auto-Complete</SelectItem>
                   <SelectItem value="notify">Send Notification</SelectItem>
                   <SelectItem value="update_status">Update Status</SelectItem>
                   <SelectItem value="end">End (workflow complete)</SelectItem>
@@ -154,7 +154,7 @@ export default function NodeConfigPanel({ node, onUpdate, onDelete, onClose }: N
             {/* Approval-specific */}
             {stepMode === "approval" && (
               <>
-                <SectionHeader title="Who Approves" hint="Define the approver for this step" />
+                <SectionHeader title="Assigned To" hint="Who handles this step" />
                 <Field label="Approver Type">
                   <Select value={formData.assigneeType || "role"} onValueChange={(v) => { update("assigneeType", v); update("assignee", ""); }}>
                     <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>

@@ -64,13 +64,13 @@ export default function WorkflowSettingsPanel({ settings, onUpdate, onClose }: W
   };
 
   const handleTestWorkflow = () => {
-    toast.info("Test mode started — create a test document to verify routing, approvers, and escalation.", { duration: 5000 });
+    toast.info("Test mode started — create a test document to verify routing, assignees, and timing.", { duration: 5000 });
   };
 
   return (
     <div className="w-[340px] shrink-0 border-l border-border bg-card h-full overflow-y-auto">
       <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-        <h3 className="text-sm font-semibold text-foreground">Policy Settings</h3>
+        <h3 className="text-sm font-semibold text-foreground">Workflow Settings</h3>
         <button onClick={onClose} className="h-7 w-7 rounded-md flex items-center justify-center hover:bg-secondary transition-colors">
           <X className="h-4 w-4 text-muted-foreground" />
         </button>
@@ -78,12 +78,12 @@ export default function WorkflowSettingsPanel({ settings, onUpdate, onClose }: W
 
       <div className="px-5 py-5 space-y-5">
         {/* General */}
-        <Field label="Policy Name">
-          <Input value={settings.name} onChange={(e) => set("name", e.target.value)} placeholder="e.g., High Value Invoice Approval" className="h-9 text-sm" />
+        <Field label="Workflow Name">
+          <Input value={settings.name} onChange={(e) => set("name", e.target.value)} placeholder="e.g., High Value Document Review" className="h-9 text-sm" />
         </Field>
 
         <Field label="Description">
-          <Textarea value={settings.description} onChange={(e) => set("description", e.target.value)} placeholder="e.g., Invoices > $50K require Finance Director approval" rows={2} className="text-sm resize-none" />
+          <Textarea value={settings.description} onChange={(e) => set("description", e.target.value)} placeholder="e.g., Documents > $50K require Director review" rows={2} className="text-sm resize-none" />
         </Field>
 
         {/* Step 1: Object */}
@@ -119,23 +119,23 @@ export default function WorkflowSettingsPanel({ settings, onUpdate, onClose }: W
         </div>
 
         {/* Step 4: Global approval logic */}
-        <SectionLabel>4. Global Approval Logic</SectionLabel>
+        <SectionLabel>4. Global Step Logic</SectionLabel>
 
         <Field label="Default Mode">
           <Select value={settings.approvalMode} onValueChange={(v) => set("approvalMode", v)}>
             <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="sequential">Sequential (Manager → Finance → CFO)</SelectItem>
-              <SelectItem value="parallel">Parallel (Legal + Finance at same time)</SelectItem>
-              <SelectItem value="any">Any One Approver</SelectItem>
+              <SelectItem value="sequential">Sequential (one step at a time)</SelectItem>
+              <SelectItem value="parallel">Parallel (steps run together)</SelectItem>
+              <SelectItem value="any">Any One Assignee</SelectItem>
             </SelectContent>
           </Select>
         </Field>
 
         <div className="flex items-center justify-between rounded-lg border border-border p-3">
           <div>
-            <p className="text-sm font-medium text-foreground">Auto-Approve</p>
-            <p className="text-[10px] text-muted-foreground">Skip all approval steps</p>
+            <p className="text-sm font-medium text-foreground">Auto-Complete</p>
+            <p className="text-[10px] text-muted-foreground">Skip all manual steps</p>
           </div>
           <Switch checked={settings.autoApprove} onCheckedChange={(v) => set("autoApprove", v)} />
         </div>
@@ -144,19 +144,19 @@ export default function WorkflowSettingsPanel({ settings, onUpdate, onClose }: W
           <Field label="Global Timeout (hours)">
             <Input type="number" value={settings.timeout} onChange={(e) => set("timeout", e.target.value)} className="h-9 text-sm" />
           </Field>
-          <Field label="Required Approvals">
+          <Field label="Required Completions">
             <Input type="number" value={settings.requiredApprovals} onChange={(e) => set("requiredApprovals", e.target.value)} className="h-9 text-sm" min={1} />
           </Field>
         </div>
 
         <div className="space-y-3 pt-1">
-          <CheckItem label="Default Policy" checked={settings.defaultPolicy} onChange={(v) => set("defaultPolicy", v)} />
-          <CheckItem label="Allow Self-Approval" checked={settings.allowSelfApproval} onChange={(v) => set("allowSelfApproval", v)} />
+          <CheckItem label="Default Workflow" checked={settings.defaultPolicy} onChange={(v) => set("defaultPolicy", v)} />
+          <CheckItem label="Allow Self-Action" checked={settings.allowSelfApproval} onChange={(v) => set("allowSelfApproval", v)} />
           <CheckItem label="Enable Escalation" checked={settings.enableEscalation} onChange={(v) => set("enableEscalation", v)} />
         </div>
 
         {/* Step 7: Test */}
-        <SectionLabel>7. Test Policy</SectionLabel>
+        <SectionLabel>7. Test Workflow</SectionLabel>
         <button
           onClick={handleTestWorkflow}
           className="w-full flex items-center justify-center gap-2 text-sm font-medium bg-secondary hover:bg-secondary/80 text-foreground rounded-lg py-2.5 transition-colors"
@@ -165,7 +165,7 @@ export default function WorkflowSettingsPanel({ settings, onUpdate, onClose }: W
           Run Test Simulation
         </button>
         <p className="text-[10px] text-muted-foreground text-center">
-          Create test documents to verify routing, approvers, timing, and escalation
+          Create test documents to verify routing, assignees, timing, and escalation
         </p>
 
         {/* Step 8: Activate */}
@@ -176,13 +176,13 @@ export default function WorkflowSettingsPanel({ settings, onUpdate, onClose }: W
           <div className="flex items-center gap-2">
             <div>
               <div className="flex items-center gap-2">
-                <p className="text-sm font-medium text-foreground">Policy Active</p>
+                <p className="text-sm font-medium text-foreground">Workflow Active</p>
                 <Badge variant={settings.active ? "default" : "secondary"} className="text-[10px] h-5">
                   {settings.active ? "LIVE" : "DRAFT"}
                 </Badge>
               </div>
               <p className="text-[10px] text-muted-foreground mt-0.5">
-                {settings.active ? "This policy is processing documents" : "Enable to start processing"}
+                {settings.active ? "This workflow is processing documents" : "Enable to start processing"}
               </p>
             </div>
           </div>
@@ -192,7 +192,7 @@ export default function WorkflowSettingsPanel({ settings, onUpdate, onClose }: W
         {settings.active && (
           <div className="space-y-2">
             <CheckItem
-              label="Deactivate conflicting policies"
+              label="Deactivate conflicting workflows"
               checked={settings.deactivateConflicting}
               onChange={(v) => set("deactivateConflicting", v)}
             />
@@ -207,7 +207,7 @@ export default function WorkflowSettingsPanel({ settings, onUpdate, onClose }: W
         {settings.active && !settings.name.trim() && (
           <div className="flex items-start gap-2 rounded-lg bg-destructive/10 p-3">
             <AlertTriangle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
-            <p className="text-xs text-destructive">Policy needs a name before it can be activated.</p>
+            <p className="text-xs text-destructive">Workflow needs a name before it can be activated.</p>
           </div>
         )}
       </div>
