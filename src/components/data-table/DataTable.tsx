@@ -536,11 +536,45 @@ export function DataTable<T>({
                   !!renderRowActions,
                 );
 
+                const isFirst = index === 0;
+                const isLast = index === visibleColumns.length - 1;
+                // Pin to the side that matches the column's edge position.
+                const canPinStart = isFirst || pinned === "start";
+                const canPinEnd = isLast || pinned === "end";
+                const pinAction =
+                  pinned === "start"
+                    ? () => unpin(col.key)
+                    : pinned === "end"
+                      ? () => unpin(col.key)
+                      : isFirst
+                        ? () => pinStart(col.key)
+                        : isLast
+                          ? () => pinEnd(col.key)
+                          : null;
+
                 return (
                   <th
                     key={col.key}
+                    draggable
+                    onDragStart={(e) => {
+                      e.dataTransfer.effectAllowed = "move";
+                      e.dataTransfer.setData("text/plain", col.key);
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.dataTransfer.dropEffect = "move";
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      const fromKey = e.dataTransfer.getData("text/plain");
+                      if (!fromKey || fromKey === col.key) return;
+                      const from = state.order.indexOf(fromKey);
+                      const to = state.order.indexOf(col.key);
+                      if (from < 0 || to < 0) return;
+                      reorder(from, to);
+                    }}
                     className={cn(
-                      "border-b bg-secondary px-3 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground",
+                      "group/th border-b bg-secondary px-3 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground",
                       index < visibleColumns.length - 1 && "border-r border-border/40",
                       col.align === "right" && "text-right",
                       col.align === "center" && "text-center",
@@ -550,19 +584,56 @@ export function DataTable<T>({
                   >
                     <div
                       className={cn(
-                        "flex min-w-0 items-center gap-2",
+                        "flex min-w-0 items-center gap-1.5",
                         col.align === "right" && "justify-end",
                         col.align === "center" && "justify-center",
                       )}
                     >
+                      <button
+                        type="button"
+                        title="Drag to reorder"
+                        aria-label="Drag to reorder column"
+                        className="shrink-0 cursor-grab rounded p-0.5 text-muted-foreground/40 opacity-0 transition-opacity hover:bg-secondary hover:text-foreground group-hover/th:opacity-100 active:cursor-grabbing"
+                        onMouseDown={(e) => e.stopPropagation()}
+                      >
+                        <GripVertical className="h-3.5 w-3.5" />
+                      </button>
+
                       <span className="truncate">{col.label}</span>
-                      {pinned && (
-                        <Pin
+
+                      {pinAction && (canPinStart || canPinEnd) && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            pinAction();
+                          }}
+                          title={
+                            pinned
+                              ? "Unpin column"
+                              : canPinStart
+                                ? "Pin to left"
+                                : "Pin to right"
+                          }
+                          aria-label={pinned ? "Unpin column" : "Pin column"}
                           className={cn(
-                            "h-3 w-3 shrink-0 text-primary",
-                            pinned === "start" ? "-rotate-45" : "rotate-45",
+                            "shrink-0 rounded p-0.5 transition-colors",
+                            pinned
+                              ? "text-primary hover:bg-primary/10"
+                              : "text-muted-foreground/40 opacity-0 hover:bg-secondary hover:text-foreground group-hover/th:opacity-100",
                           )}
-                        />
+                        >
+                          {pinned ? (
+                            <Pin
+                              className={cn(
+                                "h-3 w-3",
+                                pinned === "start" ? "-rotate-45" : "rotate-45",
+                              )}
+                            />
+                          ) : (
+                            <Pin className="h-3 w-3" />
+                          )}
+                        </button>
                       )}
                     </div>
                   </th>
