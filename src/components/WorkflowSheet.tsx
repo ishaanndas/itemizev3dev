@@ -8,31 +8,31 @@ import {
 
 const workflows = [
   {
-    id: "standard-approval",
-    name: "Standard Approval",
-    description: "Route to department manager, then finance for approval",
+    id: "standard-review",
+    name: "Standard Review",
+    description: "Route to department manager, then to finance for review",
     icon: FileCheck,
-    steps: ["Department Manager", "Finance Review", "Final Approval"],
+    steps: ["Department Manager", "Finance Review", "Final Sign-off"],
     avgTime: "2-3 days",
-    category: "approval",
+    category: "review",
   },
   {
-    id: "auto-approve",
-    name: "Auto-Approve (< $500)",
-    description: "Automatically approve invoices under threshold",
+    id: "auto-process",
+    name: "Auto-Process (< $500)",
+    description: "Automatically process documents under threshold",
     icon: Zap,
-    steps: ["Amount Check", "Auto-Approve"],
+    steps: ["Amount Check", "Auto-Process"],
     avgTime: "Instant",
     category: "automation",
   },
   {
     id: "multi-level",
     name: "Multi-Level Review",
-    description: "Escalate through multiple approval tiers based on amount",
+    description: "Escalate through multiple tiers based on amount",
     icon: Users,
     steps: ["Team Lead", "Department Head", "VP Finance", "CFO"],
     avgTime: "3-5 days",
-    category: "approval",
+    category: "review",
   },
   {
     id: "compliance-review",
@@ -74,7 +74,7 @@ export default function WorkflowSheet({
             Assign Workflow
           </SheetTitle>
           <SheetDescription className="text-sm text-muted-foreground">
-            Choose an approval workflow to route this document through
+            Choose a workflow to route this document through
           </SheetDescription>
         </SheetHeader>
 

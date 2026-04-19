@@ -353,15 +353,15 @@ export default function PendingReviewTable({ viewAllHref, compact }: PendingRevi
                     );
                   })}
                   <td className={`sticky right-0 z-20 py-3.5 px-3 border-l border-border bg-background shadow-[-8px_0_8px_-8px_hsl(var(--border))]`}>
-                    <div className="flex items-center justify-end gap-2">
-                      <button className="text-xs font-medium px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
-                        Approve
-                      </button>
+                    <div className="flex items-center justify-end gap-1.5">
                       <button
                         onClick={() => navigate(`/documents/${doc.docNumber || doc.vendor.replace(/\s/g, "-").toLowerCase()}`)}
                         className="text-xs font-medium px-3 py-1.5 rounded-md border border-border text-foreground hover:bg-secondary transition-colors"
                       >
                         Review
+                      </button>
+                      <button className="text-xs font-medium px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors whitespace-nowrap">
+                        Approve & Next
                       </button>
                     </div>
                   </td>

@@ -96,11 +96,11 @@ const navigation: NavGroup[] = [
     ],
   },
   {
-    label: "Approvals",
+    label: "Workflows",
     collapsible: true,
     defaultOpen: true,
     items: [
-      { name: "Approval Policies", icon: GitMerge, href: "/workflows" },
+      { name: "Workflows", icon: GitMerge, href: "/workflows" },
     ],
   },
   {
