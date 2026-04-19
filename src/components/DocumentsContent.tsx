@@ -3,11 +3,13 @@ import {
   ArrowUpDown, MoreHorizontal, Search,
   ChevronDown, Settings, Plug, BookOpen, Users2,
   Filter, Eye, Clock, ChevronRight, X, LogOut, Home,
+  Download, FileX, Flag,
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import UploadSheet from "./UploadSheet";
 import { useNavigate } from "react-router-dom";
 import { DataTable, DataTableColumn } from "@/components/data-table/DataTable";
+import RowActions from "@/components/data-table/RowActions";
 
 type DocType = "All" | "Invoice" | "Purchase Order" | "Receipt" | "Document";
 type DocStatus = "All" | "Completed" | "Pending" | "Needs Review" | "In Review";
