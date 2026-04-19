@@ -640,7 +640,7 @@ export function DataTable<T>({
                         style={{ width: 120, minWidth: 120 }}
                         data-no-row-click
                       >
-                        <div className="flex items-center justify-end gap-1">{renderRowActions(row, i)}</div>
+                        <div className="flex w-full items-center justify-end">{renderRowActions(row, i)}</div>
                       </td>
                     )}
                   </tr>
