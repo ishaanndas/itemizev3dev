@@ -530,9 +530,6 @@ export function DataTable<T>({
                         align={col.align}
                         pinned={pinned}
                         isLast={idx === visibleCols.length - 1 && !renderRowActions}
-                        onPinStart={() => pinStart(col.key)}
-                        onPinEnd={() => pinEnd(col.key)}
-                        onUnpin={() => unpin(col.key)}
                       />
                     );
                   })}
