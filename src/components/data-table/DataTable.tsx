@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect, useCallback, ReactNode } from "react";
+import { useState, useMemo, useRef, useEffect, ReactNode } from "react";
 import {
   DndContext,
   PointerSensor,
@@ -14,7 +14,17 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Check, ChevronDown, GripVertical, Pin, PinOff, RotateCcw, Settings2 } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  ChevronsLeft,
+  ChevronsRight,
+  GripVertical,
+  Pin,
+  PinOff,
+  RotateCcw,
+  Settings2,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /* ---------------- Types ---------------- */
