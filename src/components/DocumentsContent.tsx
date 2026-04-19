@@ -450,20 +450,20 @@ export default function DocumentsContent() {
             onCellSave={handleCellSave}
             onRowClick={(doc) => navigate(`/documents/${doc.docNumber !== "—" ? doc.docNumber : doc.vendor.replace(/\s/g, "-").toLowerCase()}`)}
             emptyState="No documents match your filters"
-            renderRowActions={(doc) => (
-              <>
-                <button
-                  onClick={() => navigate(`/documents/${doc.docNumber !== "—" ? doc.docNumber : doc.vendor.replace(/\s/g, "-").toLowerCase()}`)}
-                  className="h-7 w-7 rounded flex items-center justify-center hover:bg-secondary transition-colors"
-                  title="View"
-                >
-                  <Eye className="h-3.5 w-3.5 text-muted-foreground" />
-                </button>
-                <button className="h-7 w-7 rounded flex items-center justify-center hover:bg-secondary transition-colors" title="More">
-                  <MoreHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
-                </button>
-              </>
-            )}
+            renderRowActions={(doc) => {
+              const goTo = () =>
+                navigate(`/documents/${doc.docNumber !== "—" ? doc.docNumber : doc.vendor.replace(/\s/g, "-").toLowerCase()}`);
+              return (
+                <RowActions
+                  review={{ label: "View", onClick: goTo, icon: <Eye className="h-3.5 w-3.5" /> }}
+                  more={[
+                    { label: "Download", onClick: () => {}, icon: <Download className="h-3.5 w-3.5" /> },
+                    { label: "Flag", onClick: () => {}, icon: <Flag className="h-3.5 w-3.5" /> },
+                    { label: "Delete", onClick: () => {}, icon: <FileX className="h-3.5 w-3.5" />, destructive: true },
+                  ]}
+                />
+              );
+            }}
           />
 
           {/* Footer */}
