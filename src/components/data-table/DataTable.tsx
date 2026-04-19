@@ -242,33 +242,41 @@ function ColumnManager({
                     </div>
                     <span className="text-sm text-foreground truncate">{col.label}</span>
                   </button>
-                  <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-0.5 shrink-0">
                     <button
                       onClick={() => (pinnedStart ? onUnpin(col.key) : onPinStart(col.key))}
-                      title={pinnedStart ? "Unpin" : "Pin to start"}
+                      title={pinnedStart ? "Unpin from start" : "Pin to start"}
                       className={cn(
-                        "h-6 w-6 rounded flex items-center justify-center hover:bg-secondary",
-                        pinnedStart && "text-primary opacity-100",
+                        "h-6 w-6 rounded flex items-center justify-center transition-colors",
+                        pinnedStart
+                          ? "bg-primary/10 text-primary"
+                          : "text-muted-foreground/60 hover:bg-secondary hover:text-foreground",
                       )}
                     >
-                      <Pin className="h-3 w-3 -rotate-45" />
+                      <ChevronsLeft className="h-3.5 w-3.5" />
                     </button>
                     <button
                       onClick={() => (pinnedEnd ? onUnpin(col.key) : onPinEnd(col.key))}
-                      title={pinnedEnd ? "Unpin" : "Pin to end"}
+                      title={pinnedEnd ? "Unpin from end" : "Pin to end"}
                       className={cn(
-                        "h-6 w-6 rounded flex items-center justify-center hover:bg-secondary",
-                        pinnedEnd && "text-primary opacity-100",
+                        "h-6 w-6 rounded flex items-center justify-center transition-colors",
+                        pinnedEnd
+                          ? "bg-primary/10 text-primary"
+                          : "text-muted-foreground/60 hover:bg-secondary hover:text-foreground",
                       )}
                     >
-                      <Pin className="h-3 w-3 rotate-45" />
+                      <ChevronsRight className="h-3.5 w-3.5" />
                     </button>
+                    {(pinnedStart || pinnedEnd) && (
+                      <button
+                        onClick={() => onUnpin(col.key)}
+                        title="Unpin"
+                        className="h-6 w-6 rounded flex items-center justify-center text-muted-foreground/60 hover:bg-secondary hover:text-foreground"
+                      >
+                        <PinOff className="h-3 w-3" />
+                      </button>
+                    )}
                   </div>
-                  {(pinnedStart || pinnedEnd) && (
-                    <span className="text-[9px] font-semibold uppercase text-primary tracking-wide">
-                      {pinnedStart ? "Start" : "End"}
-                    </span>
-                  )}
                 </div>
               );
             })}
