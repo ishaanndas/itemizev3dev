@@ -71,10 +71,10 @@ interface ConditionLayer {
 }
 
 const stepTypeConfig: Record<StepType, { label: string; description: string }> = {
-  approval: { label: "Require Approval", description: "Assign an approver for this condition" },
-  notify: { label: "Send Notification", description: "Notify users about this document" },
-  approve_bill: { label: "Approve Bill", description: "Auto-approve the bill" },
-  auto_approve: { label: "Auto-Approve", description: "Skip approval for this condition" },
+  approval: { label: "Require Approval", description: "Assign someone to review this document" },
+  notify: { label: "Send Notification", description: "Notify stakeholders about this document" },
+  approve_bill: { label: "Mark Complete", description: "Auto-complete this step" },
+  auto_approve: { label: "Auto-Complete", description: "Skip manual action for this condition" },
   update_status: { label: "Update Status", description: "Change the document status" },
 };
 
@@ -239,7 +239,7 @@ export default function LinearWorkflowBuilder({ isNew = false }: { isNew?: boole
               </div>
               <h3 className="text-sm font-semibold text-foreground mb-1">No conditions yet</h3>
               <p className="text-xs text-muted-foreground mb-5 max-w-[300px]">
-                Add your first condition to define when this workflow applies — e.g. by department, amount, or vendor.
+                Add your first condition to define when this workflow applies — e.g. by document type, amount, or vendor.
               </p>
               <button
                 onClick={addLayer}
@@ -441,7 +441,7 @@ function StepRow({ step, index, onUpdate, onRemove }: {
           {step.type === "approval" && (
             <>
               <div className="grid grid-cols-3 gap-3">
-                <Field label="Approver Type">
+                <Field label="Assignee Type">
                   <Select value={step.assigneeType || "role"} onValueChange={(v) => onUpdate({ assigneeType: v as Step["assigneeType"], assignee: "" })}>
                     <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -495,7 +495,7 @@ function StepRow({ step, index, onUpdate, onRemove }: {
                   </Select>
                 </Field>
 
-                <Field label="Required Approvals">
+                <Field label="Required Completions">
                   <Input type="number" value={step.requiredApprovals ?? "1"} onChange={(e) => onUpdate({ requiredApprovals: e.target.value })} className="h-8 text-xs" min={1} />
                 </Field>
               </div>
@@ -533,7 +533,7 @@ function StepRow({ step, index, onUpdate, onRemove }: {
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-xs">
                 <input type="checkbox" checked={step.notifyApprovers ?? true} onChange={(e) => onUpdate({ notifyApprovers: e.target.checked })} className="rounded" />
-                Approver(s) — Action Required
+                Assignee(s) — Action Required
               </label>
               <label className="flex items-center gap-2 text-xs">
                 <input type="checkbox" checked={step.notifyRequestor ?? true} onChange={(e) => onUpdate({ notifyRequestor: e.target.checked })} className="rounded" />
@@ -569,10 +569,10 @@ function StepRow({ step, index, onUpdate, onRemove }: {
 function AddStepPopover({ onAdd }: { onAdd: (type: StepType) => void }) {
   const [open, setOpen] = useState(false);
   const items: { type: StepType; icon: typeof Users; label: string; desc: string }[] = [
-    { type: "approval", icon: Users, label: "Require Approval", desc: "Assign approver(s)" },
+    { type: "approval", icon: Users, label: "Require Approval", desc: "Assign reviewer(s)" },
     { type: "notify", icon: Bell, label: "Send Notification", desc: "Notify stakeholders" },
-    { type: "approve_bill", icon: CheckCircle2, label: "Approve Bill", desc: "Auto-approve document" },
-    { type: "auto_approve", icon: Clock, label: "Auto-Approve", desc: "Skip approval" },
+    { type: "approve_bill", icon: CheckCircle2, label: "Mark Complete", desc: "Auto-complete document" },
+    { type: "auto_approve", icon: Clock, label: "Auto-Complete", desc: "Skip manual action" },
     { type: "update_status", icon: SlidersHorizontal, label: "Update Status", desc: "Change document status" },
   ];
 
