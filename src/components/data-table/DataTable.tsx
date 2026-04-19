@@ -107,6 +107,38 @@ function getWidthStyle(width?: number | string) {
   return { width: DEFAULT_COLUMN_WIDTH, minWidth: DEFAULT_COLUMN_WIDTH };
 }
 
+function getStickyStyle<T>(
+  key: string,
+  pinned: "start" | "end" | null,
+  visibleColumns: DataTableColumn<T>[],
+  state: ColumnState,
+  selectable: boolean,
+  hasActions: boolean,
+): React.CSSProperties | undefined {
+  if (!pinned) return undefined;
+
+  if (pinned === "start") {
+    let offset = selectable ? SELECT_COLUMN_WIDTH : 0;
+    for (const col of visibleColumns) {
+      if (col.key === key) break;
+      if (state.pinnedStart.includes(col.key)) {
+        offset += getWidthValue(col.width);
+      }
+    }
+    return { left: offset, boxShadow: "1px 0 0 0 hsl(var(--border))" };
+  }
+
+  let offset = hasActions ? ACTIONS_COLUMN_WIDTH : 0;
+  for (let i = visibleColumns.length - 1; i >= 0; i--) {
+    const col = visibleColumns[i];
+    if (col.key === key) break;
+    if (state.pinnedEnd.includes(col.key)) {
+      offset += getWidthValue(col.width);
+    }
+  }
+  return { right: offset, boxShadow: "-1px 0 0 0 hsl(var(--border))" };
+}
+
 function InlineEditCell({
   value,
   onCommit,
@@ -475,7 +507,10 @@ export function DataTable<T>({
           <thead>
             <tr>
               {selectable && (
-                <th className="border-b border-r border-border bg-secondary/60 px-3 py-3 text-left">
+                <th
+                  className="sticky left-0 z-30 border-b border-r border-border bg-secondary px-3 py-3 text-left"
+                  style={{ boxShadow: "1px 0 0 0 hsl(var(--border))" }}
+                >
                   <input
                     type="checkbox"
                     checked={!!allSelected}
@@ -492,15 +527,26 @@ export function DataTable<T>({
                     ? "end"
                     : null;
 
+                const stickyStyle = getStickyStyle(
+                  col.key,
+                  pinned,
+                  visibleColumns,
+                  state,
+                  selectable,
+                  !!renderRowActions,
+                );
+
                 return (
                   <th
                     key={col.key}
                     className={cn(
-                      "border-b bg-secondary/60 px-3 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground",
+                      "border-b bg-secondary px-3 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground",
                       index < visibleColumns.length - 1 && "border-r border-border/40",
                       col.align === "right" && "text-right",
                       col.align === "center" && "text-center",
+                      pinned && "sticky z-20",
                     )}
+                    style={stickyStyle}
                   >
                     <div
                       className={cn(
@@ -524,7 +570,10 @@ export function DataTable<T>({
               })}
 
               {renderRowActions && (
-                <th className="border-b border-l border-border bg-secondary/60 px-3 py-3 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                <th
+                  className="sticky right-0 z-30 border-b border-l border-border bg-secondary px-3 py-3 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground"
+                  style={{ boxShadow: "-1px 0 0 0 hsl(var(--border))" }}
+                >
                   Actions
                 </th>
               )}
@@ -558,7 +607,13 @@ export function DataTable<T>({
                     }}
                   >
                     {selectable && (
-                      <td className={cn("border-r border-border px-3 py-3.5 align-middle", rowBackground, hoverBackground)}>
+                      <td
+                        className={cn(
+                          "sticky left-0 z-20 border-r border-border px-3 py-3.5 align-middle",
+                          isSelected ? "bg-primary/5" : "bg-card",
+                        )}
+                        style={{ boxShadow: "1px 0 0 0 hsl(var(--border))" }}
+                      >
                         <input
                           type="checkbox"
                           checked={isSelected}
@@ -571,19 +626,34 @@ export function DataTable<T>({
                     {visibleColumns.map((col, columnIndex) => {
                       const value = col.accessor ? col.accessor(row) : "";
                       const isLastBeforeActions = columnIndex === visibleColumns.length - 1;
+                      const pinned: "start" | "end" | null = state.pinnedStart.includes(col.key)
+                        ? "start"
+                        : state.pinnedEnd.includes(col.key)
+                          ? "end"
+                          : null;
+                      const stickyStyle = getStickyStyle(
+                        col.key,
+                        pinned,
+                        visibleColumns,
+                        state,
+                        selectable,
+                        !!renderRowActions,
+                      );
 
                       return (
                         <td
                           key={col.key}
                           className={cn(
                             "overflow-hidden px-3 py-3.5 align-middle whitespace-nowrap transition-colors",
-                            rowBackground,
-                            hoverBackground,
+                            pinned ? (isSelected ? "bg-primary/5" : "bg-card") : rowBackground,
+                            !pinned && hoverBackground,
+                            pinned && "sticky z-10",
                             !isLastBeforeActions && "border-r border-border/40",
                             col.align === "right" && "text-right tabular-nums",
                             col.align === "center" && "text-center",
                             col.className,
                           )}
+                          style={stickyStyle}
                         >
                           {col.editable && onCellSave ? (
                             <InlineEditCell
@@ -603,10 +673,10 @@ export function DataTable<T>({
                     {renderRowActions && (
                       <td
                         className={cn(
-                          "border-l border-border px-3 py-2 align-middle text-center",
-                          rowBackground,
-                          hoverBackground,
+                          "sticky right-0 z-20 border-l border-border px-3 py-2 align-middle text-center",
+                          isSelected ? "bg-primary/5" : "bg-card",
                         )}
+                        style={{ boxShadow: "-1px 0 0 0 hsl(var(--border))" }}
                         data-no-row-click
                       >
                         <div className="flex items-center justify-center">{renderRowActions(row, rowIndex)}</div>
