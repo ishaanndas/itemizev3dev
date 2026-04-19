@@ -139,6 +139,8 @@ export default function PendingReviewTable({ viewAllHref, compact }: PendingRevi
         data={docs}
         rowKey={(d, i) => `${d.docNumber || d.vendor}-${i}`}
         selectable
+        searchable
+        searchPlaceholder="Search documents..."
         selectedRows={selectedRows}
         onToggleRow={toggleRow}
         onToggleAll={toggleAll}
