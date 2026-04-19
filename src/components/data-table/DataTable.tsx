@@ -544,7 +544,7 @@ export function DataTable<T>({
               </DndContext>
               {renderRowActions && (
                 <th
-                  className="sticky right-0 z-30 bg-secondary py-3 px-3 text-right text-[11px] font-medium text-muted-foreground uppercase tracking-wider border-b border-l border-border whitespace-nowrap w-[120px]"
+                  className="bg-secondary py-3 px-3 text-right text-[11px] font-medium text-muted-foreground uppercase tracking-wider border-b border-l border-border whitespace-nowrap"
                   style={{ width: 120, minWidth: 120 }}
                 >
                   Actions
@@ -633,7 +633,7 @@ export function DataTable<T>({
                     {renderRowActions && (
                       <td
                         className={cn(
-                          "sticky right-0 z-20 py-2 px-3 border-l border-border transition-colors",
+                          "py-2 px-3 border-l border-border transition-colors",
                           baseBg,
                           hoverBg,
                         )}
