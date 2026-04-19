@@ -475,7 +475,10 @@ export function DataTable<T>({
           <thead>
             <tr>
               {selectable && (
-                <th className="border-b border-r border-border bg-secondary/60 px-3 py-3 text-left">
+                <th
+                  className="sticky left-0 z-30 border-b border-r border-border bg-secondary px-3 py-3 text-left"
+                  style={{ boxShadow: "1px 0 0 0 hsl(var(--border))" }}
+                >
                   <input
                     type="checkbox"
                     checked={!!allSelected}
@@ -492,15 +495,25 @@ export function DataTable<T>({
                     ? "end"
                     : null;
 
+                const stickyStyle = getStickyStyle(
+                  col.key,
+                  pinned,
+                  visibleColumns,
+                  state,
+                  selectable,
+                );
+
                 return (
                   <th
                     key={col.key}
                     className={cn(
-                      "border-b bg-secondary/60 px-3 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground",
+                      "border-b bg-secondary px-3 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground",
                       index < visibleColumns.length - 1 && "border-r border-border/40",
                       col.align === "right" && "text-right",
                       col.align === "center" && "text-center",
+                      pinned && "sticky z-20",
                     )}
+                    style={stickyStyle}
                   >
                     <div
                       className={cn(
@@ -524,7 +537,10 @@ export function DataTable<T>({
               })}
 
               {renderRowActions && (
-                <th className="border-b border-l border-border bg-secondary/60 px-3 py-3 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                <th
+                  className="sticky right-0 z-30 border-b border-l border-border bg-secondary px-3 py-3 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground"
+                  style={{ boxShadow: "-1px 0 0 0 hsl(var(--border))" }}
+                >
                   Actions
                 </th>
               )}
