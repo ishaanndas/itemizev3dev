@@ -723,7 +723,6 @@ export default function DocumentDetailContent() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          </div>
         </div>
     </div>
 
