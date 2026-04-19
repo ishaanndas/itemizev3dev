@@ -303,18 +303,12 @@ function SortableHeader({
   align = "left",
   pinned,
   isLast,
-  onPinStart,
-  onPinEnd,
-  onUnpin,
 }: {
   id: string;
   label: ReactNode;
   align?: "left" | "right" | "center";
   pinned: "start" | "end" | null;
   isLast: boolean;
-  onPinStart: () => void;
-  onPinEnd: () => void;
-  onUnpin: () => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
   const style: React.CSSProperties = {
@@ -327,7 +321,7 @@ function SortableHeader({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "group/th relative py-3 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap select-none bg-secondary/40",
+        "group/th relative py-3 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap select-none bg-secondary/60 border-b border-border",
         !isLast && "border-r border-border/40",
         align === "right" && "text-right",
         align === "center" && "text-center",
@@ -341,14 +335,14 @@ function SortableHeader({
           align === "center" && "justify-center",
         )}
       >
-        {/* Drag handle */}
+        {/* Drag handle — always visible to indicate draggability */}
         <button
           {...attributes}
           {...listeners}
           aria-label="Drag to reorder column"
           title="Drag to reorder"
           className={cn(
-            "cursor-grab active:cursor-grabbing rounded p-0.5 text-muted-foreground/40 hover:text-foreground hover:bg-secondary transition-colors",
+            "cursor-grab active:cursor-grabbing rounded p-0.5 text-muted-foreground/50 hover:text-foreground hover:bg-secondary transition-colors shrink-0",
             isDragging && "cursor-grabbing",
           )}
         >
@@ -357,46 +351,17 @@ function SortableHeader({
 
         <span className="flex-1 truncate">{label}</span>
 
-        {/* Pinned indicator */}
-        {pinned && (
-          <Pin
-            className={cn(
-              "h-3 w-3 text-primary shrink-0",
-              pinned === "start" ? "-rotate-45" : "rotate-45",
-            )}
-          />
-        )}
-
-        {/* Hover quick-pin */}
-        <div className="hidden group-hover/th:flex items-center gap-0.5">
-          {pinned !== "start" && (
-            <button
-              onClick={onPinStart}
-              title="Pin to start"
-              className="h-5 w-5 rounded flex items-center justify-center text-muted-foreground/60 hover:text-primary hover:bg-secondary"
-            >
-              <ChevronsLeft className="h-3 w-3" />
-            </button>
-          )}
-          {pinned !== "end" && (
-            <button
-              onClick={onPinEnd}
-              title="Pin to end"
-              className="h-5 w-5 rounded flex items-center justify-center text-muted-foreground/60 hover:text-primary hover:bg-secondary"
-            >
-              <ChevronsRight className="h-3 w-3" />
-            </button>
-          )}
+        {/* Reserved-space pin slot — prevents layout shift */}
+        <span className="inline-flex items-center justify-center w-3 h-3 shrink-0">
           {pinned && (
-            <button
-              onClick={onUnpin}
-              title="Unpin"
-              className="h-5 w-5 rounded flex items-center justify-center text-muted-foreground/60 hover:text-foreground hover:bg-secondary"
-            >
-              <PinOff className="h-3 w-3" />
-            </button>
+            <Pin
+              className={cn(
+                "h-3 w-3 text-primary",
+                pinned === "start" ? "-rotate-45" : "rotate-45",
+              )}
+            />
           )}
-        </div>
+        </span>
       </div>
     </th>
   );
@@ -565,9 +530,6 @@ export function DataTable<T>({
                         align={col.align}
                         pinned={pinned}
                         isLast={idx === visibleCols.length - 1 && !renderRowActions}
-                        onPinStart={() => pinStart(col.key)}
-                        onPinEnd={() => pinEnd(col.key)}
-                        onUnpin={() => unpin(col.key)}
                       />
                     );
                   })}
@@ -592,19 +554,13 @@ export function DataTable<T>({
               </tr>
             ) : (
               data.map((row, i) => {
-                // Use OPAQUE backgrounds so sticky cells don't bleed
+                // Single solid background for ALL rows — eliminates sticky-cell bleed-through entirely.
+                // Selection and hover override with primary tint / secondary.
                 const isSelected = !!selectedRows?.has(i);
-                const rowBgClass = isSelected
-                  ? "bg-[hsl(var(--primary)/0.06)]"
-                  : i % 2 === 0
-                    ? "bg-card"
-                    : "bg-secondary/40";
-                // For sticky cells we need a fully opaque match
-                const stickyBgClass = isSelected
-                  ? "bg-[hsl(var(--primary)/0.06)]"
-                  : i % 2 === 0
-                    ? "bg-card"
-                    : "bg-[hsl(var(--secondary))]";
+                const baseBg = isSelected
+                  ? "bg-[hsl(var(--primary)/0.08)]"
+                  : "bg-[hsl(var(--card))]";
+                const hoverBg = "group-hover/row:bg-[hsl(var(--secondary)/0.6)]";
                 return (
                   <tr
                     key={rowKey(row, i)}
@@ -622,8 +578,8 @@ export function DataTable<T>({
                       <td
                         className={cn(
                           "sticky left-0 z-20 py-3.5 px-3 border-r border-border transition-colors",
-                          stickyBgClass,
-                          "group-hover/row:bg-[hsl(var(--secondary))]",
+                          baseBg,
+                          hoverBg,
                         )}
                       >
                         <input
@@ -642,8 +598,8 @@ export function DataTable<T>({
                           key={col.key}
                           className={cn(
                             "py-3.5 px-3 whitespace-nowrap transition-colors",
-                            rowBgClass,
-                            "group-hover/row:bg-[hsl(var(--secondary))]",
+                            baseBg,
+                            hoverBg,
                             !isLastBeforeActions && "border-r border-border/40",
                             col.align === "right" && "text-right tabular-nums",
                             col.align === "center" && "text-center",
@@ -668,9 +624,8 @@ export function DataTable<T>({
                       <td
                         className={cn(
                           "sticky right-0 z-20 py-3.5 px-3 border-l border-border transition-colors",
-                          stickyBgClass,
-                          "group-hover/row:bg-[hsl(var(--secondary))]",
-                          "shadow-[-8px_0_8px_-8px_hsl(var(--border))]",
+                          baseBg,
+                          hoverBg,
                         )}
                         data-no-row-click
                       >
