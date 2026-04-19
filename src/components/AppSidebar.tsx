@@ -57,7 +57,7 @@ const navigation: NavGroup[] = [
     collapsible: true,
     defaultOpen: true,
     items: [
-      { name: "My Tasks", icon: CheckCircle, count: 4 },
+      { name: "My Tasks", icon: CheckCircle, count: 4, href: "/my-tasks" },
       { name: "Pending Review", icon: Clock, count: 12, href: "/pending-review" },
       { name: "Returned", icon: AlertCircle, count: 2 },
     ],
