@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect, useCallback, ReactNode } from "react";
+import { useState, useMemo, useRef, useEffect, ReactNode } from "react";
 import {
   DndContext,
   PointerSensor,
@@ -14,7 +14,17 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Check, ChevronDown, GripVertical, Pin, PinOff, RotateCcw, Settings2 } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  ChevronsLeft,
+  ChevronsRight,
+  GripVertical,
+  Pin,
+  PinOff,
+  RotateCcw,
+  Settings2,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /* ---------------- Types ---------------- */
@@ -232,33 +242,41 @@ function ColumnManager({
                     </div>
                     <span className="text-sm text-foreground truncate">{col.label}</span>
                   </button>
-                  <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-0.5 shrink-0">
                     <button
                       onClick={() => (pinnedStart ? onUnpin(col.key) : onPinStart(col.key))}
-                      title={pinnedStart ? "Unpin" : "Pin to start"}
+                      title={pinnedStart ? "Unpin from start" : "Pin to start"}
                       className={cn(
-                        "h-6 w-6 rounded flex items-center justify-center hover:bg-secondary",
-                        pinnedStart && "text-primary opacity-100",
+                        "h-6 w-6 rounded flex items-center justify-center transition-colors",
+                        pinnedStart
+                          ? "bg-primary/10 text-primary"
+                          : "text-muted-foreground/60 hover:bg-secondary hover:text-foreground",
                       )}
                     >
-                      <Pin className="h-3 w-3 -rotate-45" />
+                      <ChevronsLeft className="h-3.5 w-3.5" />
                     </button>
                     <button
                       onClick={() => (pinnedEnd ? onUnpin(col.key) : onPinEnd(col.key))}
-                      title={pinnedEnd ? "Unpin" : "Pin to end"}
+                      title={pinnedEnd ? "Unpin from end" : "Pin to end"}
                       className={cn(
-                        "h-6 w-6 rounded flex items-center justify-center hover:bg-secondary",
-                        pinnedEnd && "text-primary opacity-100",
+                        "h-6 w-6 rounded flex items-center justify-center transition-colors",
+                        pinnedEnd
+                          ? "bg-primary/10 text-primary"
+                          : "text-muted-foreground/60 hover:bg-secondary hover:text-foreground",
                       )}
                     >
-                      <Pin className="h-3 w-3 rotate-45" />
+                      <ChevronsRight className="h-3.5 w-3.5" />
                     </button>
+                    {(pinnedStart || pinnedEnd) && (
+                      <button
+                        onClick={() => onUnpin(col.key)}
+                        title="Unpin"
+                        className="h-6 w-6 rounded flex items-center justify-center text-muted-foreground/60 hover:bg-secondary hover:text-foreground"
+                      >
+                        <PinOff className="h-3 w-3" />
+                      </button>
+                    )}
                   </div>
-                  {(pinnedStart || pinnedEnd) && (
-                    <span className="text-[9px] font-semibold uppercase text-primary tracking-wide">
-                      {pinnedStart ? "Start" : "End"}
-                    </span>
-                  )}
                 </div>
               );
             })}
@@ -281,31 +299,105 @@ function ColumnManager({
 /* ---------------- Sortable header ---------------- */
 function SortableHeader({
   id,
-  children,
-  className,
+  label,
+  align = "left",
+  pinned,
+  isLast,
+  onPinStart,
+  onPinEnd,
+  onUnpin,
 }: {
   id: string;
-  children: ReactNode;
-  className?: string;
+  label: ReactNode;
+  align?: "left" | "right" | "center";
+  pinned: "start" | "end" | null;
+  isLast: boolean;
+  onPinStart: () => void;
+  onPinEnd: () => void;
+  onUnpin: () => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0.4 : 1,
   };
   return (
     <th
       ref={setNodeRef}
       style={style}
-      {...attributes}
-      {...listeners}
       className={cn(
-        "py-3 px-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap cursor-grab select-none",
-        className,
+        "group/th relative py-3 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap select-none bg-secondary/40",
+        !isLast && "border-r border-border/40",
+        align === "right" && "text-right",
+        align === "center" && "text-center",
+        align === "left" && "text-left",
       )}
     >
-      {children}
+      <div
+        className={cn(
+          "flex items-center gap-1.5",
+          align === "right" && "justify-end",
+          align === "center" && "justify-center",
+        )}
+      >
+        {/* Drag handle */}
+        <button
+          {...attributes}
+          {...listeners}
+          aria-label="Drag to reorder column"
+          title="Drag to reorder"
+          className={cn(
+            "cursor-grab active:cursor-grabbing rounded p-0.5 text-muted-foreground/40 hover:text-foreground hover:bg-secondary transition-colors",
+            isDragging && "cursor-grabbing",
+          )}
+        >
+          <GripVertical className="h-3.5 w-3.5" />
+        </button>
+
+        <span className="flex-1 truncate">{label}</span>
+
+        {/* Pinned indicator */}
+        {pinned && (
+          <Pin
+            className={cn(
+              "h-3 w-3 text-primary shrink-0",
+              pinned === "start" ? "-rotate-45" : "rotate-45",
+            )}
+          />
+        )}
+
+        {/* Hover quick-pin */}
+        <div className="hidden group-hover/th:flex items-center gap-0.5">
+          {pinned !== "start" && (
+            <button
+              onClick={onPinStart}
+              title="Pin to start"
+              className="h-5 w-5 rounded flex items-center justify-center text-muted-foreground/60 hover:text-primary hover:bg-secondary"
+            >
+              <ChevronsLeft className="h-3 w-3" />
+            </button>
+          )}
+          {pinned !== "end" && (
+            <button
+              onClick={onPinEnd}
+              title="Pin to end"
+              className="h-5 w-5 rounded flex items-center justify-center text-muted-foreground/60 hover:text-primary hover:bg-secondary"
+            >
+              <ChevronsRight className="h-3 w-3" />
+            </button>
+          )}
+          {pinned && (
+            <button
+              onClick={onUnpin}
+              title="Unpin"
+              className="h-5 w-5 rounded flex items-center justify-center text-muted-foreground/60 hover:text-foreground hover:bg-secondary"
+            >
+              <PinOff className="h-3 w-3" />
+            </button>
+          )}
+        </div>
+      </div>
     </th>
   );
 }
@@ -446,9 +538,9 @@ export function DataTable<T>({
           style={{ minWidth: `${visibleCols.length * 150 + (selectable ? 60 : 0) + (renderRowActions ? 140 : 0)}px` }}
         >
           <thead>
-            <tr className="bg-secondary/40 border-b border-border">
+            <tr>
               {selectable && (
-                <th className="sticky left-0 z-20 bg-secondary/95 backdrop-blur-sm py-3 px-3 text-left w-10 border-r border-border">
+                <th className="sticky left-0 z-30 bg-secondary py-3 px-3 text-left w-10 border-b border-r border-border">
                   <input
                     type="checkbox"
                     checked={!!allSelected}
@@ -459,23 +551,30 @@ export function DataTable<T>({
               )}
               <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleHeaderDragEnd}>
                 <SortableContext items={visibleCols.map((c) => c.key)} strategy={horizontalListSortingStrategy}>
-                  {visibleCols.map((col, idx) => (
-                    <SortableHeader
-                      key={col.key}
-                      id={col.key}
-                      className={cn(
-                        idx < visibleCols.length - 1 && "border-r border-border/40",
-                        col.align === "right" && "text-right",
-                        col.align === "center" && "text-center",
-                      )}
-                    >
-                      {col.label}
-                    </SortableHeader>
-                  ))}
+                  {visibleCols.map((col, idx) => {
+                    const pinned: "start" | "end" | null = state.pinnedStart.includes(col.key)
+                      ? "start"
+                      : state.pinnedEnd.includes(col.key)
+                        ? "end"
+                        : null;
+                    return (
+                      <SortableHeader
+                        key={col.key}
+                        id={col.key}
+                        label={col.label}
+                        align={col.align}
+                        pinned={pinned}
+                        isLast={idx === visibleCols.length - 1 && !renderRowActions}
+                        onPinStart={() => pinStart(col.key)}
+                        onPinEnd={() => pinEnd(col.key)}
+                        onUnpin={() => unpin(col.key)}
+                      />
+                    );
+                  })}
                 </SortableContext>
               </DndContext>
               {renderRowActions && (
-                <th className="sticky right-0 z-20 bg-secondary/95 backdrop-blur-sm py-3 px-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider border-l border-border">
+                <th className="sticky right-0 z-30 bg-secondary py-3 px-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider border-b border-l border-border whitespace-nowrap">
                   Actions
                 </th>
               )}
@@ -486,53 +585,66 @@ export function DataTable<T>({
               <tr>
                 <td
                   colSpan={visibleCols.length + (selectable ? 1 : 0) + (renderRowActions ? 1 : 0)}
-                  className="px-4 py-12 text-center text-sm text-muted-foreground"
+                  className="px-4 py-12 text-center text-sm text-muted-foreground bg-card"
                 >
                   {emptyState ?? "No records to display"}
                 </td>
               </tr>
             ) : (
               data.map((row, i) => {
-                const rowBg = selectedRows?.has(i)
-                  ? "bg-primary/5"
+                // Use OPAQUE backgrounds so sticky cells don't bleed
+                const isSelected = !!selectedRows?.has(i);
+                const rowBgClass = isSelected
+                  ? "bg-[hsl(var(--primary)/0.06)]"
                   : i % 2 === 0
-                    ? "bg-background"
-                    : "bg-muted/30";
+                    ? "bg-card"
+                    : "bg-secondary/40";
+                // For sticky cells we need a fully opaque match
+                const stickyBgClass = isSelected
+                  ? "bg-[hsl(var(--primary)/0.06)]"
+                  : i % 2 === 0
+                    ? "bg-card"
+                    : "bg-[hsl(var(--secondary))]";
                 return (
                   <tr
                     key={rowKey(row, i)}
                     className={cn(
-                      "transition-colors border-b border-border last:border-b-0",
-                      rowBg,
-                      "hover:bg-secondary/50",
+                      "group/row border-b border-border last:border-b-0",
                       onRowClick && "cursor-pointer",
                     )}
                     onClick={(e) => {
-                      // ignore clicks on inputs/buttons
                       const target = e.target as HTMLElement;
                       if (target.closest("input, button, a, [data-no-row-click]")) return;
                       onRowClick?.(row, i);
                     }}
                   >
                     {selectable && (
-                      <td className={cn("sticky left-0 z-10 py-3.5 px-3 border-r border-border", rowBg)}>
+                      <td
+                        className={cn(
+                          "sticky left-0 z-20 py-3.5 px-3 border-r border-border transition-colors",
+                          stickyBgClass,
+                          "group-hover/row:bg-[hsl(var(--secondary))]",
+                        )}
+                      >
                         <input
                           type="checkbox"
-                          checked={!!selectedRows?.has(i)}
+                          checked={isSelected}
                           onChange={() => onToggleRow?.(i)}
                           className="h-4 w-4 rounded border-border text-primary accent-primary"
                         />
                       </td>
                     )}
                     {visibleCols.map((col, idx) => {
-                      const isLast = idx === visibleCols.length - 1;
+                      const isLastBeforeActions = idx === visibleCols.length - 1;
                       const value = col.accessor ? col.accessor(row) : "";
                       return (
                         <td
                           key={col.key}
                           className={cn(
-                            "py-3.5 px-3 whitespace-nowrap",
-                            !isLast && "border-r border-border/40",
+                            "py-3.5 px-3 whitespace-nowrap transition-colors",
+                            rowBgClass,
+                            "group-hover/row:bg-[hsl(var(--secondary))]",
+                            !isLastBeforeActions && "border-r border-border/40",
                             col.align === "right" && "text-right tabular-nums",
                             col.align === "center" && "text-center",
                             col.className,
@@ -555,8 +667,10 @@ export function DataTable<T>({
                     {renderRowActions && (
                       <td
                         className={cn(
-                          "sticky right-0 z-10 py-3.5 px-3 border-l border-border shadow-[-8px_0_8px_-8px_hsl(var(--border))]",
-                          rowBg,
+                          "sticky right-0 z-20 py-3.5 px-3 border-l border-border transition-colors",
+                          stickyBgClass,
+                          "group-hover/row:bg-[hsl(var(--secondary))]",
+                          "shadow-[-8px_0_8px_-8px_hsl(var(--border))]",
                         )}
                         data-no-row-click
                       >
