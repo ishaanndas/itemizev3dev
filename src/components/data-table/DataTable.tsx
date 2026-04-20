@@ -502,29 +502,30 @@ export function DataTable<T>({
 
   return (
     <div className={cn("space-y-3", className)}>
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">{toolbarLeft}</div>
-        <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2">
+        {toolbarLeft && <div className="flex items-center gap-2 shrink-0">{toolbarLeft}</div>}
+        {searchable && (
+          <div className="relative flex-1 min-w-0">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={searchPlaceholder}
+              className="h-9 w-full rounded-lg border border-border bg-card pl-8 pr-7 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-primary/50 transition-all"
+            />
+            {search && (
+              <button
+                onClick={() => setSearch("")}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+        )}
+        {!searchable && <div className="flex-1" />}
+        <div className="flex items-center gap-2 shrink-0">
           {toolbarRight}
-          {searchable && (
-            <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder={searchPlaceholder}
-                className="h-9 w-56 rounded-lg border border-border bg-card pl-8 pr-7 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-primary/50 transition-all"
-              />
-              {search && (
-                <button
-                  onClick={() => setSearch("")}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              )}
-            </div>
-          )}
           <ColumnManager
             columns={columns as DataTableColumn<unknown>[]}
             state={state}
