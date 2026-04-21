@@ -600,7 +600,7 @@ export default function DocumentDetailContent() {
         </div>
 
         {/* RIGHT: Document preview */}
-        <div className="flex-1 flex flex-col min-h-0 bg-secondary/30 pb-12">
+        <div className="flex-1 min-w-0 flex flex-col min-h-0 bg-secondary/30 pb-12">
           <div className="flex items-center justify-between border-b border-border bg-card px-4 py-2.5">
             <div className="flex items-center gap-2.5">
               <FileText className="h-4 w-4 text-muted-foreground" />
