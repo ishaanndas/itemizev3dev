@@ -200,6 +200,12 @@ interface LineItem {
   unitPrice: string;
   tax: string;
   total: string;
+  glAccount: string;
+  costCenter: string;
+  project: string;
+  discount: string;
+  category: string;
+  notes: string;
 }
 
 const createLineItem = (): LineItem => ({
@@ -211,16 +217,28 @@ const createLineItem = (): LineItem => ({
   unitPrice: "",
   tax: "",
   total: "",
+  glAccount: "",
+  costCenter: "",
+  project: "",
+  discount: "",
+  category: "",
+  notes: "",
 });
 
 const LINE_ITEM_COLS = [
-  { key: "description" as const, label: "Description", width: "flex-[2]", placeholder: "Description" },
-  { key: "sku" as const, label: "SKU", width: "flex-1", placeholder: "SKU" },
+  { key: "description" as const, label: "Description", width: "w-64", placeholder: "Description" },
+  { key: "sku" as const, label: "SKU", width: "w-32", placeholder: "SKU" },
   { key: "qty" as const, label: "Qty", width: "w-16", placeholder: "0" },
   { key: "uom" as const, label: "UOM", width: "w-16", placeholder: "EA" },
   { key: "unitPrice" as const, label: "Unit Price", width: "w-24", placeholder: "$0.00" },
+  { key: "discount" as const, label: "Discount", width: "w-24", placeholder: "$0.00" },
   { key: "tax" as const, label: "Tax", width: "w-20", placeholder: "$0.00" },
   { key: "total" as const, label: "Total", width: "w-24", placeholder: "$0.00" },
+  { key: "glAccount" as const, label: "GL Account", width: "w-32", placeholder: "0000-00" },
+  { key: "costCenter" as const, label: "Cost Center", width: "w-28", placeholder: "CC-000" },
+  { key: "project" as const, label: "Project", width: "w-32", placeholder: "Project" },
+  { key: "category" as const, label: "Category", width: "w-32", placeholder: "Category" },
+  { key: "notes" as const, label: "Notes", width: "w-48", placeholder: "Notes" },
 ];
 
 function LineItemsTable({ items, onChange, onDelete, onAdd }: {
@@ -231,35 +249,39 @@ function LineItemsTable({ items, onChange, onDelete, onAdd }: {
 }) {
   return (
     <div className="border border-border rounded-lg bg-card overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center gap-1 px-3 py-2 border-b border-border bg-secondary/40">
-        {LINE_ITEM_COLS.map(col => (
-          <div key={col.key} className={`${col.width} text-[11px] font-semibold text-muted-foreground uppercase tracking-wide px-1`}>
-            {col.label}
-          </div>
-        ))}
-        <div className="w-8" />
-      </div>
-      {/* Rows */}
-      <div className="divide-y divide-border">
-        {items.map(item => (
-          <div key={item.id} className="flex items-center gap-1 px-3 py-1.5 hover:bg-accent/20 transition-colors group">
+      <div className="overflow-x-auto">
+        <div className="min-w-max">
+          {/* Header */}
+          <div className="flex items-center gap-1 px-3 py-2 border-b border-border bg-secondary/40">
             {LINE_ITEM_COLS.map(col => (
-              <div key={col.key} className={`${col.width} px-1`}>
-                <input
-                  type="text"
-                  value={item[col.key]}
-                  onChange={(e) => onChange(item.id, { ...item, [col.key]: e.target.value })}
-                  placeholder={col.placeholder}
-                  className="w-full bg-transparent text-sm text-foreground py-1 outline-none border border-transparent rounded px-1.5 focus:border-primary/30 focus:bg-card transition-all placeholder:text-muted-foreground/40"
-                />
+              <div key={col.key} className={`${col.width} shrink-0 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide px-1`}>
+                {col.label}
               </div>
             ))}
-            <button onClick={() => onDelete(item.id)} className="w-8 flex items-center justify-center text-muted-foreground/0 group-hover:text-muted-foreground hover:!text-destructive transition-colors p-1 rounded">
-              <Trash2 className="h-3.5 w-3.5" />
-            </button>
+            <div className="w-8 shrink-0" />
           </div>
-        ))}
+          {/* Rows */}
+          <div className="divide-y divide-border">
+            {items.map(item => (
+              <div key={item.id} className="flex items-center gap-1 px-3 py-1.5 hover:bg-accent/20 transition-colors group">
+                {LINE_ITEM_COLS.map(col => (
+                  <div key={col.key} className={`${col.width} shrink-0 px-1`}>
+                    <input
+                      type="text"
+                      value={item[col.key]}
+                      onChange={(e) => onChange(item.id, { ...item, [col.key]: e.target.value })}
+                      placeholder={col.placeholder}
+                      className="w-full bg-transparent text-sm text-foreground py-1 outline-none border border-transparent rounded px-1.5 focus:border-primary/30 focus:bg-card transition-all placeholder:text-muted-foreground/40"
+                    />
+                  </div>
+                ))}
+                <button onClick={() => onDelete(item.id)} className="w-8 shrink-0 flex items-center justify-center text-muted-foreground/0 group-hover:text-muted-foreground hover:!text-destructive transition-colors p-1 rounded">
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
       {/* Add row */}
       <button onClick={onAdd} className="w-full flex items-center justify-center gap-1.5 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/20 transition-colors border-t border-border">
