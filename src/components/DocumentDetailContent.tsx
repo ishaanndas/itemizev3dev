@@ -401,9 +401,9 @@ export default function DocumentDetailContent() {
       <TopBar />
 
       {/* Main split view */}
-      <div className="flex-1 flex min-h-0">
+      <div className="flex-1 flex min-h-0 min-w-0 w-full overflow-hidden">
         {/* LEFT: Fields panel */}
-        <div className="w-[55%] shrink-0 border-r border-border flex flex-col min-h-0">
+        <div className="w-[55%] shrink-0 min-w-0 border-r border-border flex flex-col min-h-0">
           {/* Header: back icon + doc name + status */}
           <div className="shrink-0 border-b border-border bg-card px-5 py-2.5 flex items-center gap-3">
             <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md hover:bg-secondary shrink-0" title="Back">
@@ -600,7 +600,7 @@ export default function DocumentDetailContent() {
         </div>
 
         {/* RIGHT: Document preview */}
-        <div className="flex-1 flex flex-col min-h-0 bg-secondary/30 pb-12">
+        <div className="flex-1 min-w-0 flex flex-col min-h-0 bg-secondary/30 pb-12">
           <div className="flex items-center justify-between border-b border-border bg-card px-4 py-2.5">
             <div className="flex items-center gap-2.5">
               <FileText className="h-4 w-4 text-muted-foreground" />
