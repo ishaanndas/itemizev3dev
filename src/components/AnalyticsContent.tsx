@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import UploadSheet from "./UploadSheet";
+import TopBar from "./TopBar";
 
 type AnalyticsTab = "AP Insights" | "Documents" | "Vendors" | "Quality" | "General Analytics";
 
@@ -351,49 +352,7 @@ export default function AnalyticsContent() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-background">
-      {/* Top bar */}
-      <header className="nav-dark-bar h-14 flex items-center justify-between px-6 shrink-0">
-        <button
-          onClick={() => setCmdOpen(true)}
-          className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg border border-white/15 hover:border-white/25 bg-white/10 hover:bg-white/15 transition-all text-sm text-white/60 w-72"
-        >
-          <Search className="h-3.5 w-3.5" />
-          <span className="flex-1 text-left">Search...</span>
-          <kbd className="text-[11px] font-medium bg-white/10 border border-white/15 rounded px-1.5 py-0.5 text-white/50">⌘K</kbd>
-        </button>
-
-        <div className="flex items-center gap-1.5">
-          <button onClick={() => setUploadOpen(true)} className="flex items-center gap-2 text-sm font-medium bg-white text-[hsl(220,50%,14%)] rounded-lg px-3.5 py-2 hover:bg-white/90 transition-all shadow-sm">
-            <Upload className="h-3.5 w-3.5" />
-            Upload
-          </button>
-          <button className="h-9 w-9 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors">
-            <HelpCircle className="h-[18px] w-[18px] text-white/60" />
-          </button>
-          <button className="h-9 w-9 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors relative">
-            <Bell className="h-[18px] w-[18px] text-white/60" />
-            <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary" />
-          </button>
-          <div className="relative ml-1">
-            <button
-              onClick={() => setProfileOpen(!profileOpen)}
-              className="flex items-center gap-2.5 rounded-lg px-2 py-1 hover:bg-white/10 transition-colors"
-            >
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-white/30 to-white/20 flex items-center justify-center">
-                <span className="text-xs font-semibold text-white">JD</span>
-              </div>
-              <div className="text-left hidden lg:block">
-                <div className="text-[13px] font-medium text-white leading-tight">Jane Doe</div>
-                <div className="text-[11px] text-white/50 leading-tight">Admin</div>
-              </div>
-              <ChevronDown className="h-3 w-3 text-white/50 hidden lg:block" />
-            </button>
-            <ProfileDropdown open={profileOpen} onClose={() => setProfileOpen(false)} />
-          </div>
-        </div>
-      </header>
-
-      <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)} />
+      <TopBar />
 
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-6xl mx-auto px-6 py-8">
