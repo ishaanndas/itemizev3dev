@@ -198,12 +198,7 @@ interface LineItem {
   qty: string;
   uom: string;
   unitPrice: string;
-  discount: string;
   tax: string;
-  taxCode: string;
-  glAccount: string;
-  costCenter: string;
-  project: string;
   total: string;
 }
 
@@ -214,28 +209,18 @@ const createLineItem = (): LineItem => ({
   qty: "",
   uom: "",
   unitPrice: "",
-  discount: "",
   tax: "",
-  taxCode: "",
-  glAccount: "",
-  costCenter: "",
-  project: "",
   total: "",
 });
 
 const LINE_ITEM_COLS = [
-  { key: "description" as const, label: "Description", width: 240, placeholder: "Description" },
-  { key: "sku" as const, label: "SKU", width: 120, placeholder: "SKU" },
-  { key: "qty" as const, label: "Qty", width: 70, placeholder: "0" },
-  { key: "uom" as const, label: "UOM", width: 70, placeholder: "EA" },
-  { key: "unitPrice" as const, label: "Unit Price", width: 110, placeholder: "$0.00" },
-  { key: "discount" as const, label: "Discount", width: 100, placeholder: "0%" },
-  { key: "tax" as const, label: "Tax", width: 90, placeholder: "$0.00" },
-  { key: "taxCode" as const, label: "Tax Code", width: 100, placeholder: "STD" },
-  { key: "glAccount" as const, label: "GL Account", width: 130, placeholder: "5000-00" },
-  { key: "costCenter" as const, label: "Cost Center", width: 130, placeholder: "CC-100" },
-  { key: "project" as const, label: "Project", width: 140, placeholder: "Project code" },
-  { key: "total" as const, label: "Total", width: 110, placeholder: "$0.00" },
+  { key: "description" as const, label: "Description", width: "flex-[2]", placeholder: "Description" },
+  { key: "sku" as const, label: "SKU", width: "flex-1", placeholder: "SKU" },
+  { key: "qty" as const, label: "Qty", width: "w-16", placeholder: "0" },
+  { key: "uom" as const, label: "UOM", width: "w-16", placeholder: "EA" },
+  { key: "unitPrice" as const, label: "Unit Price", width: "w-24", placeholder: "$0.00" },
+  { key: "tax" as const, label: "Tax", width: "w-20", placeholder: "$0.00" },
+  { key: "total" as const, label: "Total", width: "w-24", placeholder: "$0.00" },
 ];
 
 function LineItemsTable({ items, onChange, onDelete, onAdd }: {
@@ -244,48 +229,37 @@ function LineItemsTable({ items, onChange, onDelete, onAdd }: {
   onDelete: (id: string) => void;
   onAdd: () => void;
 }) {
-  const totalWidth = LINE_ITEM_COLS.reduce((sum, c) => sum + c.width, 0) + 24 /* px-3 */ + 32; /* actions */
-
   return (
     <div className="border border-border rounded-lg bg-card overflow-hidden">
-      {/* Horizontal scroll container */}
-      <div className="overflow-x-auto">
-        <div style={{ minWidth: totalWidth }}>
-          {/* Header */}
-          <div className="flex items-center gap-1 px-3 py-2 border-b border-border bg-secondary/40 sticky top-0">
+      {/* Header */}
+      <div className="flex items-center gap-1 px-3 py-2 border-b border-border bg-secondary/40">
+        {LINE_ITEM_COLS.map(col => (
+          <div key={col.key} className={`${col.width} text-[11px] font-semibold text-muted-foreground uppercase tracking-wide px-1`}>
+            {col.label}
+          </div>
+        ))}
+        <div className="w-8" />
+      </div>
+      {/* Rows */}
+      <div className="divide-y divide-border">
+        {items.map(item => (
+          <div key={item.id} className="flex items-center gap-1 px-3 py-1.5 hover:bg-accent/20 transition-colors group">
             {LINE_ITEM_COLS.map(col => (
-              <div
-                key={col.key}
-                style={{ width: col.width }}
-                className="shrink-0 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide px-1"
-              >
-                {col.label}
+              <div key={col.key} className={`${col.width} px-1`}>
+                <input
+                  type="text"
+                  value={item[col.key]}
+                  onChange={(e) => onChange(item.id, { ...item, [col.key]: e.target.value })}
+                  placeholder={col.placeholder}
+                  className="w-full bg-transparent text-sm text-foreground py-1 outline-none border border-transparent rounded px-1.5 focus:border-primary/30 focus:bg-card transition-all placeholder:text-muted-foreground/40"
+                />
               </div>
             ))}
-            <div className="w-8 shrink-0" />
+            <button onClick={() => onDelete(item.id)} className="w-8 flex items-center justify-center text-muted-foreground/0 group-hover:text-muted-foreground hover:!text-destructive transition-colors p-1 rounded">
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
           </div>
-          {/* Rows */}
-          <div className="divide-y divide-border">
-            {items.map(item => (
-              <div key={item.id} className="flex items-center gap-1 px-3 py-1.5 hover:bg-accent/20 transition-colors group">
-                {LINE_ITEM_COLS.map(col => (
-                  <div key={col.key} style={{ width: col.width }} className="shrink-0 px-1">
-                    <input
-                      type="text"
-                      value={item[col.key]}
-                      onChange={(e) => onChange(item.id, { ...item, [col.key]: e.target.value })}
-                      placeholder={col.placeholder}
-                      className="w-full bg-transparent text-sm text-foreground py-1 outline-none border border-transparent rounded px-1.5 focus:border-primary/30 focus:bg-card transition-all placeholder:text-muted-foreground/40"
-                    />
-                  </div>
-                ))}
-                <button onClick={() => onDelete(item.id)} className="w-8 shrink-0 flex items-center justify-center text-muted-foreground/0 group-hover:text-muted-foreground hover:!text-destructive transition-colors p-1 rounded">
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
+        ))}
       </div>
       {/* Add row */}
       <button onClick={onAdd} className="w-full flex items-center justify-center gap-1.5 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/20 transition-colors border-t border-border">
@@ -316,9 +290,8 @@ export default function DocumentDetailContent() {
   const [activeField, setActiveField] = useState<FieldKey | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [lineItems, setLineItems] = useState<LineItem[]>([
-    { ...createLineItem(), description: "Delivery Fee", qty: "1", unitPrice: "$100.00", discount: "0%", tax: "$8.00", taxCode: "STD", glAccount: "5200-00", costCenter: "CC-100", project: "PRJ-2024-A", total: "$108.00" },
-    { ...createLineItem(), description: "Hard Hats", sku: "HH-001", qty: "10", uom: "EA", unitPrice: "$100.00", discount: "5%", tax: "$76.00", taxCode: "STD", glAccount: "5000-00", costCenter: "CC-200", project: "PRJ-2024-A", total: "$1,026.00" },
-    { ...createLineItem(), description: "Safety Vests", sku: "SV-220", qty: "20", uom: "EA", unitPrice: "$25.00", discount: "0%", tax: "$40.00", taxCode: "STD", glAccount: "5000-00", costCenter: "CC-200", project: "PRJ-2024-B", total: "$540.00" },
+    { ...createLineItem(), description: "Delivery Fee", qty: "1", unitPrice: "$100.00", total: "$100.00" },
+    { ...createLineItem(), description: "Hard Hats", sku: "HH-001", qty: "10", uom: "EA", unitPrice: "$100.00", total: "$1,000.00" },
   ]);
 
   const handleLineItemChange = (id: string, updated: LineItem) => {
@@ -408,7 +381,7 @@ export default function DocumentDetailContent() {
       {/* Main split view */}
       <div className="flex-1 flex min-h-0">
         {/* LEFT: Fields panel */}
-        <div className="w-[48%] shrink-0 border-r border-border flex flex-col min-h-0">
+        <div className="w-[55%] shrink-0 border-r border-border flex flex-col min-h-0">
           {/* Header: back icon + doc name + status */}
           <div className="shrink-0 border-b border-border bg-card px-5 py-2.5 flex items-center gap-3">
             <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md hover:bg-secondary shrink-0" title="Back">
@@ -461,7 +434,7 @@ export default function DocumentDetailContent() {
           </div>
 
           {/* All sections scrollable */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-8 min-w-0">
+          <div className="flex-1 overflow-y-auto p-6 space-y-8">
             {/* Linking & Workflow */}
             <div className="space-y-2">
               <button
@@ -559,7 +532,7 @@ export default function DocumentDetailContent() {
             <div className="h-px bg-border" />
 
             {/* Line Items */}
-            <section id="step-3" className="space-y-4 min-w-0">
+            <section id="step-3" className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-sm font-semibold text-foreground">Line Items</h3>
@@ -693,7 +666,7 @@ export default function DocumentDetailContent() {
       </div>
 
         {/* Bottom action bar */}
-        <div className="absolute bottom-0 right-0 left-[48%] border-t border-border bg-card px-4 py-2.5 flex items-center justify-between shadow-[0_-2px_8px_-2px_hsl(var(--foreground)/0.06)]">
+        <div className="absolute bottom-0 right-0 left-[55%] border-t border-border bg-card px-4 py-2.5 flex items-center justify-between shadow-[0_-2px_8px_-2px_hsl(var(--foreground)/0.06)]">
           {/* Left: Prev / Next nav */}
           <div className="flex items-center gap-1.5">
             <Button onClick={goToPrev} disabled={!hasPrev} size="sm" className="gap-1 text-xs h-8">
