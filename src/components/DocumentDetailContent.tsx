@@ -408,7 +408,7 @@ export default function DocumentDetailContent() {
       {/* Main split view */}
       <div className="flex-1 flex min-h-0">
         {/* LEFT: Fields panel */}
-        <div className="w-[55%] shrink-0 border-r border-border flex flex-col min-h-0">
+        <div className="w-[48%] shrink-0 border-r border-border flex flex-col min-h-0">
           {/* Header: back icon + doc name + status */}
           <div className="shrink-0 border-b border-border bg-card px-5 py-2.5 flex items-center gap-3">
             <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md hover:bg-secondary shrink-0" title="Back">
@@ -693,7 +693,7 @@ export default function DocumentDetailContent() {
       </div>
 
         {/* Bottom action bar */}
-        <div className="absolute bottom-0 right-0 left-[55%] border-t border-border bg-card px-4 py-2.5 flex items-center justify-between shadow-[0_-2px_8px_-2px_hsl(var(--foreground)/0.06)]">
+        <div className="absolute bottom-0 right-0 left-[48%] border-t border-border bg-card px-4 py-2.5 flex items-center justify-between shadow-[0_-2px_8px_-2px_hsl(var(--foreground)/0.06)]">
           {/* Left: Prev / Next nav */}
           <div className="flex items-center gap-1.5">
             <Button onClick={goToPrev} disabled={!hasPrev} size="sm" className="gap-1 text-xs h-8">
