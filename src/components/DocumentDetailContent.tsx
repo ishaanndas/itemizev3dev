@@ -316,8 +316,9 @@ export default function DocumentDetailContent() {
   const [activeField, setActiveField] = useState<FieldKey | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [lineItems, setLineItems] = useState<LineItem[]>([
-    { ...createLineItem(), description: "Delivery Fee", qty: "1", unitPrice: "$100.00", total: "$100.00" },
-    { ...createLineItem(), description: "Hard Hats", sku: "HH-001", qty: "10", uom: "EA", unitPrice: "$100.00", total: "$1,000.00" },
+    { ...createLineItem(), description: "Delivery Fee", qty: "1", unitPrice: "$100.00", discount: "0%", tax: "$8.00", taxCode: "STD", glAccount: "5200-00", costCenter: "CC-100", project: "PRJ-2024-A", total: "$108.00" },
+    { ...createLineItem(), description: "Hard Hats", sku: "HH-001", qty: "10", uom: "EA", unitPrice: "$100.00", discount: "5%", tax: "$76.00", taxCode: "STD", glAccount: "5000-00", costCenter: "CC-200", project: "PRJ-2024-A", total: "$1,026.00" },
+    { ...createLineItem(), description: "Safety Vests", sku: "SV-220", qty: "20", uom: "EA", unitPrice: "$25.00", discount: "0%", tax: "$40.00", taxCode: "STD", glAccount: "5000-00", costCenter: "CC-200", project: "PRJ-2024-B", total: "$540.00" },
   ]);
 
   const handleLineItemChange = (id: string, updated: LineItem) => {
