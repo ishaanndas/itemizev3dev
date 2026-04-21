@@ -397,7 +397,7 @@ export default function DocumentDetailContent() {
 
   return (
     <>
-    <div className="flex-1 flex flex-col min-h-0 bg-background relative">
+    <div className="flex-1 min-w-0 flex flex-col min-h-0 bg-background relative">
       <TopBar />
 
       {/* Main split view */}
