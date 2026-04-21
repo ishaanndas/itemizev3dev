@@ -693,7 +693,7 @@ export default function DocumentDetailContent() {
       </div>
 
         {/* Bottom action bar */}
-        <div className="absolute bottom-0 right-0 left-[55%] border-t border-border bg-card px-4 py-2.5 flex items-center justify-between shadow-[0_-2px_8px_-2px_hsl(var(--foreground)/0.06)]">
+        <div className="absolute bottom-0 right-0 left-[48%] border-t border-border bg-card px-4 py-2.5 flex items-center justify-between shadow-[0_-2px_8px_-2px_hsl(var(--foreground)/0.06)]">
           {/* Left: Prev / Next nav */}
           <div className="flex items-center gap-1.5">
             <Button onClick={goToPrev} disabled={!hasPrev} size="sm" className="gap-1 text-xs h-8">
