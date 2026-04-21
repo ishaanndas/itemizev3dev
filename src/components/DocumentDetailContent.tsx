@@ -403,7 +403,7 @@ export default function DocumentDetailContent() {
       {/* Main split view */}
       <div className="flex-1 flex min-h-0 min-w-0 w-full overflow-hidden">
         {/* LEFT: Fields panel */}
-        <div className="w-[55%] shrink-0 min-w-0 border-r border-border flex flex-col min-h-0">
+        <div className="w-[55%] max-w-[55%] shrink-0 min-w-0 border-r border-border flex flex-col min-h-0">
           {/* Header: back icon + doc name + status */}
           <div className="shrink-0 border-b border-border bg-card px-5 py-2.5 flex items-center gap-3">
             <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md hover:bg-secondary shrink-0" title="Back">
