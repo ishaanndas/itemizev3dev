@@ -461,7 +461,7 @@ export default function DocumentDetailContent() {
           </div>
 
           {/* All sections scrollable */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-8">
+          <div className="flex-1 overflow-y-auto p-6 space-y-8 min-w-0">
             {/* Linking & Workflow */}
             <div className="space-y-2">
               <button
@@ -559,7 +559,7 @@ export default function DocumentDetailContent() {
             <div className="h-px bg-border" />
 
             {/* Line Items */}
-            <section id="step-3" className="space-y-4">
+            <section id="step-3" className="space-y-4 min-w-0">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-sm font-semibold text-foreground">Line Items</h3>
