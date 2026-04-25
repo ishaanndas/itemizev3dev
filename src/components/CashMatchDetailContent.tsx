@@ -299,7 +299,7 @@ export default function CashMatchDetailContent() {
         </div>
 
         {/* MIDDLE: Extracted + match builder */}
-        <div className="w-[32%] max-w-[32%] min-w-0 shrink-0 border-r border-border overflow-y-auto">
+        <div className="w-[30%] max-w-[30%] min-w-0 shrink-0 border-r border-border overflow-y-auto">
           <div className="p-5 space-y-5">
             {/* AI explanation */}
             <div className={`rounded-xl border p-3.5 ${conf.badgeClass}`}>
