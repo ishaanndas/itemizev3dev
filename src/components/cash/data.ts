@@ -1,5 +1,36 @@
 import type { Confidence } from "./confidence";
 
+export type ExtractedField =
+  | "payer"
+  | "amount"
+  | "reference"
+  | "customerId"
+  | "date"
+  | "memo";
+
+export interface ExtractedToken {
+  /** A snippet of the source document text that should be highlighted */
+  text: string;
+  /** Which logical field this token represents (drives color & link to AR side) */
+  field: ExtractedField;
+  /** If this token resolved to an AR invoice, the invoice number */
+  matchedInvoice?: string;
+}
+
+export type SourceDocKind = "email" | "check" | "ach" | "portal";
+
+export interface SourceDocument {
+  kind: SourceDocKind;
+  /** Header shown in the viewer chrome (e.g. "From: ar@acme.com  |  Apr 6, 2026") */
+  meta: { label: string; value: string }[];
+  /** Subject / title row */
+  title?: string;
+  /** Raw HTML body (sanitized in fixtures). For check/ach this is plain pre-formatted text. */
+  body: string;
+  /** Tokens to highlight inside the body */
+  highlights: ExtractedToken[];
+}
+
 export interface Payment {
   id: string;
   paymentId: string;
@@ -14,6 +45,8 @@ export interface Payment {
   confidence: Confidence;
   matchScore: number;
   invoiceCount: number;
+  /** Optional source remittance document for the viewer */
+  source?: SourceDocument;
 }
 
 export interface OpenInvoice {
