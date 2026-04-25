@@ -23,10 +23,17 @@ import {
   ChevronsUpDown,
   PanelLeftClose,
   PanelLeft,
+  Banknote,
+  FileSpreadsheet,
+  ScrollText,
+  ShieldAlert,
+  Wallet,
   type LucideIcon,
 } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useSidebarState } from "@/contexts/SidebarContext";
+import { useProduct, type Product } from "@/contexts/ProductContext";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface NavItem {
@@ -44,7 +51,7 @@ interface NavGroup {
   items: NavItem[];
 }
 
-const navigation: NavGroup[] = [
+const apNavigation: NavGroup[] = [
   {
     label: "Overview",
     items: [
@@ -114,6 +121,127 @@ const navigation: NavGroup[] = [
     ],
   },
 ];
+
+const cashNavigation: NavGroup[] = [
+  {
+    label: "Overview",
+    items: [
+      { name: "Dashboard", icon: LayoutDashboard, href: "/cash" },
+    ],
+  },
+  {
+    label: "Receivables",
+    collapsible: true,
+    defaultOpen: true,
+    items: [
+      { name: "Payments Inbox", icon: Inbox, count: 38, href: "/cash/payments" },
+      { name: "Open AR", icon: FileSpreadsheet, count: 124, href: "/cash/open-ar" },
+      { name: "Remittance Portal", icon: Mail },
+    ],
+  },
+  {
+    label: "Reconciliation",
+    collapsible: true,
+    defaultOpen: true,
+    items: [
+      { name: "Matching Queue", icon: Link2, count: 27, href: "/cash/matching" },
+      { name: "Exceptions", icon: ShieldAlert, count: 9, href: "/cash/exceptions" },
+      { name: "Unapplied Cash", icon: Wallet, count: 6 },
+    ],
+  },
+  {
+    label: "Posting",
+    collapsible: true,
+    defaultOpen: true,
+    items: [
+      { name: "Posting Files", icon: ScrollText, href: "/cash/posting" },
+      { name: "GL Activity", icon: Activity },
+    ],
+  },
+  {
+    label: "Analytics",
+    collapsible: true,
+    defaultOpen: true,
+    items: [
+      { name: "Cash Analytics", icon: BarChart3, href: "/cash/analytics" },
+      { name: "AR Aging", icon: TrendingUp },
+      { name: "Payer Trends", icon: Users },
+    ],
+  },
+  {
+    label: "Workflows",
+    collapsible: true,
+    defaultOpen: true,
+    items: [
+      { name: "Workflows", icon: GitMerge, href: "/workflows" },
+    ],
+  },
+];
+
+function ProductSwitcher({ collapsed }: { collapsed: boolean }) {
+  const { product, setProduct } = useProduct();
+  const navigate = useNavigate();
+
+  const handleSwitch = (next: Product) => {
+    setProduct(next);
+    navigate(next === "cash" ? "/cash" : "/");
+  };
+
+  if (collapsed) {
+    return (
+      <div className="flex flex-col items-center gap-1 px-2 py-2 border-b border-border/60">
+        {(["ap", "cash"] as Product[]).map((p) => (
+          <Tooltip key={p} delayDuration={0}>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => handleSwitch(p)}
+                className={`h-7 w-7 rounded-md text-[10px] font-bold transition-colors ${
+                  product === p
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {p === "ap" ? "AP" : "AR"}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right" sideOffset={8}>
+              <p>{p === "ap" ? "Accounts Payable" : "Cash Application"}</p>
+            </TooltipContent>
+          </Tooltip>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="px-3 py-2.5 border-b border-border/60 shrink-0">
+      <div className="flex items-center gap-1 p-1 rounded-lg bg-secondary/70 border border-border/60">
+        <button
+          onClick={() => handleSwitch("ap")}
+          className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-semibold transition-all ${
+            product === "ap"
+              ? "bg-card text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <FileText className="h-3 w-3" />
+          Payables
+        </button>
+        <button
+          onClick={() => handleSwitch("cash")}
+          className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-semibold transition-all ${
+            product === "cash"
+              ? "bg-card text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Banknote className="h-3 w-3" />
+          Cash App
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function NavGroupSection({ group, activePage, collapsed }: { group: NavGroup; activePage?: string; collapsed: boolean }) {
   const [open, setOpen] = useState(group.defaultOpen ?? true);
@@ -195,6 +323,8 @@ function NavGroupSection({ group, activePage, collapsed }: { group: NavGroup; ac
 
 export default function AppSidebar({ activePage }: { activePage?: string }) {
   const { collapsed, toggle } = useSidebarState();
+  const { product } = useProduct();
+  const navigation = product === "cash" ? cashNavigation : apNavigation;
 
   return (
     <aside
@@ -216,6 +346,8 @@ export default function AppSidebar({ activePage }: { activePage?: string }) {
           )}
         </button>
       </div>
+
+      <ProductSwitcher collapsed={collapsed} />
 
       {!collapsed && (
         <div className="px-3 py-2.5 border-b border-border/60 shrink-0">
