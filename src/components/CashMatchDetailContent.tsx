@@ -185,23 +185,121 @@ export default function CashMatchDetailContent() {
 
       {/* 3-pane body */}
       <div className="flex-1 flex min-w-0 w-full overflow-hidden">
-        {/* LEFT: Source document */}
-        <div className="w-[36%] max-w-[36%] min-w-0 shrink-0 border-r border-border overflow-hidden">
-          {payment.source ? (
-            <RemittanceDocViewer
-              doc={payment.source}
-              hoveredField={hoveredField}
-              onTokenClick={handleTokenClick}
-            />
-          ) : (
-            <div className="h-full flex items-center justify-center text-xs text-muted-foreground p-6 text-center">
-              No source document attached.
+        {/* LEFT: AR candidates table */}
+        <div className="w-[36%] max-w-[36%] min-w-0 shrink-0 border-r border-border overflow-hidden flex flex-col bg-secondary/20">
+          {/* Toolbar */}
+          <div className="px-4 py-3 border-b border-border bg-card shrink-0 flex items-center gap-2">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-sm font-semibold text-foreground">Open AR candidates</h3>
+              <p className="text-[11px] text-muted-foreground truncate">
+                {candidateInvoices.length} {showAllOpen ? "across all customers" : `for ${payment.payer}`}
+              </p>
             </div>
-          )}
+            <button
+              onClick={() => setShowAllOpen((v) => !v)}
+              className="text-[11px] font-medium border border-border rounded-md px-2 py-1.5 hover:bg-secondary text-foreground whitespace-nowrap"
+            >
+              {showAllOpen ? "Customer" : "All AR"}
+            </button>
+          </div>
+
+          <div className="px-4 py-2.5 border-b border-border bg-card shrink-0">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search invoice, customer..."
+                className="w-full bg-background border border-border rounded-lg pl-9 pr-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-primary/40"
+              />
+            </div>
+          </div>
+
+          {/* Table — horizontally scrollable inside its pane */}
+          <div ref={candidatesScrollRef} className="flex-1 min-w-0 overflow-auto">
+            {candidateInvoices.length === 0 ? (
+              <div className="m-4 border border-dashed border-border rounded-lg p-5 text-center bg-card">
+                <AlertTriangle className="h-5 w-5 text-amber-500 mx-auto mb-2" />
+                <div className="text-sm font-medium text-foreground mb-1">No matches</div>
+                <p className="text-[11px] text-muted-foreground">Toggle "All AR" or move to unapplied cash.</p>
+              </div>
+            ) : (
+              <table className="text-xs min-w-full">
+                <thead className="sticky top-0 z-10 bg-secondary/80 backdrop-blur border-b border-border">
+                  <tr className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    <th className="text-left px-3 py-2 font-semibold whitespace-nowrap">Invoice</th>
+                    <th className="text-right px-3 py-2 font-semibold whitespace-nowrap">Open</th>
+                    <th className="text-center px-3 py-2 font-semibold whitespace-nowrap">Signals</th>
+                    <th className="text-right px-2 py-2 font-semibold whitespace-nowrap">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {candidateInvoices.map((inv) => {
+                    const isApplied = !!appliedInvoices.find((a) => a.invoiceNumber === inv.invoiceNumber);
+                    const refMatch = !!payment.reference?.includes(inv.invoiceNumber);
+                    const customerMatch = inv.customerId === payment.customerId;
+                    const amountMatch = Math.abs(inv.openBalance - payment.amount) < 0.01;
+                    const overdue = inv.daysPastDue > 0;
+                    return (
+                      <tr
+                        key={inv.invoiceNumber}
+                        data-row-inv={inv.invoiceNumber}
+                        className={`transition-colors ${isApplied ? "bg-primary/[0.04]" : "hover:bg-accent/20"}`}
+                      >
+                        <td className="px-3 py-2 align-top">
+                          <div className="flex items-center gap-1.5">
+                            {isApplied && <Link2 className="h-3 w-3 text-primary shrink-0" />}
+                            <span className="font-mono font-semibold text-foreground text-[11px]">{inv.invoiceNumber}</span>
+                          </div>
+                          <div className="text-[10px] text-muted-foreground truncate max-w-[140px]">{inv.customer}</div>
+                          <div className="text-[10px] text-muted-foreground">
+                            Due {inv.dueDate}
+                            {overdue && <span className="ml-1 font-semibold text-destructive">+{inv.daysPastDue}d</span>}
+                          </div>
+                        </td>
+                        <td className="px-3 py-2 align-top text-right whitespace-nowrap">
+                          <div className="font-semibold tabular-nums text-foreground text-[11px]">{formatUSD(inv.openBalance)}</div>
+                        </td>
+                        <td className="px-3 py-2 align-top">
+                          <div className="flex items-center justify-center gap-0.5 flex-wrap">
+                            {refMatch && (
+                              <span className={`inline-flex items-center text-[9px] font-semibold border rounded-full px-1.5 py-0.5 ${FIELD_STYLES.reference.chip}`} title="Invoice reference matched">Ref</span>
+                            )}
+                            {customerMatch && (
+                              <span className={`inline-flex items-center text-[9px] font-semibold border rounded-full px-1.5 py-0.5 ${FIELD_STYLES.customerId.chip}`} title="Customer ID matched">Cust</span>
+                            )}
+                            {amountMatch && (
+                              <span className={`inline-flex items-center text-[9px] font-semibold border rounded-full px-1.5 py-0.5 ${FIELD_STYLES.amount.chip}`} title="Amount matched">Amt</span>
+                            )}
+                            {!refMatch && !customerMatch && !amountMatch && (
+                              <span className="text-[10px] text-muted-foreground">—</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-2 py-2 align-top text-right whitespace-nowrap">
+                          <button
+                            onClick={() => isApplied ? removeApplied(inv.invoiceNumber) : addApplied(inv.invoiceNumber, inv.openBalance)}
+                            className={`inline-flex items-center gap-0.5 text-[10px] font-semibold rounded-md px-1.5 py-1 transition-colors ${
+                              isApplied
+                                ? "bg-secondary text-foreground hover:bg-destructive/10 hover:text-destructive border border-border"
+                                : "bg-primary text-primary-foreground hover:opacity-90"
+                            }`}
+                          >
+                            {isApplied ? <><X className="h-2.5 w-2.5" /> Remove</> : <><Plus className="h-2.5 w-2.5" /> Apply</>}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
+          </div>
         </div>
 
         {/* MIDDLE: Extracted + match builder */}
-        <div className="w-[32%] max-w-[32%] min-w-0 shrink-0 border-r border-border overflow-y-auto">
+        <div className="w-[30%] max-w-[30%] min-w-0 shrink-0 border-r border-border overflow-y-auto">
           <div className="p-5 space-y-5">
             {/* AI explanation */}
             <div className={`rounded-xl border p-3.5 ${conf.badgeClass}`}>
@@ -332,139 +430,19 @@ export default function CashMatchDetailContent() {
           </div>
         </div>
 
-        {/* RIGHT: AR candidates table */}
-        <div className="flex-1 min-w-0 overflow-hidden flex flex-col bg-secondary/20">
-          {/* Toolbar */}
-          <div className="px-5 py-3 border-b border-border bg-card shrink-0 flex items-center gap-2">
-            <div className="flex-1 min-w-0">
-              <h3 className="text-sm font-semibold text-foreground">Open AR candidates</h3>
-              <p className="text-[11px] text-muted-foreground">
-                {candidateInvoices.length} invoice{candidateInvoices.length === 1 ? "" : "s"} {showAllOpen ? "across all customers" : `for ${payment.payer}`}
-              </p>
+        {/* RIGHT: Source document viewer */}
+        <div className="flex-1 min-w-0 overflow-hidden">
+          {payment.source ? (
+            <RemittanceDocViewer
+              doc={payment.source}
+              hoveredField={hoveredField}
+              onTokenClick={handleTokenClick}
+            />
+          ) : (
+            <div className="h-full flex items-center justify-center text-xs text-muted-foreground p-6 text-center">
+              No source document attached.
             </div>
-            <button
-              onClick={() => setShowAllOpen((v) => !v)}
-              className="text-[11px] font-medium border border-border rounded-md px-2.5 py-1.5 hover:bg-secondary text-foreground whitespace-nowrap"
-            >
-              {showAllOpen ? "Customer only" : "Search all open AR"}
-            </button>
-          </div>
-
-          <div className="px-5 py-2.5 border-b border-border bg-card shrink-0">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search invoice #, customer, ID..."
-                className="w-full bg-background border border-border rounded-lg pl-9 pr-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-primary/40"
-              />
-            </div>
-          </div>
-
-          {/* Table */}
-          <div ref={candidatesScrollRef} className="flex-1 overflow-auto">
-            {candidateInvoices.length === 0 ? (
-              <div className="m-5 border border-dashed border-border rounded-lg p-6 text-center bg-card">
-                <AlertTriangle className="h-5 w-5 text-amber-500 mx-auto mb-2" />
-                <div className="text-sm font-medium text-foreground mb-1">No matching invoices</div>
-                <p className="text-xs text-muted-foreground">
-                  Try toggling "Search all open AR" or move to unapplied cash.
-                </p>
-              </div>
-            ) : (
-              <table className="w-full text-xs">
-                <thead className="sticky top-0 z-10 bg-secondary/60 backdrop-blur border-b border-border">
-                  <tr className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    <th className="text-left px-3 py-2 font-semibold">Invoice</th>
-                    <th className="text-left px-3 py-2 font-semibold">Customer</th>
-                    <th className="text-left px-3 py-2 font-semibold">Due</th>
-                    <th className="text-right px-3 py-2 font-semibold">Open balance</th>
-                    <th className="text-center px-3 py-2 font-semibold">Match signals</th>
-                    <th className="text-right px-3 py-2 font-semibold w-20">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {candidateInvoices.map((inv) => {
-                    const isApplied = !!appliedInvoices.find((a) => a.invoiceNumber === inv.invoiceNumber);
-                    const refMatch = !!payment.reference?.includes(inv.invoiceNumber);
-                    const customerMatch = inv.customerId === payment.customerId;
-                    const amountMatch = Math.abs(inv.openBalance - payment.amount) < 0.01;
-                    const overdue = inv.daysPastDue > 0;
-                    return (
-                      <tr
-                        key={inv.invoiceNumber}
-                        data-row-inv={inv.invoiceNumber}
-                        className={`transition-colors ${isApplied ? "bg-primary/[0.04]" : "hover:bg-accent/20"}`}
-                      >
-                        <td className="px-3 py-2.5">
-                          <div className="flex items-center gap-1.5">
-                            {isApplied && <Link2 className="h-3 w-3 text-primary shrink-0" />}
-                            <span className="font-mono font-semibold text-foreground">{inv.invoiceNumber}</span>
-                          </div>
-                          <div className="text-[10px] text-muted-foreground mt-0.5">Inv {inv.invoiceDate}</div>
-                        </td>
-                        <td className="px-3 py-2.5">
-                          <div className="text-foreground truncate max-w-[140px]">{inv.customer}</div>
-                          <div className="text-[10px] text-muted-foreground font-mono">{inv.customerId}</div>
-                        </td>
-                        <td className="px-3 py-2.5">
-                          <div className="text-foreground">{inv.dueDate}</div>
-                          {overdue && (
-                            <div className="text-[10px] font-semibold text-destructive">+{inv.daysPastDue}d past due</div>
-                          )}
-                        </td>
-                        <td className="px-3 py-2.5 text-right">
-                          <div className="font-semibold tabular-nums text-foreground">{formatUSD(inv.openBalance)}</div>
-                        </td>
-                        <td className="px-3 py-2.5">
-                          <div className="flex items-center justify-center gap-1 flex-wrap">
-                            {refMatch && (
-                              <span className={`inline-flex items-center gap-0.5 text-[9px] font-semibold border rounded-full px-1.5 py-0.5 ${FIELD_STYLES.reference.chip}`}>
-                                <Check className="h-2.5 w-2.5" /> Ref
-                              </span>
-                            )}
-                            {customerMatch && (
-                              <span className={`inline-flex items-center gap-0.5 text-[9px] font-semibold border rounded-full px-1.5 py-0.5 ${FIELD_STYLES.customerId.chip}`}>
-                                <Check className="h-2.5 w-2.5" /> Cust
-                              </span>
-                            )}
-                            {amountMatch && (
-                              <span className={`inline-flex items-center gap-0.5 text-[9px] font-semibold border rounded-full px-1.5 py-0.5 ${FIELD_STYLES.amount.chip}`}>
-                                <Check className="h-2.5 w-2.5" /> Amt
-                              </span>
-                            )}
-                            {!refMatch && !customerMatch && !amountMatch && (
-                              <span className="text-[10px] text-muted-foreground italic">—</span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-3 py-2.5 text-right">
-                          <button
-                            onClick={() => isApplied ? removeApplied(inv.invoiceNumber) : addApplied(inv.invoiceNumber, inv.openBalance)}
-                            className={`inline-flex items-center gap-1 text-[10px] font-semibold rounded-md px-2 py-1 transition-colors ${
-                              isApplied
-                                ? "bg-secondary text-foreground hover:bg-destructive/10 hover:text-destructive border border-border"
-                                : "bg-primary text-primary-foreground hover:opacity-90"
-                            }`}
-                          >
-                            {isApplied ? <><X className="h-2.5 w-2.5" /> Remove</> : <><Plus className="h-2.5 w-2.5" /> Apply</>}
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            )}
-          </div>
-
-          {/* Footer hint */}
-          <div className="border-t border-border bg-card px-5 py-2 shrink-0 flex items-center gap-2 text-[10px] text-muted-foreground">
-            <ArrowRight className="h-3 w-3" />
-            Click an extracted reference in the source document to jump to that invoice.
-          </div>
+          )}
         </div>
       </div>
     </div>

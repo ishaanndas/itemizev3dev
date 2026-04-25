@@ -113,12 +113,12 @@ export default function RemittanceDocViewer({ doc, hoveredField = null, onTokenC
       </div>
 
       {/* Document surface */}
-      <div className="flex-1 overflow-auto p-6">
+      <div className="flex-1 min-w-0 overflow-auto p-4">
         <div
           className="mx-auto bg-white dark:bg-card border border-border shadow-sm rounded-md"
           style={{
-            width: `${680 * zoom}px`,
-            maxWidth: "100%",
+            width: `${zoom * 100}%`,
+            maxWidth: zoom <= 1 ? "100%" : `${680 * zoom}px`,
             transition: "width 120ms ease-out",
           }}
         >
