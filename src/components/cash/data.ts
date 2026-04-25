@@ -94,3 +94,122 @@ export const sampleOpenAR: OpenInvoice[] = [
 
 export const formatUSD = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 });
+
+/** Tailwind classes per extracted field type — used by the doc viewer & match builder */
+export const FIELD_STYLES: Record<ExtractedField, { chip: string; highlight: string; label: string }> = {
+  payer:      { chip: "bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-500/10 dark:text-violet-300 dark:border-violet-500/30", highlight: "bg-violet-100/70 dark:bg-violet-500/20 text-violet-900 dark:text-violet-200 border-b border-violet-400/60", label: "Payer" },
+  amount:     { chip: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/30", highlight: "bg-emerald-100/70 dark:bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 border-b border-emerald-400/60", label: "Amount" },
+  reference:  { chip: "bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:border-sky-500/30", highlight: "bg-sky-100/70 dark:bg-sky-500/20 text-sky-900 dark:text-sky-200 border-b border-sky-400/60", label: "Invoice ref" },
+  customerId: { chip: "bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-300 dark:border-indigo-500/30", highlight: "bg-indigo-100/70 dark:bg-indigo-500/20 text-indigo-900 dark:text-indigo-200 border-b border-indigo-400/60", label: "Customer ID" },
+  date:       { chip: "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-500/10 dark:text-slate-300 dark:border-slate-500/30", highlight: "bg-slate-200/70 dark:bg-slate-500/20 text-foreground border-b border-slate-400/60", label: "Date" },
+  memo:       { chip: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/30", highlight: "bg-amber-100/70 dark:bg-amber-500/20 text-amber-900 dark:text-amber-200 border-b border-amber-400/60", label: "Memo" },
+};
+
+function buildSource(p: Payment): SourceDocument {
+  const refs = (p.reference ?? "").split(/[,;]\s*/).map((r) => r.trim()).filter(Boolean);
+  const amountStr = formatUSD(p.amount);
+
+  if (p.remittanceSource === "Email") {
+    const rows = refs.length
+      ? refs.map((r) => {
+          const inv = sampleOpenAR.find((o) => o.invoiceNumber === r);
+          const amt = inv ? Math.min(inv.openBalance, p.amount / Math.max(refs.length, 1)) : p.amount / Math.max(refs.length, 1);
+          return `<tr><td style="padding:6px;border-bottom:1px solid #eee">${r}</td><td style="padding:6px;border-bottom:1px solid #eee">${inv?.invoiceDate ?? "—"}</td><td style="padding:6px;border-bottom:1px solid #eee;text-align:right">${formatUSD(amt)}</td></tr>`;
+        }).join("")
+      : `<tr><td colspan="3" style="padding:6px;color:#888;font-style:italic">See attached remittance — refs unclear</td></tr>`;
+    return {
+      kind: "email",
+      meta: [
+        { label: "From", value: `ar@${p.payer.toLowerCase().replace(/[^a-z]/g, "").slice(0, 10)}.com` },
+        { label: "To", value: "remittance@itemize-bank.com" },
+        { label: "Date", value: p.receivedDate },
+      ],
+      title: `Remittance advice — ${p.paymentId} — ${amountStr}`,
+      body: `
+        <p>Hello,</p>
+        <p>Please find below remittance for payment <b>${p.paymentId}</b> sent today by <b>${p.payer}</b> (Customer <b>${p.customerId}</b>) for a total of <b>${amountStr}</b>.</p>
+        <table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:12px">
+          <thead><tr style="background:#f4f4f5"><th style="text-align:left;padding:6px;border-bottom:1px solid #ddd">Invoice</th><th style="text-align:left;padding:6px;border-bottom:1px solid #ddd">Date</th><th style="text-align:right;padding:6px;border-bottom:1px solid #ddd">Amount</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+        <p style="margin-top:12px">Best regards,<br/>Accounts Payable<br/>${p.payer}</p>
+      `,
+      highlights: [
+        { text: p.payer, field: "payer" },
+        { text: p.customerId, field: "customerId" },
+        { text: amountStr, field: "amount" },
+        ...refs.map((r) => ({ text: r, field: "reference" as ExtractedField, matchedInvoice: r })),
+      ],
+    };
+  }
+
+  if (p.remittanceSource === "Lockbox") {
+    const memo = refs.length ? `Memo: ${refs.join(", ")}` : (p.reference ?? "Memo: —");
+    return {
+      kind: "check",
+      meta: [
+        { label: "Lockbox", value: "WLBX-1042" },
+        { label: "Image", value: `IMG-${p.paymentId.slice(-4)}.tif` },
+        { label: "Captured", value: p.receivedDate },
+      ],
+      title: `Check from ${p.payer}`,
+      body: `${p.payer}\n${p.customerId}\n123 Industry Way\n\nPay to the order of:  ITEMIZE BANK CLIENT\n\nAmount:  ${amountStr}\nDate:    ${p.receivedDate}\n\n${memo}\n\n_______________________  (signature on file)\n\nRouting :: 021000021     Account :: ••••4471\nCheck #  :: ${p.paymentId.replace("PAY-", "")}`,
+      highlights: [
+        { text: p.payer, field: "payer" },
+        { text: p.customerId, field: "customerId" },
+        { text: amountStr, field: "amount" },
+        { text: p.receivedDate, field: "date" },
+        ...refs.map((r) => ({ text: r, field: "reference" as ExtractedField, matchedInvoice: r })),
+        ...(refs.length === 0 && p.reference ? [{ text: p.reference, field: "memo" as ExtractedField }] : []),
+      ],
+    };
+  }
+
+  if (p.remittanceSource === "ACH Addenda") {
+    const addendaRef = refs[0] ?? p.reference ?? "";
+    return {
+      kind: "ach",
+      meta: [
+        { label: "File", value: "BAI2-20260406.txt" },
+        { label: "Trace", value: `0210000${p.paymentId.slice(-6)}` },
+        { label: "Settled", value: p.receivedDate },
+      ],
+      title: `ACH CCD+ — ${p.paymentId}`,
+      body: `6225130001230000${p.paymentId.slice(-7)}0000${(p.amount * 100).toFixed(0).padStart(10, "0")}${p.customerId.padEnd(15, " ")}${p.payer.toUpperCase().slice(0, 22).padEnd(22, " ")}\n705${addendaRef ? `RMR*IV*${addendaRef}**${p.amount.toFixed(2)}` : "No structured remittance — addenda blank"}\n822500001000000010000000000${(p.amount * 100).toFixed(0).padStart(10, "0")}\n\n--- Decoded ---\nPayer:        ${p.payer}\nCustomer ID:  ${p.customerId}\nAmount:       ${amountStr}\nReceived:     ${p.receivedDate}\nRemittance:   ${addendaRef || "(none)"}\n`,
+      highlights: [
+        { text: p.payer.toUpperCase().slice(0, 22), field: "payer" },
+        { text: p.payer, field: "payer" },
+        { text: p.customerId, field: "customerId" },
+        { text: amountStr, field: "amount" },
+        ...refs.map((r) => ({ text: r, field: "reference" as ExtractedField, matchedInvoice: r })),
+      ],
+    };
+  }
+
+  // Portal upload
+  return {
+    kind: "portal",
+    meta: [
+      { label: "Source", value: "Customer Portal" },
+      { label: "User", value: `${p.payer.split(" ")[0].toLowerCase()}@portal` },
+      { label: "Uploaded", value: p.receivedDate },
+    ],
+    title: `Payment confirmation — ${p.paymentId}`,
+    body: `
+      <p><b>Payment Confirmation</b></p>
+      <p>Customer <b>${p.customerId}</b> (<b>${p.payer}</b>) submitted a payment of <b>${amountStr}</b> via ${p.method} on <b>${p.receivedDate}</b>.</p>
+      <p>Applied to invoice${refs.length > 1 ? "s" : ""}: ${refs.map((r) => `<b>${r}</b>`).join(", ") || "<i>not specified</i>"}</p>
+    `,
+    highlights: [
+      { text: p.payer, field: "payer" },
+      { text: p.customerId, field: "customerId" },
+      { text: amountStr, field: "amount" },
+      { text: p.receivedDate, field: "date" },
+      ...refs.map((r) => ({ text: r, field: "reference" as ExtractedField, matchedInvoice: r })),
+    ],
+  };
+}
+
+samplePayments.forEach((p) => {
+  p.source = buildSource(p);
+});
