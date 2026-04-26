@@ -1,6 +1,9 @@
-import { Upload, Search, FileSpreadsheet, CheckCircle2, AlertCircle } from "lucide-react";
+import { useCallback, useState } from "react";
+import { Upload, CheckCircle2, Eye } from "lucide-react";
 import TopBar from "./TopBar";
-import { sampleOpenAR, formatUSD } from "./cash/data";
+import { sampleOpenAR, formatUSD, type OpenInvoice } from "./cash/data";
+import { DataTable, DataTableColumn } from "@/components/data-table/DataTable";
+import RowActions from "@/components/data-table/RowActions";
 
 const statusStyles: Record<string, string> = {
   Open: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/30",
@@ -10,6 +13,90 @@ const statusStyles: Record<string, string> = {
 
 export default function CashOpenARContent() {
   const totalOpen = sampleOpenAR.filter((i) => i.status !== "Paid").reduce((s, i) => s + i.openBalance, 0);
+  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
+
+  const toggleRow = useCallback((i: number) => {
+    setSelectedRows((prev) => {
+      const next = new Set(prev);
+      if (next.has(i)) next.delete(i);
+      else next.add(i);
+      return next;
+    });
+  }, []);
+
+  const toggleAll = useCallback(() => {
+    if (selectedRows.size === sampleOpenAR.length) setSelectedRows(new Set());
+    else setSelectedRows(new Set(sampleOpenAR.map((_, i) => i)));
+  }, [selectedRows.size]);
+
+  const columns: DataTableColumn<OpenInvoice>[] = [
+    {
+      key: "customerId",
+      label: "Customer ID",
+      accessor: (i) => i.customerId,
+      render: (i) => <span className="font-mono text-xs text-muted-foreground">{i.customerId}</span>,
+      width: 130,
+    },
+    {
+      key: "customer",
+      label: "Customer",
+      accessor: (i) => i.customer,
+      render: (i) => <span className="font-medium text-foreground">{i.customer}</span>,
+      width: 200,
+    },
+    {
+      key: "invoiceNumber",
+      label: "Invoice #",
+      accessor: (i) => i.invoiceNumber,
+      render: (i) => <span className="font-mono text-xs text-foreground">{i.invoiceNumber}</span>,
+      width: 130,
+    },
+    {
+      key: "invoiceDate",
+      label: "Invoice Date",
+      accessor: (i) => i.invoiceDate,
+      render: (i) => <span className="text-muted-foreground text-xs">{i.invoiceDate}</span>,
+      width: 130,
+    },
+    {
+      key: "dueDate",
+      label: "Due Date",
+      accessor: (i) => i.dueDate,
+      render: (i) => <span className="text-muted-foreground text-xs">{i.dueDate}</span>,
+      width: 130,
+    },
+    {
+      key: "openBalance",
+      label: "Open Balance",
+      accessor: (i) => formatUSD(i.openBalance),
+      align: "right",
+      render: (i) => <span className="font-semibold tabular-nums text-foreground">{formatUSD(i.openBalance)}</span>,
+      width: 140,
+    },
+    {
+      key: "daysPastDue",
+      label: "Days Past Due",
+      accessor: (i) => (i.daysPastDue > 0 ? `+${i.daysPastDue}` : "—"),
+      align: "right",
+      render: (i) => (
+        <span className={`tabular-nums text-xs ${i.daysPastDue > 0 ? "text-destructive font-semibold" : "text-muted-foreground"}`}>
+          {i.daysPastDue > 0 ? `+${i.daysPastDue}` : "—"}
+        </span>
+      ),
+      width: 130,
+    },
+    {
+      key: "status",
+      label: "Status",
+      accessor: (i) => i.status,
+      render: (i) => (
+        <span className={`inline-flex text-[11px] font-medium border rounded-full px-2 py-0.5 ${statusStyles[i.status]}`}>
+          {i.status}
+        </span>
+      ),
+      width: 110,
+    },
+  ];
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-background">
@@ -51,55 +138,28 @@ export default function CashOpenARContent() {
             </div>
           </div>
 
-          {/* Search */}
-          <div className="relative max-w-md mb-4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search invoice or customer..."
-              className="w-full bg-card border border-border rounded-lg pl-9 pr-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-primary/40"
-            />
-          </div>
-
-          {/* Table */}
-          <div className="bg-card border border-border rounded-xl overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-secondary/40 border-b border-border">
-                  <tr className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    <th className="text-left px-4 py-3">Customer ID</th>
-                    <th className="text-left px-4 py-3">Customer</th>
-                    <th className="text-left px-4 py-3">Invoice #</th>
-                    <th className="text-left px-4 py-3">Invoice Date</th>
-                    <th className="text-left px-4 py-3">Due Date</th>
-                    <th className="text-right px-4 py-3">Open Balance</th>
-                    <th className="text-right px-4 py-3">Days Past Due</th>
-                    <th className="text-left px-4 py-3">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {sampleOpenAR.map((inv) => (
-                    <tr key={inv.invoiceNumber} className="hover:bg-accent/20 transition-colors">
-                      <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{inv.customerId}</td>
-                      <td className="px-4 py-3 font-medium text-foreground">{inv.customer}</td>
-                      <td className="px-4 py-3 font-mono text-xs text-foreground">{inv.invoiceNumber}</td>
-                      <td className="px-4 py-3 text-muted-foreground text-xs">{inv.invoiceDate}</td>
-                      <td className="px-4 py-3 text-muted-foreground text-xs">{inv.dueDate}</td>
-                      <td className="px-4 py-3 text-right font-semibold tabular-nums text-foreground">{formatUSD(inv.openBalance)}</td>
-                      <td className={`px-4 py-3 text-right tabular-nums text-xs ${inv.daysPastDue > 0 ? "text-destructive font-semibold" : "text-muted-foreground"}`}>
-                        {inv.daysPastDue > 0 ? `+${inv.daysPastDue}` : "—"}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex text-[11px] font-medium border rounded-full px-2 py-0.5 ${statusStyles[inv.status]}`}>
-                          {inv.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <DataTable<OpenInvoice>
+            storageKey="cash-open-ar"
+            columns={columns}
+            data={sampleOpenAR}
+            rowKey={(i) => i.invoiceNumber}
+            selectable
+            searchable
+            searchPlaceholder="Search invoice or customer..."
+            selectedRows={selectedRows}
+            onToggleRow={toggleRow}
+            onToggleAll={toggleAll}
+            renderRowActions={(inv) => (
+              <RowActions
+                review={{ label: "View invoice", onClick: () => {}, icon: <Eye className="h-3.5 w-3.5" /> }}
+                more={[
+                  { label: "Apply payment", onClick: () => {} },
+                  { label: "Mark as paid", onClick: () => {} },
+                  { label: "Write off", onClick: () => {}, destructive: true },
+                ]}
+              />
+            )}
+          />
         </div>
       </div>
     </div>
