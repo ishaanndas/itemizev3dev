@@ -15,7 +15,7 @@ export interface ConfidenceMeta {
 export const CONFIDENCE: Record<Confidence, ConfidenceMeta> = {
   green: {
     label: "High",
-    badgeClass: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30",
+    badgeClass: "text-emerald-600 dark:text-emerald-400",
     dotClass: "bg-emerald-500",
     borderClass: "border-l-emerald-500",
     icon: Check,
@@ -23,7 +23,7 @@ export const CONFIDENCE: Record<Confidence, ConfidenceMeta> = {
   },
   yellow: {
     label: "Medium",
-    badgeClass: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/30",
+    badgeClass: "text-amber-600 dark:text-amber-400",
     dotClass: "bg-amber-500",
     borderClass: "border-l-amber-500",
     icon: AlertTriangle,
@@ -31,7 +31,7 @@ export const CONFIDENCE: Record<Confidence, ConfidenceMeta> = {
   },
   red: {
     label: "Low",
-    badgeClass: "bg-destructive/10 text-destructive border-destructive/20",
+    badgeClass: "text-destructive",
     dotClass: "bg-destructive",
     borderClass: "border-l-destructive",
     icon: X,
@@ -41,12 +41,11 @@ export const CONFIDENCE: Record<Confidence, ConfidenceMeta> = {
 
 export function ConfidenceBadge({ level, score }: { level: Confidence; score?: number }) {
   const meta = CONFIDENCE[level];
-  const Icon = meta.icon;
   return (
-    <span className={`inline-flex items-center gap-1 text-[11px] font-semibold border rounded-full px-2 py-0.5 ${meta.badgeClass}`}>
-      <Icon className="h-3 w-3" />
+    <span className={`inline-flex items-center gap-1.5 text-xs font-medium tabular-nums ${meta.badgeClass}`}>
+      <span className={`inline-block h-1.5 w-1.5 rounded-full ${meta.dotClass}`} />
       {meta.label}
-      {score !== undefined && <span className="tabular-nums opacity-70">· {(score * 100).toFixed(0)}%</span>}
+      {score !== undefined && <span className="text-muted-foreground font-normal">{(score * 100).toFixed(0)}%</span>}
     </span>
   );
 }
