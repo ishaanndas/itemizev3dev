@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Upload, Filter, ChevronDown } from "lucide-react";
+import { Upload, Filter, ChevronDown, Eye, Check, FileX } from "lucide-react";
 import TopBar from "./TopBar";
-import { samplePayments, formatUSD } from "./cash/data";
+import { samplePayments, formatUSD, type Payment } from "./cash/data";
 import { ConfidenceBadge } from "./cash/confidence";
+import { DataTable, DataTableColumn } from "@/components/data-table/DataTable";
+import RowActions from "@/components/data-table/RowActions";
 
 const statusStyles: Record<string, string> = {
   Matched: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30",
@@ -13,19 +15,100 @@ const statusStyles: Record<string, string> = {
   Posted: "bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-500/10 dark:text-violet-400 dark:border-violet-500/30",
 };
 
-const sourceStyles: Record<string, string> = {
-  "Lockbox": "bg-secondary text-foreground/70",
-  "ACH Addenda": "bg-secondary text-foreground/70",
-  "Email": "bg-secondary text-foreground/70",
-  "Portal": "bg-secondary text-foreground/70",
-};
-
 export default function CashPaymentsContent() {
   const navigate = useNavigate();
   const [filter, setFilter] = useState<string>("All");
+  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
 
   const filters = ["All", "Matched", "Partial", "Exception", "Unmatched"];
   const filtered = filter === "All" ? samplePayments : samplePayments.filter((p) => p.status === filter);
+
+  const toggleRow = useCallback((i: number) => {
+    setSelectedRows((prev) => {
+      const next = new Set(prev);
+      if (next.has(i)) next.delete(i);
+      else next.add(i);
+      return next;
+    });
+  }, []);
+
+  const toggleAll = useCallback(() => {
+    if (selectedRows.size === filtered.length) setSelectedRows(new Set());
+    else setSelectedRows(new Set(filtered.map((_, i) => i)));
+  }, [selectedRows.size, filtered]);
+
+  const goToMatch = (p: Payment) => navigate(`/cash/matching/${p.id}`);
+
+  const columns: DataTableColumn<Payment>[] = [
+    {
+      key: "paymentId",
+      label: "Payment ID",
+      accessor: (p) => p.paymentId,
+      render: (p) => <span className="font-mono text-xs text-foreground">{p.paymentId}</span>,
+      width: 130,
+    },
+    {
+      key: "payer",
+      label: "Payer",
+      accessor: (p) => p.payer,
+      render: (p) => <span className="font-medium text-foreground">{p.payer}</span>,
+      width: 200,
+    },
+    { key: "method", label: "Method", accessor: (p) => p.method, width: 100 },
+    {
+      key: "remittanceSource",
+      label: "Source",
+      accessor: (p) => p.remittanceSource,
+      render: (p) => (
+        <span className="text-[11px] font-medium rounded-full px-2 py-0.5 bg-secondary text-foreground/70">
+          {p.remittanceSource}
+        </span>
+      ),
+      width: 130,
+    },
+    {
+      key: "reference",
+      label: "Reference",
+      accessor: (p) => p.reference ?? "—",
+      render: (p) => <span className="text-foreground/70 text-xs font-mono truncate">{p.reference || "—"}</span>,
+      width: 180,
+    },
+    {
+      key: "amount",
+      label: "Amount",
+      accessor: (p) => formatUSD(p.amount),
+      align: "right",
+      render: (p) => <span className="font-semibold tabular-nums text-foreground">{formatUSD(p.amount)}</span>,
+      width: 130,
+    },
+    {
+      key: "receivedDate",
+      label: "Received",
+      accessor: (p) => p.receivedDate,
+      render: (p) => <span className="text-muted-foreground text-xs">{p.receivedDate}</span>,
+      width: 120,
+    },
+    {
+      key: "confidence",
+      label: "Confidence",
+      accessor: (p) => `${Math.round(p.matchScore * 100)}%`,
+      render: (p) => <ConfidenceBadge level={p.confidence} score={p.matchScore} />,
+      width: 130,
+    },
+    {
+      key: "status",
+      label: "Status",
+      accessor: (p) => p.status,
+      render: (p) => (
+        <span className={`inline-flex text-[11px] font-medium border rounded-full px-2 py-0.5 ${statusStyles[p.status]}`}>
+          {p.status}
+        </span>
+      ),
+      width: 120,
+    },
+    { key: "customerId", label: "Customer ID", accessor: (p) => p.customerId, defaultVisible: false, width: 120 },
+    { key: "invoiceCount", label: "Invoices", accessor: (p) => String(p.invoiceCount), align: "right", defaultVisible: false, width: 90 },
+  ];
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-background">
@@ -45,27 +128,13 @@ export default function CashPaymentsContent() {
             </button>
           </div>
 
-          {/* Filters */}
-          <div className="flex items-center justify-between gap-3 mb-4">
-            <div className="flex items-center gap-2 flex-1">
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                <input
-                  type="text"
-                  placeholder="Search by payer, payment ID, reference..."
-                  className="w-full bg-card border border-border rounded-lg pl-9 pr-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-primary/40"
-                />
-              </div>
-              <button className="flex items-center gap-1.5 text-sm border border-border rounded-lg px-3 py-2 hover:bg-secondary transition-colors text-foreground">
-                <Filter className="h-3.5 w-3.5" />
-                Method
-                <ChevronDown className="h-3 w-3" />
-              </button>
-              <button className="flex items-center gap-1.5 text-sm border border-border rounded-lg px-3 py-2 hover:bg-secondary transition-colors text-foreground">
-                Source
-                <ChevronDown className="h-3 w-3" />
-              </button>
-            </div>
+          {/* Status filter pills */}
+          <div className="flex items-center justify-end gap-2 mb-3">
+            <button className="flex items-center gap-1.5 text-sm border border-border rounded-lg px-3 py-2 hover:bg-secondary transition-colors text-foreground">
+              <Filter className="h-3.5 w-3.5" />
+              Method
+              <ChevronDown className="h-3 w-3" />
+            </button>
             <div className="flex items-center gap-1 bg-secondary/60 border border-border rounded-lg p-1">
               {filters.map((f) => (
                 <button
@@ -81,53 +150,36 @@ export default function CashPaymentsContent() {
             </div>
           </div>
 
-          {/* Table */}
-          <div className="bg-card border border-border rounded-xl overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-secondary/40 border-b border-border">
-                  <tr className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    <th className="text-left px-4 py-3">Payment ID</th>
-                    <th className="text-left px-4 py-3">Payer</th>
-                    <th className="text-left px-4 py-3">Method</th>
-                    <th className="text-left px-4 py-3">Source</th>
-                    <th className="text-left px-4 py-3">Reference</th>
-                    <th className="text-right px-4 py-3">Amount</th>
-                    <th className="text-left px-4 py-3">Received</th>
-                    <th className="text-left px-4 py-3">Confidence</th>
-                    <th className="text-left px-4 py-3">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {filtered.map((p) => (
-                    <tr
-                      key={p.id}
-                      onClick={() => navigate(`/cash/matching/${p.id}`)}
-                      className="hover:bg-accent/20 cursor-pointer transition-colors"
-                    >
-                      <td className="px-4 py-3 font-mono text-xs text-foreground">{p.paymentId}</td>
-                      <td className="px-4 py-3 font-medium text-foreground">{p.payer}</td>
-                      <td className="px-4 py-3 text-foreground/80">{p.method}</td>
-                      <td className="px-4 py-3">
-                        <span className={`text-[11px] font-medium rounded-full px-2 py-0.5 ${sourceStyles[p.remittanceSource] || "bg-secondary"}`}>
-                          {p.remittanceSource}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-foreground/70 text-xs font-mono truncate max-w-[180px]">{p.reference}</td>
-                      <td className="px-4 py-3 text-right font-semibold tabular-nums text-foreground">{formatUSD(p.amount)}</td>
-                      <td className="px-4 py-3 text-muted-foreground text-xs">{p.receivedDate}</td>
-                      <td className="px-4 py-3"><ConfidenceBadge level={p.confidence} score={p.matchScore} /></td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex text-[11px] font-medium border rounded-full px-2 py-0.5 ${statusStyles[p.status]}`}>
-                          {p.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <DataTable<Payment>
+            storageKey="cash-payments"
+            columns={columns}
+            data={filtered}
+            rowKey={(p) => p.id}
+            selectable
+            searchable
+            searchPlaceholder="Search by payer, payment ID, reference..."
+            selectedRows={selectedRows}
+            onToggleRow={toggleRow}
+            onToggleAll={toggleAll}
+            onRowClick={goToMatch}
+            toolbarLeft={
+              selectedRows.size > 0 ? (
+                <button className="text-xs font-medium px-3.5 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+                  Apply {selectedRows.size} payment{selectedRows.size > 1 ? "s" : ""}
+                </button>
+              ) : null
+            }
+            renderRowActions={(p) => (
+              <RowActions
+                review={{ label: "Review match", onClick: () => goToMatch(p), icon: <Eye className="h-3.5 w-3.5" /> }}
+                primary={{ label: "Approve", onClick: () => goToMatch(p), icon: <Check className="h-3.5 w-3.5" /> }}
+                more={[
+                  { label: "View remittance", onClick: () => goToMatch(p) },
+                  { label: "Mark as exception", onClick: () => {}, icon: <FileX className="h-3.5 w-3.5" />, destructive: true },
+                ]}
+              />
+            )}
+          />
         </div>
       </div>
     </div>
