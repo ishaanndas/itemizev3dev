@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Filter, ChevronDown, Sparkles, ArrowRight } from "lucide-react";
+// note: ConfidenceDot no longer used in row
 import TopBar from "./TopBar";
 import { samplePayments, sampleOpenAR, formatUSD, type Payment } from "./cash/data";
 import { ConfidenceBadge, ConfidenceDot, type Confidence } from "./cash/confidence";
@@ -15,11 +16,8 @@ function MatchRow({ payment }: { payment: Payment }) {
       onClick={() => navigate(`/cash/matching/${payment.id}`)}
       className="w-full text-left grid grid-cols-12 gap-3 items-center px-4 py-3 hover:bg-accent/20 transition-colors"
     >
-      <div className="col-span-1 flex items-center justify-center">
-        <ConfidenceDot level={payment.confidence} />
-      </div>
       {/* Payment side */}
-      <div className="col-span-4 min-w-0">
+      <div className="col-span-5 min-w-0">
         <div className="text-sm font-medium text-foreground truncate">{payment.payer}</div>
         <div className="text-[11px] text-muted-foreground font-mono mt-0.5">
           {payment.paymentId} · {payment.method} · {payment.receivedDate}
@@ -150,8 +148,7 @@ export default function CashMatchingContent() {
           <div className="bg-card border border-border rounded-xl overflow-hidden">
             {/* Header */}
             <div className="grid grid-cols-12 gap-3 px-4 py-3 bg-secondary/40 border-b border-border text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              <div className="col-span-1" />
-              <div className="col-span-4">Payment</div>
+              <div className="col-span-5">Payment</div>
               <div className="col-span-2 text-right">Amount</div>
               <div className="col-span-1" />
               <div className="col-span-3">Suggested Invoice</div>
