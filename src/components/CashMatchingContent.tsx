@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Filter, ChevronDown, Sparkles, ArrowRight } from "lucide-react";
-// note: ConfidenceDot no longer used in row
 import TopBar from "./TopBar";
 import { samplePayments, sampleOpenAR, formatUSD, type Payment } from "./cash/data";
-import { ConfidenceBadge, ConfidenceDot, type Confidence } from "./cash/confidence";
+import { ConfidenceBadge, type Confidence } from "./cash/confidence";
 
 function MatchRow({ payment }: { payment: Payment }) {
   const navigate = useNavigate();
