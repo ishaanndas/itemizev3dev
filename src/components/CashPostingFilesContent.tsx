@@ -1,7 +1,9 @@
-import { Download, FileSpreadsheet, Clock, CheckCircle2, ScrollText } from "lucide-react";
+import { Download, FileSpreadsheet, Clock, CheckCircle2, ScrollText, Eye } from "lucide-react";
 import TopBar from "./TopBar";
 import { formatUSD } from "./cash/data";
 import { ConfidenceBadge, type Confidence } from "./cash/confidence";
+import { DataTable, DataTableColumn } from "@/components/data-table/DataTable";
+import RowActions from "@/components/data-table/RowActions";
 
 interface PostingFile {
   batchId: string;
@@ -54,6 +56,52 @@ const statusStyles: Record<PostingFile["status"], string> = {
   "Ready": "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/30",
   "Sent to Bank": "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30",
 };
+
+const glColumns: DataTableColumn<JournalLine>[] = [
+  { key: "journalId", label: "Journal", accessor: (l) => l.journalId, render: (l) => <span className="font-mono text-xs text-foreground">{l.journalId}</span>, width: 110 },
+  { key: "line", label: "Ln", accessor: (l) => String(l.line), align: "right", render: (l) => <span className="text-muted-foreground">{l.line}</span>, width: 60 },
+  { key: "customerId", label: "Customer", accessor: (l) => l.customerId, render: (l) => <span className="font-mono text-xs text-muted-foreground">{l.customerId}</span>, width: 120 },
+  { key: "invoice", label: "Invoice", accessor: (l) => l.invoice, render: (l) => <span className="font-mono text-xs text-foreground">{l.invoice}</span>, width: 110 },
+  { key: "account", label: "Account", accessor: (l) => l.account, render: (l) => <span className="text-foreground">{l.account}</span>, width: 180 },
+  { key: "debit", label: "Debit", accessor: (l) => (l.debit > 0 ? formatUSD(l.debit) : "—"), align: "right", render: (l) => <span className="tabular-nums text-foreground">{l.debit > 0 ? formatUSD(l.debit) : "—"}</span>, width: 120 },
+  { key: "credit", label: "Credit", accessor: (l) => (l.credit > 0 ? formatUSD(l.credit) : "—"), align: "right", render: (l) => <span className="tabular-nums text-foreground">{l.credit > 0 ? formatUSD(l.credit) : "—"}</span>, width: 120 },
+  { key: "description", label: "Description", accessor: (l) => l.description, render: (l) => <span className="text-muted-foreground truncate">{l.description}</span>, width: 220 },
+  { key: "match", label: "Match", accessor: (l) => `${Math.round(l.confidenceScore * 100)}%`, render: (l) => <ConfidenceBadge level={l.confidenceFlag} score={l.confidenceScore} />, width: 130 },
+];
+
+const historyColumns: DataTableColumn<PostingFile>[] = [
+  { key: "batchId", label: "Batch ID", accessor: (f) => f.batchId, render: (f) => <span className="font-mono text-xs text-foreground">{f.batchId}</span>, width: 170 },
+  { key: "date", label: "Date", accessor: (f) => f.date, render: (f) => <span className="text-muted-foreground text-xs">{f.date}</span>, width: 120 },
+  { key: "journalCount", label: "Journals", accessor: (f) => String(f.journalCount), align: "right", render: (f) => <span className="tabular-nums text-foreground">{f.journalCount}</span>, width: 100 },
+  { key: "lineCount", label: "Lines", accessor: (f) => String(f.lineCount), align: "right", render: (f) => <span className="tabular-nums text-foreground">{f.lineCount}</span>, width: 90 },
+  { key: "totalAmount", label: "Total", accessor: (f) => formatUSD(f.totalAmount), align: "right", render: (f) => <span className="tabular-nums font-semibold text-foreground">{formatUSD(f.totalAmount)}</span>, width: 140 },
+  {
+    key: "composition",
+    label: "Composition",
+    accessor: (f) => `${f.autoPct}/${f.manualPct}/${f.exceptionPct}`,
+    render: (f) => (
+      <div className="flex items-center gap-1 w-32 h-1.5 rounded-full overflow-hidden bg-secondary">
+        <div className="h-full bg-emerald-500" style={{ width: `${f.autoPct}%` }} />
+        <div className="h-full bg-amber-500" style={{ width: `${f.manualPct}%` }} />
+        <div className="h-full bg-destructive" style={{ width: `${f.exceptionPct}%` }} />
+      </div>
+    ),
+    width: 160,
+  },
+  {
+    key: "status",
+    label: "Status",
+    accessor: (f) => f.status,
+    render: (f) => (
+      <span className={`inline-flex items-center gap-1 text-[11px] font-medium border rounded-full px-2 py-0.5 ${statusStyles[f.status]}`}>
+        {f.status === "Sent to Bank" && <CheckCircle2 className="h-3 w-3" />}
+        {f.status === "Generating" && <Clock className="h-3 w-3" />}
+        {f.status}
+      </span>
+    ),
+    width: 160,
+  },
+];
 
 export default function CashPostingFilesContent() {
   return (
@@ -115,8 +163,8 @@ export default function CashPostingFilesContent() {
           </div>
 
           {/* GL Preview */}
-          <div className="bg-card border border-border rounded-xl overflow-hidden mb-6">
-            <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <ScrollText className="h-4 w-4 text-muted-foreground" />
                 <h3 className="text-sm font-semibold text-foreground">GL Posting Preview</h3>
@@ -127,88 +175,28 @@ export default function CashPostingFilesContent() {
                 Download CSV
               </button>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs">
-                <thead className="bg-secondary/40 border-b border-border">
-                  <tr className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    <th className="text-left px-3 py-2">Journal</th>
-                    <th className="text-left px-3 py-2">Ln</th>
-                    <th className="text-left px-3 py-2">Customer</th>
-                    <th className="text-left px-3 py-2">Invoice</th>
-                    <th className="text-left px-3 py-2">Account</th>
-                    <th className="text-right px-3 py-2">Debit</th>
-                    <th className="text-right px-3 py-2">Credit</th>
-                    <th className="text-left px-3 py-2">Description</th>
-                    <th className="text-left px-3 py-2">Match</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {previewLines.map((l, i) => (
-                    <tr key={i} className="hover:bg-accent/20">
-                      <td className="px-3 py-2 font-mono text-foreground">{l.journalId}</td>
-                      <td className="px-3 py-2 text-muted-foreground">{l.line}</td>
-                      <td className="px-3 py-2 font-mono text-muted-foreground">{l.customerId}</td>
-                      <td className="px-3 py-2 font-mono text-foreground">{l.invoice}</td>
-                      <td className="px-3 py-2 text-foreground">{l.account}</td>
-                      <td className="px-3 py-2 text-right tabular-nums text-foreground">{l.debit > 0 ? formatUSD(l.debit) : "—"}</td>
-                      <td className="px-3 py-2 text-right tabular-nums text-foreground">{l.credit > 0 ? formatUSD(l.credit) : "—"}</td>
-                      <td className="px-3 py-2 text-muted-foreground truncate max-w-[200px]">{l.description}</td>
-                      <td className="px-3 py-2"><ConfidenceBadge level={l.confidenceFlag} score={l.confidenceScore} /></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <DataTable<JournalLine>
+              storageKey="cash-gl-preview"
+              columns={glColumns}
+              data={previewLines}
+              rowKey={(l, i) => `${l.journalId}-${l.line}-${i}`}
+            />
           </div>
 
           {/* History */}
           <h3 className="text-sm font-semibold text-foreground mb-3">History</h3>
-          <div className="bg-card border border-border rounded-xl overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-secondary/40 border-b border-border">
-                <tr className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                  <th className="text-left px-4 py-3">Batch ID</th>
-                  <th className="text-left px-4 py-3">Date</th>
-                  <th className="text-right px-4 py-3">Journals</th>
-                  <th className="text-right px-4 py-3">Lines</th>
-                  <th className="text-right px-4 py-3">Total</th>
-                  <th className="text-left px-4 py-3">Composition</th>
-                  <th className="text-left px-4 py-3">Status</th>
-                  <th className="px-4 py-3" />
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {files.map((f) => (
-                  <tr key={f.batchId} className="hover:bg-accent/20 transition-colors">
-                    <td className="px-4 py-3 font-mono text-xs text-foreground">{f.batchId}</td>
-                    <td className="px-4 py-3 text-muted-foreground text-xs">{f.date}</td>
-                    <td className="px-4 py-3 text-right tabular-nums text-foreground">{f.journalCount}</td>
-                    <td className="px-4 py-3 text-right tabular-nums text-foreground">{f.lineCount}</td>
-                    <td className="px-4 py-3 text-right tabular-nums font-semibold text-foreground">{formatUSD(f.totalAmount)}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1 w-32 h-1.5 rounded-full overflow-hidden bg-secondary">
-                        <div className="h-full bg-emerald-500" style={{ width: `${f.autoPct}%` }} />
-                        <div className="h-full bg-amber-500" style={{ width: `${f.manualPct}%` }} />
-                        <div className="h-full bg-destructive" style={{ width: `${f.exceptionPct}%` }} />
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-flex items-center gap-1 text-[11px] font-medium border rounded-full px-2 py-0.5 ${statusStyles[f.status]}`}>
-                        {f.status === "Sent to Bank" && <CheckCircle2 className="h-3 w-3" />}
-                        {f.status === "Generating" && <Clock className="h-3 w-3" />}
-                        {f.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <button className="text-muted-foreground hover:text-foreground">
-                        <Download className="h-3.5 w-3.5" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DataTable<PostingFile>
+            storageKey="cash-posting-history"
+            columns={historyColumns}
+            data={files}
+            rowKey={(f) => f.batchId}
+            renderRowActions={(f) => (
+              <RowActions
+                review={{ label: "View batch", onClick: () => {}, icon: <Eye className="h-3.5 w-3.5" /> }}
+                primary={{ label: "Download", onClick: () => {}, icon: <Download className="h-3.5 w-3.5" /> }}
+              />
+            )}
+          />
         </div>
       </div>
     </div>
