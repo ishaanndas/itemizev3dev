@@ -32,12 +32,12 @@ function ExtractedChip({
     <div
       onMouseEnter={() => onHover(field)}
       onMouseLeave={() => onHover(null)}
-      className="group flex items-start gap-2"
+      className="group flex items-start gap-3"
     >
+      <span className="text-sm text-foreground break-words flex-1 min-w-0">{value || <span className="text-muted-foreground italic">not detected</span>}</span>
       <span className={`shrink-0 inline-flex items-center text-[10px] font-semibold border rounded-full px-2 py-0.5 mt-0.5 ${meta.chip}`}>
         {meta.label}
       </span>
-      <span className="text-sm text-foreground break-words flex-1">{value || <span className="text-muted-foreground italic">not detected</span>}</span>
     </div>
   );
 }
