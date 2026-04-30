@@ -167,6 +167,24 @@ function buildSource(p: Payment): SourceDocument {
 
   if (p.remittanceSource === "ACH Addenda") {
     const addendaRef = refs[0] ?? p.reference ?? "";
+    // Build line-item breakdown for attached invoices
+    const lineItems = refs.length
+      ? refs.map((r, i) => {
+          const inv = sampleOpenAR.find((o) => o.invoiceNumber === r);
+          const amt = inv ? Math.min(inv.openBalance, p.amount / Math.max(refs.length, 1)) : p.amount / Math.max(refs.length, 1);
+          const date = inv?.invoiceDate ?? p.receivedDate;
+          return `705RMR*IV*${r}*${date.replace(/[^0-9]/g, "").slice(0, 8) || "20260406"}*${amt.toFixed(2)}*${(i + 1).toString().padStart(2, "0")}`;
+        }).join("\n")
+      : (addendaRef ? `705RMR*IV*${addendaRef}**${p.amount.toFixed(2)}` : "705No structured remittance — addenda blank");
+
+    const decodedLines = refs.length
+      ? refs.map((r, i) => {
+          const inv = sampleOpenAR.find((o) => o.invoiceNumber === r);
+          const amt = inv ? Math.min(inv.openBalance, p.amount / Math.max(refs.length, 1)) : p.amount / Math.max(refs.length, 1);
+          return `  ${(i + 1).toString().padStart(2, "0")}.  ${r.padEnd(12, " ")}  ${(inv?.invoiceDate ?? "—").padEnd(14, " ")}  ${formatUSD(amt).padStart(12, " ")}`;
+        }).join("\n")
+      : `  (no invoice line items)`;
+
     return {
       kind: "ach",
       meta: [
@@ -175,7 +193,7 @@ function buildSource(p: Payment): SourceDocument {
         { label: "Settled", value: p.receivedDate },
       ],
       title: `ACH CCD+ — ${p.paymentId}`,
-      body: `6225130001230000${p.paymentId.slice(-7)}0000${(p.amount * 100).toFixed(0).padStart(10, "0")}${p.customerId.padEnd(15, " ")}${p.payer.toUpperCase().slice(0, 22).padEnd(22, " ")}\n705${addendaRef ? `RMR*IV*${addendaRef}**${p.amount.toFixed(2)}` : "No structured remittance — addenda blank"}\n822500001000000010000000000${(p.amount * 100).toFixed(0).padStart(10, "0")}\n\n--- Decoded ---\nPayer:        ${p.payer}\nCustomer ID:  ${p.customerId}\nAmount:       ${amountStr}\nReceived:     ${p.receivedDate}\nRemittance:   ${addendaRef || "(none)"}\n`,
+      body: `6225130001230000${p.paymentId.slice(-7)}0000${(p.amount * 100).toFixed(0).padStart(10, "0")}${p.customerId.padEnd(15, " ")}${p.payer.toUpperCase().slice(0, 22).padEnd(22, " ")}\n${lineItems}\n822500001000000010000000000${(p.amount * 100).toFixed(0).padStart(10, "0")}\n\n--- Decoded ---\nPayer:        ${p.payer}\nCustomer ID:  ${p.customerId}\nTotal Amount: ${amountStr}\nReceived:     ${p.receivedDate}\n\n--- Attached Invoices (${refs.length}) ---\n  #    Invoice       Date            Applied\n  ───────────────────────────────────────────\n${decodedLines}\n  ───────────────────────────────────────────\n  Total${" ".repeat(33)}${formatUSD(p.amount).padStart(12, " ")}\n`,
       highlights: [
         { text: p.payer.toUpperCase().slice(0, 22), field: "payer" },
         { text: p.payer, field: "payer" },
