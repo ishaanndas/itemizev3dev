@@ -41,13 +41,20 @@ function MatchRow({ payment }: { payment: Payment }) {
             </div>
           </>
         ) : (
-          <div className="text-xs text-muted-foreground italic">No candidate found</div>
+          <>
+            <div className="text-sm font-medium text-muted-foreground italic">No candidate found</div>
+            <div className="text-[11px] text-muted-foreground/70 truncate">Needs manual research</div>
+          </>
         )}
       </div>
       <div className="col-span-1 flex flex-col items-end">
-        <ConfidenceBadge level={payment.confidence} score={payment.matchScore} />
+        {candidate ? (
+          <ConfidenceBadge level={payment.confidence} score={payment.matchScore} />
+        ) : (
+          <span className="text-xs font-medium text-muted-foreground/70">N/A</span>
+        )}
         {diff !== 0 && candidate && (
-          <span className={`text-[10px] mt-1 tabular-nums ${diff < 0 ? "text-amber-600" : "text-blue-600"}`}>
+          <span className={`text-[10px] mt-1 tabular-nums font-medium ${diff < 0 ? "text-rose-700 dark:text-rose-400" : "text-teal-700 dark:text-teal-400"}`}>
             {diff > 0 ? "+" : ""}{formatUSD(diff)}
           </span>
         )}
