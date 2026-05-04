@@ -52,6 +52,7 @@ const App = () => (
               <Route path="/cash/exceptions" element={<CashExceptions />} />
               <Route path="/cash/posting" element={<CashPostingFiles />} />
               <Route path="/cash/analytics" element={<CashAnalytics />} />
+              <Route path="/style-guide" element={<StyleGuide />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
