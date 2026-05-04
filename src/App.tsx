@@ -21,6 +21,7 @@ import CashMatchDetail from "./pages/CashMatchDetail.tsx";
 import CashExceptions from "./pages/CashExceptions.tsx";
 import CashPostingFiles from "./pages/CashPostingFiles.tsx";
 import CashAnalytics from "./pages/CashAnalytics.tsx";
+import StyleGuide from "./pages/StyleGuide.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
