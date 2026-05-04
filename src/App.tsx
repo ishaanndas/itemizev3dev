@@ -21,6 +21,7 @@ import CashMatchDetail from "./pages/CashMatchDetail.tsx";
 import CashExceptions from "./pages/CashExceptions.tsx";
 import CashPostingFiles from "./pages/CashPostingFiles.tsx";
 import CashAnalytics from "./pages/CashAnalytics.tsx";
+import StyleGuide from "./pages/StyleGuide.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -51,6 +52,7 @@ const App = () => (
               <Route path="/cash/exceptions" element={<CashExceptions />} />
               <Route path="/cash/posting" element={<CashPostingFiles />} />
               <Route path="/cash/analytics" element={<CashAnalytics />} />
+              <Route path="/style-guide" element={<StyleGuide />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
