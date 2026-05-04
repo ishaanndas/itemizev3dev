@@ -28,6 +28,7 @@ import {
   ScrollText,
   ShieldAlert,
   Wallet,
+  Palette,
   type LucideIcon,
 } from "lucide-react";
 import { useState } from "react";
