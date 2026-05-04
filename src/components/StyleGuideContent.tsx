@@ -1,8 +1,8 @@
 import { useState } from "react";
 import {
-  Palette, Type, Layout, Square, Table as TableIcon, BarChart3, ChevronRight,
-  Home, Check, X, AlertTriangle, Info, Search, Upload, Bell, Settings,
-  TrendingUp, FileText, Banknote, MoreHorizontal, Edit, Trash2, Eye,
+  Palette, Type, Layout, Square, Table as TableIcon, BarChart3,
+  Check, X, AlertTriangle, Info, Search, Upload,
+  FileText, Banknote, MoreHorizontal, Edit, Trash2,
 } from "lucide-react";
 import TopBar from "./TopBar";
 import { Button } from "./ui/button";
