@@ -22,7 +22,7 @@ import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { Separator } from "./ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
-import { Breadcrumb, BrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator, BreadcrumbList } from "./ui/breadcrumb";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator, BreadcrumbList } from "./ui/breadcrumb";
 import { ConfidenceBadge } from "./cash/confidence";
 
 // ----- Color tokens -----
