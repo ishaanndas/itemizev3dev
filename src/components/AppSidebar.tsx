@@ -67,7 +67,7 @@ const apNavigation: NavGroup[] = [
     items: [
       { name: "My Tasks", icon: CheckCircle, count: 4, href: "/my-tasks" },
       { name: "Pending Review", icon: Clock, count: 12, href: "/pending-review" },
-      { name: "Returned", icon: AlertCircle, count: 2 },
+      { name: "Returned", icon: AlertCircle, count: 2, href: "/returned" },
     ],
   },
   {
