@@ -8,6 +8,7 @@ import { ProductProvider } from "@/contexts/ProductContext";
 import Index from "./pages/Index.tsx";
 import Documents from "./pages/Documents.tsx";
 import PendingReview from "./pages/PendingReview.tsx";
+import Returned from "./pages/Returned.tsx";
 import MyTasks from "./pages/MyTasks.tsx";
 import Analytics from "./pages/Analytics.tsx";
 import DocumentDetail from "./pages/DocumentDetail.tsx";
@@ -38,6 +39,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/documents" element={<Documents />} />
               <Route path="/pending-review" element={<PendingReview />} />
+              <Route path="/returned" element={<Returned />} />
               <Route path="/my-tasks" element={<MyTasks />} />
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/documents/:id" element={<DocumentDetail />} />
