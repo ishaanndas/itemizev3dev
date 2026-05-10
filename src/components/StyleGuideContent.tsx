@@ -201,6 +201,8 @@ export default function StyleGuideContent() {
                     { t: "One brand color", d: "Primary blue carries brand. Status colors (green/amber/red/teal/rose) carry meaning. Never use brand blue for status." },
                     { t: "Keyboard-first", d: "Every list, table, and form is navigable by keyboard. ⌘K opens the global palette from anywhere." },
                     { t: "Symmetric light & dark", d: "Both themes are designed equally. Never use raw white/black — only semantic tokens." },
+                    { t: "No decorative stat cards", d: "Don't sprinkle KPI/counter cards (\"3 pending\", \"$12k total\") on every page just to fill space. Add stat cards only when the number drives a real decision or action on that page. If the number is already visible in the table or duplicates a sidebar count, leave it out." },
+                    { t: "Tables mirror Excel", d: "Tables are the primary work surface for finance users. Every grid must feel like Excel: inline editing where applicable, drag-to-reorder columns, pin left/right, show/hide, resize, sort, multi-select, keyboard nav. Use AG Grid as the underlying library — never hand-roll a <table> for record lists." },
                   ].map((p) => (
                     <div key={p.t} className="bg-card border border-border rounded-xl p-5">
                       <div className="text-sm font-semibold text-foreground">{p.t}</div>
