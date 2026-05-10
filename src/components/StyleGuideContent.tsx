@@ -649,7 +649,13 @@ export default function StyleGuideContent() {
               </Section>
 
               {/* ---------- TABLES ---------- */}
-              <Section id="tables" title="Tables" description="High-density grids. Use tabular-nums on numeric columns and the DataTable component for full features.">
+              <Section id="tables" title="Tables" description="High-density, Excel-like grids built on AG Grid. The primary work surface for finance users.">
+                <GuidanceBox>
+                  <p><strong className="text-foreground">Library: AG Grid (always).</strong> All record-list tables use the shared <code className="font-mono">DataTable</code> wrapper around AG Grid. Don't introduce TanStack Table, MUI DataGrid, or raw <code className="font-mono">&lt;table&gt;</code> for lists of records — raw tables are only for static reference content (style-guide examples, legend keys).</p>
+                  <p><strong className="text-foreground">Mirror Excel.</strong> Finance users live in spreadsheets. Every grid must support: inline cell editing (where editable), drag-to-reorder columns, pin column left/right, show/hide columns, column resize, multi-column sort, multi-select with shift+click, keyboard navigation (arrows, tab, enter to edit, esc to cancel), and copy/paste of selected ranges.</p>
+                  <p><strong className="text-foreground">Inline editing rule.</strong> Turn editing on wherever users are expected to fix or enrich data (Documents, GL coding, mappings, vendor master). Read-only grids (Pending Review, My Tasks, audit logs) keep editing off but still get every other Excel feature.</p>
+                  <p><strong className="text-foreground">Don't reach for cards.</strong> If the data has shared columns and would scan as a list, it belongs in a grid — not a card layout.</p>
+                </GuidanceBox>
                 <SubSection title="Standard table" guidance="32–36px row height. Header bg-secondary/40, 11px uppercase. Numeric cells right-aligned.">
                   <div className="border border-border rounded-lg overflow-hidden">
                     <table className="w-full text-sm">
