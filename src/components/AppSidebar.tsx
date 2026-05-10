@@ -55,6 +55,17 @@ interface NavGroup {
 
 const apNavigation: NavGroup[] = [
   {
+    label: "Frequently Used",
+    collapsible: true,
+    defaultOpen: true,
+    items: [
+      { name: "Pending Review", icon: Clock, count: 12, href: "/pending-review" },
+      { name: "My Tasks", icon: CheckCircle, count: 4, href: "/my-tasks" },
+      { name: "Documents", icon: FileText, href: "/documents" },
+      { name: "Analytics", icon: BarChart3, href: "/analytics" },
+    ],
+  },
+  {
     label: "Overview",
     items: [
       { name: "Dashboard", icon: LayoutDashboard, href: "/" },
