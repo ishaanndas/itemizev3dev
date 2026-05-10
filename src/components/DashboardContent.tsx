@@ -173,9 +173,8 @@ export default function DashboardContent() {
 
               {/* Pending Review Table */}
               <PendingReviewTable viewAllHref="/pending-review" compact />
-
-
-          
+            </>
+          )}
         </div>
       </div>
     </div>
