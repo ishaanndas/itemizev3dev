@@ -201,6 +201,8 @@ export default function StyleGuideContent() {
                     { t: "One brand color", d: "Primary blue carries brand. Status colors (green/amber/red/teal/rose) carry meaning. Never use brand blue for status." },
                     { t: "Keyboard-first", d: "Every list, table, and form is navigable by keyboard. ⌘K opens the global palette from anywhere." },
                     { t: "Symmetric light & dark", d: "Both themes are designed equally. Never use raw white/black — only semantic tokens." },
+                    { t: "No decorative stat cards", d: "Don't sprinkle KPI/counter cards (\"3 pending\", \"$12k total\") on every page just to fill space. Add stat cards only when the number drives a real decision or action on that page. If the number is already visible in the table or duplicates a sidebar count, leave it out." },
+                    { t: "Tables mirror Excel", d: "Tables are the primary work surface for finance users. Every grid must feel like Excel: inline editing where applicable, drag-to-reorder columns, pin left/right, show/hide, resize, sort, multi-select, keyboard nav. Use AG Grid as the underlying library — never hand-roll a <table> for record lists." },
                   ].map((p) => (
                     <div key={p.t} className="bg-card border border-border rounded-xl p-5">
                       <div className="text-sm font-semibold text-foreground">{p.t}</div>
@@ -647,7 +649,13 @@ export default function StyleGuideContent() {
               </Section>
 
               {/* ---------- TABLES ---------- */}
-              <Section id="tables" title="Tables" description="High-density grids. Use tabular-nums on numeric columns and the DataTable component for full features.">
+              <Section id="tables" title="Tables" description="High-density, Excel-like grids built on AG Grid. The primary work surface for finance users.">
+                <GuidanceBox>
+                  <p><strong className="text-foreground">Library: AG Grid (always).</strong> All record-list tables use the shared <code className="font-mono">DataTable</code> wrapper around AG Grid. Don't introduce TanStack Table, MUI DataGrid, or raw <code className="font-mono">&lt;table&gt;</code> for lists of records — raw tables are only for static reference content (style-guide examples, legend keys).</p>
+                  <p><strong className="text-foreground">Mirror Excel.</strong> Finance users live in spreadsheets. Every grid must support: inline cell editing (where editable), drag-to-reorder columns, pin column left/right, show/hide columns, column resize, multi-column sort, multi-select with shift+click, keyboard navigation (arrows, tab, enter to edit, esc to cancel), and copy/paste of selected ranges.</p>
+                  <p><strong className="text-foreground">Inline editing rule.</strong> Turn editing on wherever users are expected to fix or enrich data (Documents, GL coding, mappings, vendor master). Read-only grids (Pending Review, My Tasks, audit logs) keep editing off but still get every other Excel feature.</p>
+                  <p><strong className="text-foreground">Don't reach for cards.</strong> If the data has shared columns and would scan as a list, it belongs in a grid — not a card layout.</p>
+                </GuidanceBox>
                 <SubSection title="Standard table" guidance="32–36px row height. Header bg-secondary/40, 11px uppercase. Numeric cells right-aligned.">
                   <div className="border border-border rounded-lg overflow-hidden">
                     <table className="w-full text-sm">
@@ -706,8 +714,8 @@ export default function StyleGuideContent() {
                     <li>Inline cell editing is <strong className="text-foreground">only enabled in Documents</strong> — pass <code className="font-mono">editable:true</code> on the column AND <code className="font-mono">onCellSave</code> prop</li>
                   </ul>
                   <DoDont
-                    dos={["Use DataTable for any list of records", "Right-align numeric columns + tabular-nums", "Show selection count + bulk actions in the toolbar"]}
-                    donts={["Add a built-in <table> when DataTable already covers it", "Use card grids for tabular data (lose alignment & scanability)", "Show > 1 action button per row — use a dropdown"]}
+                    dos={["Use the DataTable (AG Grid) wrapper for any list of records", "Right-align numeric columns + tabular-nums", "Enable inline editing on grids where users fix/enrich data", "Persist column order, pinning, width, and visibility per user"]}
+                    donts={["Hand-roll a <table> or swap in another grid library", "Use card grids for tabular data (lose alignment & scanability)", "Show > 1 action button per row — use a dropdown", "Disable Excel features (reorder, pin, resize, sort) just because a grid is read-only"]}
                   />
                 </SubSection>
               </Section>
@@ -772,6 +780,14 @@ export default function StyleGuideContent() {
                       </div>
                     ))}
                   </div>
+                  <GuidanceBox>
+                    <p><strong className="text-foreground">When to use stat cards.</strong> Only when the number drives a decision or action on this page — e.g. Dashboard KPIs, queue health on Matching, AR aging totals. Pages whose primary job is a table or detail view should usually have <strong>zero</strong> stat cards.</p>
+                    <p><strong className="text-foreground">Don't decorate.</strong> A counter that just restates "rows in the table below" or duplicates a sidebar badge is noise. If removing it costs the user nothing, remove it.</p>
+                  </GuidanceBox>
+                  <DoDont
+                    dos={["Show stat cards on dashboards, overviews, and queues where the metric drives action", "Pair each metric with a sub-line giving context ($ value, delta, owner)", "Cap at 4 cards per row; group related metrics together"]}
+                    donts={["Add stat cards to every page by default", "Restate the row count of the table directly below", "Duplicate counts that already appear in the sidebar or breadcrumbs", "Use stat cards as page filler when the page is just a list"]}
+                  />
                 </SubSection>
 
                 <SubSection title="Generic card">
