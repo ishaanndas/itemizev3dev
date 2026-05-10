@@ -4,7 +4,6 @@ import {
   Clock,
   AlertCircle,
   Inbox,
-  Star,
   LayoutDashboard,
   FileText,
   Link2,
