@@ -780,6 +780,14 @@ export default function StyleGuideContent() {
                       </div>
                     ))}
                   </div>
+                  <GuidanceBox>
+                    <p><strong className="text-foreground">When to use stat cards.</strong> Only when the number drives a decision or action on this page — e.g. Dashboard KPIs, queue health on Matching, AR aging totals. Pages whose primary job is a table or detail view should usually have <strong>zero</strong> stat cards.</p>
+                    <p><strong className="text-foreground">Don't decorate.</strong> A counter that just restates "rows in the table below" or duplicates a sidebar badge is noise. If removing it costs the user nothing, remove it.</p>
+                  </GuidanceBox>
+                  <DoDont
+                    dos={["Show stat cards on dashboards, overviews, and queues where the metric drives action", "Pair each metric with a sub-line giving context ($ value, delta, owner)", "Cap at 4 cards per row; group related metrics together"]}
+                    donts={["Add stat cards to every page by default", "Restate the row count of the table directly below", "Duplicate counts that already appear in the sidebar or breadcrumbs", "Use stat cards as page filler when the page is just a list"]}
+                  />
                 </SubSection>
 
                 <SubSection title="Generic card">
