@@ -174,30 +174,6 @@ export default function DashboardContent() {
               {/* Pending Review Table */}
               <PendingReviewTable viewAllHref="/pending-review" compact />
 
-              {/* Frequently Used */}
-              <div className="stat-card mb-6">
-                <h3 className="text-sm font-semibold text-foreground mb-4">Frequently Used</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {[
-                    { icon: FileText, label: "New Invoice", desc: "Create manually" },
-                    { icon: Upload, label: "Upload Docs", desc: "Batch upload" },
-                    { icon: Users2, label: "Add Vendor", desc: "New vendor record" },
-                    { icon: Activity, label: "Run Report", desc: "Generate report" },
-                  ].map((item) => (
-                    <button key={item.label} className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-secondary transition-colors text-left">
-                      <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                        <item.icon className="h-4 w-4 text-primary" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-medium text-foreground">{item.label}</div>
-                        <div className="text-[11px] text-muted-foreground">{item.desc}</div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
 
           
         </div>
