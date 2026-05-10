@@ -1,11 +1,14 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import {
   Palette, Type, Layout, Square, Table as TableIcon, BarChart3,
   Check, X, AlertTriangle, Info, Search, Upload,
   FileText, Banknote, MoreHorizontal, Edit, Trash2,
   Sparkles, Accessibility, MessageSquare, Layers, Calendar as CalendarIcon,
   Filter, Loader2, Bell, Hash, Command, ChevronRight,
+  Eye, Download, Flag, FileX, Pin, GripVertical, ArrowUpDown, Columns3,
 } from "lucide-react";
+import { DataTable, DataTableColumn } from "./data-table/DataTable";
+import RowActions from "./data-table/RowActions";
 import TopBar from "./TopBar";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -145,6 +148,141 @@ const NAV = [
   { id: "accessibility", label: "Accessibility", icon: Accessibility },
   { id: "patterns", label: "App Patterns", icon: FileText },
 ];
+
+interface DemoTask {
+  status: string;
+  vendor: string;
+  docNumber: string;
+  total: string;
+  variance: string;
+  varianceDir: "neg" | "pos" | "flat";
+  workflow: string;
+  submitted: string;
+  daysPending: number;
+}
+
+const DEMO_ROWS: DemoTask[] = [
+  { status: "Pending", vendor: "Apple", docNumber: "AF32656303", total: "$1,402.29", variance: "$0.00", varianceDir: "flat", workflow: "Luis Test (Step 1)", submitted: "Apr 1, 2026", daysPending: 17 },
+  { status: "Pending", vendor: "Capitol Building Supply", docNumber: "128267-00", total: "$1,544.10", variance: "−$120.00", varianceDir: "neg", workflow: "AP Standard (Step 2)", submitted: "Apr 4, 2026", daysPending: 14 },
+  { status: "In Review", vendor: "Wilson Sonsini Goodrich", docNumber: "2362888", total: "$277.20", variance: "$0.00", varianceDir: "flat", workflow: "AP Standard (Step 1)", submitted: "Apr 8, 2026", daysPending: 10 },
+  { status: "Pending", vendor: "TechPro Inc", docNumber: "PO-2024-0123", total: "$11,600.69", variance: "+$50.00", varianceDir: "pos", workflow: "PO Approval (Step 3)", submitted: "Apr 10, 2026", daysPending: 8 },
+  { status: "Approved", vendor: "Globex Industries", docNumber: "GX-99812", total: "$8,120.00", variance: "$0.00", varianceDir: "flat", workflow: "AP Standard (Step 2)", submitted: "Apr 12, 2026", daysPending: 6 },
+];
+
+function StyleGuideDataTableDemo() {
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+
+  const toggleRow = useCallback((i: number) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(i)) next.delete(i);
+      else next.add(i);
+      return next;
+    });
+  }, []);
+
+  const toggleAll = useCallback(() => {
+    if (selected.size === DEMO_ROWS.length) setSelected(new Set());
+    else setSelected(new Set(DEMO_ROWS.map((_, i) => i)));
+  }, [selected.size]);
+
+  const columns: DataTableColumn<DemoTask>[] = [
+    {
+      key: "status",
+      label: "Status",
+      accessor: (r) => r.status,
+      render: (r) => {
+        const map: Record<string, string> = {
+          Pending: "bg-amber-50 text-amber-700 border-amber-200",
+          "In Review": "bg-blue-50 text-blue-700 border-blue-200",
+          Approved: "bg-emerald-50 text-emerald-700 border-emerald-200",
+        };
+        return <span className={`text-[11px] font-medium px-2.5 py-1 rounded-full border ${map[r.status] ?? "bg-secondary/60 text-foreground border-border"}`}>{r.status}</span>;
+      },
+    },
+    {
+      key: "vendor",
+      label: "Vendor",
+      accessor: (r) => r.vendor,
+      render: (r) => <span className="font-medium text-foreground">{r.vendor}</span>,
+    },
+    { key: "docNumber", label: "Document #", accessor: (r) => r.docNumber },
+    {
+      key: "total",
+      label: "Total",
+      accessor: (r) => r.total,
+      align: "right",
+      render: (r) => <span className="font-medium tabular-nums text-foreground">{r.total}</span>,
+    },
+    {
+      key: "variance",
+      label: "Variance",
+      accessor: (r) => r.variance,
+      align: "right",
+      render: (r) => (
+        <span className={`tabular-nums font-medium ${r.varianceDir === "neg" ? "text-rose-700" : r.varianceDir === "pos" ? "text-teal-700" : "text-muted-foreground"}`}>
+          {r.variance}
+        </span>
+      ),
+    },
+    {
+      key: "workflow",
+      label: "Workflow",
+      accessor: (r) => r.workflow,
+      render: (r) => (
+        <span className="text-[11px] font-medium px-2.5 py-1 rounded-full border bg-secondary/60 text-foreground border-border">
+          {r.workflow}
+        </span>
+      ),
+    },
+    { key: "submitted", label: "Submitted", accessor: (r) => r.submitted },
+    {
+      key: "daysPending",
+      label: "Days Pending",
+      accessor: (r) => `${r.daysPending}d`,
+      align: "right",
+      render: (r) => (
+        <span className={`tabular-nums font-medium ${r.daysPending > 14 ? "text-destructive" : r.daysPending > 7 ? "text-amber-600" : "text-foreground"}`}>
+          {r.daysPending}d
+        </span>
+      ),
+    },
+  ];
+
+  return (
+    <DataTable<DemoTask>
+      storageKey="style-guide-demo"
+      columns={columns}
+      data={DEMO_ROWS}
+      rowKey={(r, i) => `${r.docNumber}-${i}`}
+      selectable
+      searchable
+      searchPlaceholder="Search demo rows…"
+      selectedRows={selected}
+      onToggleRow={toggleRow}
+      onToggleAll={toggleAll}
+      toolbarLeft={
+        selected.size > 0 ? (
+          <button className="text-xs font-medium px-3.5 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+            Approve {selected.size} task{selected.size > 1 ? "s" : ""}
+          </button>
+        ) : null
+      }
+      renderRowActions={(r) => (
+        <RowActions
+          review={{ label: "Review", onClick: () => {}, icon: <Eye className="h-3.5 w-3.5" /> }}
+          primary={{ label: "Approve", onClick: () => {} }}
+          more={[
+            { label: "Reassign", onClick: () => {} },
+            { label: "Flag for review", onClick: () => {}, icon: <Flag className="h-3.5 w-3.5" /> },
+            { label: "Download", onClick: () => {}, icon: <Download className="h-3.5 w-3.5" /> },
+            { label: "Reject", onClick: () => {}, icon: <FileX className="h-3.5 w-3.5" />, destructive: true },
+          ]}
+        />
+      )}
+    />
+  );
+}
 
 export default function StyleGuideContent() {
   const [tab, setTab] = useState("overview");
@@ -656,44 +794,28 @@ export default function StyleGuideContent() {
                   <p><strong className="text-foreground">Inline editing rule.</strong> Turn editing on wherever users are expected to fix or enrich data (Documents, GL coding, mappings, vendor master). Read-only grids (Pending Review, My Tasks, audit logs) keep editing off but still get every other Excel feature.</p>
                   <p><strong className="text-foreground">Don't reach for cards.</strong> If the data has shared columns and would scan as a list, it belongs in a grid — not a card layout.</p>
                 </GuidanceBox>
-                <SubSection title="Standard table" guidance="32–36px row height. Header bg-secondary/40, 11px uppercase. Numeric cells right-aligned.">
-                  <div className="border border-border rounded-lg overflow-hidden">
-                    <table className="w-full text-sm">
-                      <thead className="bg-secondary/40 border-b border-border">
-                        <tr className="text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                          <th className="px-4 py-2.5 w-8"><Checkbox /></th>
-                          <th className="px-4 py-2.5">Payment</th>
-                          <th className="px-4 py-2.5">Payer</th>
-                          <th className="px-4 py-2.5 text-right">Amount</th>
-                          <th className="px-4 py-2.5">Match</th>
-                          <th className="px-4 py-2.5 w-10"></th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {[
-                          { id: "PAY-5012", payer: "Acme Corp", amt: "$24,500.00", lvl: "green" as const, score: 0.97 },
-                          { id: "PAY-5013", payer: "Globex Industries", amt: "$8,120.00", lvl: "yellow" as const, score: 0.78 },
-                          { id: "PAY-5014", payer: "Initech LLC", amt: "$3,200.00", lvl: "red" as const, score: 0.42 },
-                        ].map((r) => (
-                          <tr key={r.id} className="border-b border-border last:border-0 hover:bg-secondary/30">
-                            <td className="px-4 py-2.5"><Checkbox /></td>
-                            <td className="px-4 py-2.5 font-medium text-foreground">{r.id}</td>
-                            <td className="px-4 py-2.5 text-foreground/80">{r.payer}</td>
-                            <td className="px-4 py-2.5 text-right tabular-nums text-foreground">{r.amt}</td>
-                            <td className="px-4 py-2.5"><ConfidenceBadge level={r.lvl} score={r.score} /></td>
-                            <td className="px-4 py-2.5 text-right"><Button variant="ghost" size="icon" className="h-7 w-7"><MoreHorizontal /></Button></td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                <SubSection title="Live DataTable (the real component)" guidance="Identical to the grid used on My Tasks & Pending Review. Try column drag, pin, hide, sort, search, multi-select.">
+                  <StyleGuideDataTableDemo />
                   <GuidanceBox>
-                    <p><strong className="text-foreground">Anatomy:</strong> sticky checkbox left · primary identifier (medium weight) · secondary fields (foreground/80) · numerics right-aligned tabular · status badge · sticky actions right.</p>
+                    <p><strong className="text-foreground">Anatomy:</strong> sticky checkbox left · primary identifier (medium weight) · secondary fields (foreground/80) · numerics right-aligned <code className="font-mono">tabular-nums</code> · status pill · sticky Actions right.</p>
                     <p><strong className="text-foreground">Variance colors:</strong> negative deltas use <code className="font-mono text-rose-700">text-rose-700</code>, positive deltas use <code className="font-mono text-teal-700">text-teal-700</code> — never destructive/emerald (those carry status, not direction).</p>
+                    <p><strong className="text-foreground">Row click:</strong> opens the detail view. Action buttons inside the row must call <code className="font-mono">e.stopPropagation()</code> (the shared <code className="font-mono">RowActions</code> handles this automatically).</p>
                   </GuidanceBox>
                 </SubSection>
 
-                <SubSection title="Filter & toolbar" guidance="Search left, filters middle, view-controls right. Bulk actions appear in place of filters when rows are selected.">
+                <SubSection title="Bulk-action toolbar" guidance="When 1+ rows are selected, replace filters with bulk actions. Selection count is the lead label.">
+                  <div className="flex items-center gap-2 p-2 border border-border rounded-lg bg-card">
+                    <div className="text-xs font-medium text-foreground px-2">3 selected</div>
+                    <div className="h-5 w-px bg-border" />
+                    <Button size="sm" className="h-8">Approve 3</Button>
+                    <Button size="sm" variant="outline" className="h-8">Assign…</Button>
+                    <Button size="sm" variant="outline" className="h-8"><Download />Export</Button>
+                    <div className="flex-1" />
+                    <Button size="sm" variant="ghost" className="h-8 text-destructive hover:text-destructive"><Trash2 />Delete</Button>
+                  </div>
+                </SubSection>
+
+                <SubSection title="Filter & toolbar (no selection)" guidance="Search left · saved filters middle · view-controls right. Always in this order.">
                   <div className="flex items-center gap-2 p-2 border border-border rounded-lg bg-card">
                     <div className="relative flex-1 max-w-xs">
                       <Search className="h-3.5 w-3.5 text-muted-foreground absolute left-2.5 top-1/2 -translate-y-1/2" />
@@ -702,21 +824,105 @@ export default function StyleGuideContent() {
                     <Button variant="outline" size="sm"><Filter />Status: All</Button>
                     <Button variant="outline" size="sm"><CalendarIcon />Last 30 days</Button>
                     <div className="flex-1" />
-                    <Button variant="ghost" size="sm">Columns</Button>
+                    <Button variant="ghost" size="sm"><Columns3 />Columns</Button>
                   </div>
                 </SubSection>
 
-                <SubSection title="DataTable features">
-                  <ul className="text-xs text-muted-foreground space-y-1 list-disc pl-4">
-                    <li>Drag to reorder columns (header drag + Columns popover)</li>
-                    <li>Pin column to start or end</li>
-                    <li>Show / hide columns; persisted in localStorage as <code className="font-mono">dt:&lt;storageKey&gt;</code></li>
-                    <li>Inline cell editing is <strong className="text-foreground">only enabled in Documents</strong> — pass <code className="font-mono">editable:true</code> on the column AND <code className="font-mono">onCellSave</code> prop</li>
-                  </ul>
+                <SubSection title="Column header anatomy" guidance="Drag handle on hover · label · sort indicator · pin/hide menu on right-click or via Columns popover.">
+                  <div className="border border-border rounded-lg overflow-hidden bg-card">
+                    <div className="flex items-center gap-2 bg-secondary/40 border-b border-border px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      <GripVertical className="h-3.5 w-3.5 opacity-40" />
+                      <span>Vendor</span>
+                      <ArrowUpDown className="h-3 w-3 opacity-50" />
+                      <div className="flex-1" />
+                      <Pin className="h-3 w-3 opacity-40" />
+                    </div>
+                    <div className="px-3 py-2 text-sm text-foreground border-b border-border">Acme Corp</div>
+                    <div className="px-3 py-2 text-sm text-foreground">Globex Industries</div>
+                  </div>
+                </SubSection>
+
+                <SubSection title="Row actions">
+                  <div className="border border-border rounded-lg p-4 bg-card flex items-center justify-between gap-4">
+                    <span className="text-sm text-foreground">PAY-5012 · Acme Corp · <span className="tabular-nums">$24,500.00</span></span>
+                    <RowActions
+                      review={{ label: "Review", onClick: () => {} }}
+                      primary={{ label: "Approve", onClick: () => {} }}
+                      more={[
+                        { label: "Reassign", onClick: () => {} },
+                        { label: "Download", onClick: () => {}, icon: <Download className="h-3.5 w-3.5" /> },
+                        { label: "Reject", onClick: () => {}, icon: <FileX className="h-3.5 w-3.5" />, destructive: true },
+                      ]}
+                    />
+                  </div>
+                  <GuidanceBox>
+                    <p>Always use the shared <code className="font-mono">&lt;RowActions /&gt;</code> component. Pattern: <strong>at most one</strong> primary icon + Review eye icon + overflow menu. Never stack 4 buttons in a row — push secondary actions into the menu.</p>
+                  </GuidanceBox>
+                </SubSection>
+
+                <SubSection title="Excel feature checklist" guidance="Every grid in the app must support all of these — even read-only ones.">
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    {[
+                      "Drag column headers to reorder",
+                      "Pin column to start or end",
+                      "Show / hide columns (Columns popover)",
+                      "Resize columns (drag right edge)",
+                      "Multi-column sort (shift+click headers)",
+                      "Multi-select rows (shift+click, ⌘+click)",
+                      "Keyboard nav (arrows, tab, enter, esc)",
+                      "Copy selected range (⌘C / Ctrl+C)",
+                      "Inline cell editing (Documents only)",
+                      "Per-user persistence in localStorage",
+                      "Sticky header on vertical scroll",
+                      "Sticky checkbox + Actions columns",
+                    ].map((f) => (
+                      <div key={f} className="flex items-center gap-2 px-3 py-2 rounded-md border border-border bg-background/50">
+                        <Check className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                        <span className="text-foreground/80">{f}</span>
+                      </div>
+                    ))}
+                  </div>
                   <DoDont
-                    dos={["Use the DataTable (AG Grid) wrapper for any list of records", "Right-align numeric columns + tabular-nums", "Enable inline editing on grids where users fix/enrich data", "Persist column order, pinning, width, and visibility per user"]}
-                    donts={["Hand-roll a <table> or swap in another grid library", "Use card grids for tabular data (lose alignment & scanability)", "Show > 1 action button per row — use a dropdown", "Disable Excel features (reorder, pin, resize, sort) just because a grid is read-only"]}
+                    dos={["Use the shared DataTable wrapper for any list of records", "Right-align numeric columns + tabular-nums", "Enable inline editing on grids where users fix/enrich data (Documents)", "Persist column order, pinning, width, and visibility per user via dt:<storageKey>"]}
+                    donts={["Hand-roll a <table> or swap in another grid library", "Use card grids for tabular data (lose alignment & scanability)", "Show > 1 primary action per row — push the rest into the overflow menu", "Disable Excel features (reorder, pin, resize, sort) just because a grid is read-only"]}
                   />
+                </SubSection>
+
+                <SubSection title="Status pills used in tables" guidance="Use the same pill set everywhere — never invent a new color for a one-off status.">
+                  <div className="flex flex-wrap gap-2">
+                    <span className="text-[11px] font-medium px-2.5 py-1 rounded-full border bg-amber-50 text-amber-700 border-amber-200">Pending</span>
+                    <span className="text-[11px] font-medium px-2.5 py-1 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200">Approved</span>
+                    <span className="text-[11px] font-medium px-2.5 py-1 rounded-full border bg-destructive/10 text-destructive border-destructive/30">Rejected</span>
+                    <span className="text-[11px] font-medium px-2.5 py-1 rounded-full border bg-blue-50 text-blue-700 border-blue-200">In Review</span>
+                    <span className="text-[11px] font-medium px-2.5 py-1 rounded-full border bg-violet-50 text-violet-700 border-violet-200">Posted</span>
+                    <span className="text-[11px] font-medium px-2.5 py-1 rounded-full border bg-secondary/60 text-foreground border-border">Draft</span>
+                    <span className="text-[11px] font-medium px-2.5 py-1 rounded-full border bg-orange-50 text-orange-700 border-orange-200">Returned</span>
+                  </div>
+                </SubSection>
+
+                <SubSection title="Confidence badges" guidance="Use the shared ConfidenceBadge — never build your own. Levels map to score bands: ≥0.9 green, 0.6–0.9 yellow, &lt;0.6 red.">
+                  <div className="flex flex-wrap gap-3 items-center">
+                    <ConfidenceBadge level="green" score={0.97} />
+                    <ConfidenceBadge level="yellow" score={0.78} />
+                    <ConfidenceBadge level="red" score={0.42} />
+                  </div>
+                </SubSection>
+
+                <SubSection title="Variance / delta cells" guidance="Direction is conveyed by sign + color. Never strip the sign — '+' and '−' are part of the value.">
+                  <div className="grid grid-cols-3 gap-3 text-sm">
+                    <div className="border border-border rounded-md p-3 bg-card">
+                      <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Short pay</div>
+                      <div className="tabular-nums font-medium text-rose-700">−$4,500.00</div>
+                    </div>
+                    <div className="border border-border rounded-md p-3 bg-card">
+                      <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Over pay</div>
+                      <div className="tabular-nums font-medium text-teal-700">+$1,250.00</div>
+                    </div>
+                    <div className="border border-border rounded-md p-3 bg-card">
+                      <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Match</div>
+                      <div className="tabular-nums font-medium text-muted-foreground">$0.00</div>
+                    </div>
+                  </div>
                 </SubSection>
               </Section>
 
