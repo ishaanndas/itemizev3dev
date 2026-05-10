@@ -714,8 +714,8 @@ export default function StyleGuideContent() {
                     <li>Inline cell editing is <strong className="text-foreground">only enabled in Documents</strong> — pass <code className="font-mono">editable:true</code> on the column AND <code className="font-mono">onCellSave</code> prop</li>
                   </ul>
                   <DoDont
-                    dos={["Use DataTable for any list of records", "Right-align numeric columns + tabular-nums", "Show selection count + bulk actions in the toolbar"]}
-                    donts={["Add a built-in <table> when DataTable already covers it", "Use card grids for tabular data (lose alignment & scanability)", "Show > 1 action button per row — use a dropdown"]}
+                    dos={["Use the DataTable (AG Grid) wrapper for any list of records", "Right-align numeric columns + tabular-nums", "Enable inline editing on grids where users fix/enrich data", "Persist column order, pinning, width, and visibility per user"]}
+                    donts={["Hand-roll a <table> or swap in another grid library", "Use card grids for tabular data (lose alignment & scanability)", "Show > 1 action button per row — use a dropdown", "Disable Excel features (reorder, pin, resize, sort) just because a grid is read-only"]}
                   />
                 </SubSection>
               </Section>
