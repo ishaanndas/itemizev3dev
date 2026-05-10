@@ -149,6 +149,141 @@ const NAV = [
   { id: "patterns", label: "App Patterns", icon: FileText },
 ];
 
+interface DemoTask {
+  status: string;
+  vendor: string;
+  docNumber: string;
+  total: string;
+  variance: string;
+  varianceDir: "neg" | "pos" | "flat";
+  workflow: string;
+  submitted: string;
+  daysPending: number;
+}
+
+const DEMO_ROWS: DemoTask[] = [
+  { status: "Pending", vendor: "Apple", docNumber: "AF32656303", total: "$1,402.29", variance: "$0.00", varianceDir: "flat", workflow: "Luis Test (Step 1)", submitted: "Apr 1, 2026", daysPending: 17 },
+  { status: "Pending", vendor: "Capitol Building Supply", docNumber: "128267-00", total: "$1,544.10", variance: "−$120.00", varianceDir: "neg", workflow: "AP Standard (Step 2)", submitted: "Apr 4, 2026", daysPending: 14 },
+  { status: "In Review", vendor: "Wilson Sonsini Goodrich", docNumber: "2362888", total: "$277.20", variance: "$0.00", varianceDir: "flat", workflow: "AP Standard (Step 1)", submitted: "Apr 8, 2026", daysPending: 10 },
+  { status: "Pending", vendor: "TechPro Inc", docNumber: "PO-2024-0123", total: "$11,600.69", variance: "+$50.00", varianceDir: "pos", workflow: "PO Approval (Step 3)", submitted: "Apr 10, 2026", daysPending: 8 },
+  { status: "Approved", vendor: "Globex Industries", docNumber: "GX-99812", total: "$8,120.00", variance: "$0.00", varianceDir: "flat", workflow: "AP Standard (Step 2)", submitted: "Apr 12, 2026", daysPending: 6 },
+];
+
+function StyleGuideDataTableDemo() {
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+
+  const toggleRow = useCallback((i: number) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(i)) next.delete(i);
+      else next.add(i);
+      return next;
+    });
+  }, []);
+
+  const toggleAll = useCallback(() => {
+    if (selected.size === DEMO_ROWS.length) setSelected(new Set());
+    else setSelected(new Set(DEMO_ROWS.map((_, i) => i)));
+  }, [selected.size]);
+
+  const columns: DataTableColumn<DemoTask>[] = [
+    {
+      key: "status",
+      label: "Status",
+      accessor: (r) => r.status,
+      render: (r) => {
+        const map: Record<string, string> = {
+          Pending: "bg-amber-50 text-amber-700 border-amber-200",
+          "In Review": "bg-blue-50 text-blue-700 border-blue-200",
+          Approved: "bg-emerald-50 text-emerald-700 border-emerald-200",
+        };
+        return <span className={`text-[11px] font-medium px-2.5 py-1 rounded-full border ${map[r.status] ?? "bg-secondary/60 text-foreground border-border"}`}>{r.status}</span>;
+      },
+    },
+    {
+      key: "vendor",
+      label: "Vendor",
+      accessor: (r) => r.vendor,
+      render: (r) => <span className="font-medium text-foreground">{r.vendor}</span>,
+    },
+    { key: "docNumber", label: "Document #", accessor: (r) => r.docNumber },
+    {
+      key: "total",
+      label: "Total",
+      accessor: (r) => r.total,
+      align: "right",
+      render: (r) => <span className="font-medium tabular-nums text-foreground">{r.total}</span>,
+    },
+    {
+      key: "variance",
+      label: "Variance",
+      accessor: (r) => r.variance,
+      align: "right",
+      render: (r) => (
+        <span className={`tabular-nums font-medium ${r.varianceDir === "neg" ? "text-rose-700" : r.varianceDir === "pos" ? "text-teal-700" : "text-muted-foreground"}`}>
+          {r.variance}
+        </span>
+      ),
+    },
+    {
+      key: "workflow",
+      label: "Workflow",
+      accessor: (r) => r.workflow,
+      render: (r) => (
+        <span className="text-[11px] font-medium px-2.5 py-1 rounded-full border bg-secondary/60 text-foreground border-border">
+          {r.workflow}
+        </span>
+      ),
+    },
+    { key: "submitted", label: "Submitted", accessor: (r) => r.submitted },
+    {
+      key: "daysPending",
+      label: "Days Pending",
+      accessor: (r) => `${r.daysPending}d`,
+      align: "right",
+      render: (r) => (
+        <span className={`tabular-nums font-medium ${r.daysPending > 14 ? "text-destructive" : r.daysPending > 7 ? "text-amber-600" : "text-foreground"}`}>
+          {r.daysPending}d
+        </span>
+      ),
+    },
+  ];
+
+  return (
+    <DataTable<DemoTask>
+      storageKey="style-guide-demo"
+      columns={columns}
+      data={DEMO_ROWS}
+      rowKey={(r, i) => `${r.docNumber}-${i}`}
+      selectable
+      searchable
+      searchPlaceholder="Search demo rows…"
+      selectedRows={selected}
+      onToggleRow={toggleRow}
+      onToggleAll={toggleAll}
+      toolbarLeft={
+        selected.size > 0 ? (
+          <button className="text-xs font-medium px-3.5 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+            Approve {selected.size} task{selected.size > 1 ? "s" : ""}
+          </button>
+        ) : null
+      }
+      renderRowActions={(r) => (
+        <RowActions
+          review={{ label: "Review", onClick: () => {}, icon: <Eye className="h-3.5 w-3.5" /> }}
+          primary={{ label: "Approve", onClick: () => {} }}
+          more={[
+            { label: "Reassign", onClick: () => {} },
+            { label: "Flag for review", onClick: () => {}, icon: <Flag className="h-3.5 w-3.5" /> },
+            { label: "Download", onClick: () => {}, icon: <Download className="h-3.5 w-3.5" /> },
+            { label: "Reject", onClick: () => {}, icon: <FileX className="h-3.5 w-3.5" />, destructive: true },
+          ]}
+        />
+      )}
+    />
+  );
+}
+
 export default function StyleGuideContent() {
   const [tab, setTab] = useState("overview");
 
