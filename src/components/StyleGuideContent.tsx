@@ -328,7 +328,8 @@ export default function StyleGuideContent() {
               ))}
             </nav>
 
-            <div>
+            <div className="min-w-0">
+
               {/* ---------- PRINCIPLES ---------- */}
               <Section id="principles" title="Design Principles" description="The five rules every screen must respect.">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
