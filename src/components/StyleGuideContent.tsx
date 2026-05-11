@@ -313,9 +313,9 @@ export default function StyleGuideContent() {
             </div>
           </div>
 
-          <div className="grid grid-cols-[200px_1fr] gap-8">
+          <div className="grid grid-cols-[200px_minmax(0,1fr)] gap-8">
             {/* Sticky in-page nav */}
-            <nav className="sticky top-4 self-start space-y-0.5 max-h-[calc(100vh-2rem)] overflow-y-auto pr-2">
+            <nav className="sticky top-4 self-start space-y-0.5 max-h-[calc(100vh-2rem)] overflow-y-auto pr-2 min-w-0">
               {NAV.map((n) => (
                 <a
                   key={n.id}
@@ -328,7 +328,8 @@ export default function StyleGuideContent() {
               ))}
             </nav>
 
-            <div>
+            <div className="min-w-0">
+
               {/* ---------- PRINCIPLES ---------- */}
               <Section id="principles" title="Design Principles" description="The five rules every screen must respect.">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
