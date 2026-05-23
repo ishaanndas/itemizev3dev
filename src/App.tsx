@@ -41,6 +41,7 @@ const App = () => (
               <Route path="/documents" element={<Documents />} />
               <Route path="/pending-review" element={<PendingReview />} />
               <Route path="/returned" element={<Returned />} />
+              <Route path="/portal-connections" element={<PortalConnections />} />
               <Route path="/my-tasks" element={<MyTasks />} />
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/documents/:id" element={<DocumentDetail />} />
