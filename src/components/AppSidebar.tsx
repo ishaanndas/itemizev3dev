@@ -87,6 +87,7 @@ const apNavigation: NavGroup[] = [
     defaultOpen: true,
     items: [
       { name: "Documents", icon: FileText, href: "/documents" },
+      { name: "Portal Connections", icon: Globe, href: "/portal-connections" },
       { name: "PO Matching", icon: Link2 },
       { name: "Email Integration", icon: Mail },
       { name: "Document Bundles", icon: Package },
