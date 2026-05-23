@@ -9,6 +9,7 @@ import Index from "./pages/Index.tsx";
 import Documents from "./pages/Documents.tsx";
 import PendingReview from "./pages/PendingReview.tsx";
 import Returned from "./pages/Returned.tsx";
+import PortalConnections from "./pages/PortalConnections.tsx";
 import MyTasks from "./pages/MyTasks.tsx";
 import Analytics from "./pages/Analytics.tsx";
 import DocumentDetail from "./pages/DocumentDetail.tsx";
