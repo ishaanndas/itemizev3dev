@@ -6,6 +6,7 @@ import {
   Inbox,
   LayoutDashboard,
   FileText,
+  Globe,
   Link2,
   Mail,
   Package,
