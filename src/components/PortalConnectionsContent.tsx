@@ -299,12 +299,12 @@ function ConnectionCard({
 
             <div className="mt-5 flex items-center gap-2 flex-wrap">
               {isAttention || isDisconnected ? (
-                <Button size="sm">
+                <Button size="sm" onClick={() => onCredentials(conn)}>
                   <KeyRound className="h-4 w-4" />
                   Reconnect
                 </Button>
               ) : (
-                <Button size="sm">
+                <Button size="sm" onClick={() => onRun(conn)}>
                   <Play className="h-4 w-4" />
                   Sync Now
                 </Button>
@@ -314,7 +314,7 @@ function ConnectionCard({
                 View History
               </Button>
               <div className="ml-auto">
-                <ActionMenu />
+                <ActionMenu onUpdateLogin={() => onCredentials(conn)} />
               </div>
             </div>
           </div>
