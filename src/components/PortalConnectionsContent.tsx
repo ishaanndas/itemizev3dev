@@ -585,27 +585,98 @@ export default function PortalConnectionsContent() {
               ))}
             </div>
           ) : (
-            <div className="rounded-xl border border-border bg-card overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead className="bg-secondary/50">
-                    <tr className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                      <th className="px-4 py-3">Connection</th>
-                      <th className="px-4 py-3">Status</th>
-                      <th className="px-4 py-3">Last checked</th>
-                      <th className="px-4 py-3">How often</th>
-                      <th className="px-4 py-3 text-right">Bills</th>
-                      <th className="px-4 py-3 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filtered.map((c) => (
-                      <ConnectionRow key={c.id} conn={c} onHistory={openHistory} />
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            <DataTable<Connection>
+              storageKey="portal-connections"
+              data={filtered}
+              rowKey={(c) => c.id}
+              columns={[
+                {
+                  key: "name",
+                  label: "Connection",
+                  accessor: (c) => c.name,
+                  width: 260,
+                  render: (c) => {
+                    const meta = STATUS_META[c.status];
+                    return (
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={cn("h-7 w-7 rounded-md bg-secondary flex items-center justify-center shrink-0 ring-2", meta.ring)}>
+                          <Globe className="h-3.5 w-3.5 text-muted-foreground" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">{c.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">{c.statusMessage}</p>
+                        </div>
+                      </div>
+                    );
+                  },
+                },
+                {
+                  key: "status",
+                  label: "Status",
+                  accessor: (c) => STATUS_META[c.status].label,
+                  width: 150,
+                  render: (c) => {
+                    const meta = STATUS_META[c.status];
+                    const Icon = meta.icon;
+                    return (
+                      <span className={cn("inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[11px] font-medium", meta.pill)}>
+                        <Icon className="h-3 w-3" />
+                        {meta.label}
+                      </span>
+                    );
+                  },
+                },
+                {
+                  key: "lastSync",
+                  label: "Last checked",
+                  accessor: (c) => c.lastSync ?? "Never",
+                  width: 160,
+                  render: (c) => <span className="text-xs text-foreground tabular-nums">{c.lastSync ?? "Never"}</span>,
+                },
+                {
+                  key: "schedule",
+                  label: "How often",
+                  accessor: (c) => c.schedule,
+                  width: 130,
+                  render: (c) => <span className="text-xs text-foreground">{c.schedule}</span>,
+                },
+                {
+                  key: "docsSynced",
+                  label: "Bills pulled",
+                  accessor: (c) => String(c.docsSynced),
+                  align: "right",
+                  width: 110,
+                  render: (c) => <span className="text-sm font-semibold tabular-nums text-foreground">{c.docsSynced}</span>,
+                },
+                {
+                  key: "portalUrl",
+                  label: "Portal URL",
+                  accessor: (c) => c.portalUrl,
+                  defaultVisible: false,
+                  width: 220,
+                  render: (c) => <span className="font-mono text-xs text-muted-foreground truncate">{c.portalUrl}</span>,
+                },
+              ]}
+              renderRowActions={(c) => {
+                const isAttention = c.status === "attention" || c.status === "disconnected";
+                return (
+                  <RowActions
+                    review={{ label: "History", onClick: () => openHistory(c), icon: <History className="h-3.5 w-3.5" /> }}
+                    primary={
+                      isAttention
+                        ? { label: "Reconnect", onClick: () => {}, icon: <KeyRound className="h-3.5 w-3.5" /> }
+                        : { label: "Sync", onClick: () => {}, icon: <Play className="h-3.5 w-3.5" /> }
+                    }
+                    more={[
+                      { label: "Edit", onClick: () => {}, icon: <Pencil className="h-3.5 w-3.5" /> },
+                      { label: "Update login", onClick: () => {}, icon: <KeyRound className="h-3.5 w-3.5" /> },
+                      { label: "Pause syncing", onClick: () => {}, icon: <Pause className="h-3.5 w-3.5" /> },
+                      { label: "Remove", onClick: () => {}, icon: <Trash2 className="h-3.5 w-3.5" />, destructive: true },
+                    ]}
+                  />
+                );
+              }}
+            />
           )}
 
           {filtered.length === 0 && (
