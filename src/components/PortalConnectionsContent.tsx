@@ -475,10 +475,22 @@ export default function PortalConnectionsContent() {
   const [view, setView] = useState<"cards" | "table">("cards");
   const [historyConn, setHistoryConn] = useState<Connection | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [runConn, setRunConn] = useState<Connection | null>(null);
+  const [runOpen, setRunOpen] = useState(false);
+  const [credConn, setCredConn] = useState<Connection | null>(null);
+  const [credOpen, setCredOpen] = useState(false);
 
   const openHistory = (c: Connection) => {
     setHistoryConn(c);
     setHistoryOpen(true);
+  };
+  const openRun = (c: Connection) => {
+    setRunConn(c);
+    setRunOpen(true);
+  };
+  const openCred = (c: Connection) => {
+    setCredConn(c);
+    setCredOpen(true);
   };
 
   const counts = useMemo(() => {
