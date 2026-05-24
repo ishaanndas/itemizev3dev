@@ -215,37 +215,6 @@ const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "disconnected", label: "Offline" },
 ];
 
-function SummaryCard({
-  label,
-  value,
-  Icon,
-  tone,
-}: {
-  label: string;
-  value: number;
-  Icon: typeof CheckCircle2;
-  tone: "neutral" | "emerald" | "amber" | "rose";
-}) {
-  const toneClass = {
-    neutral: "bg-secondary text-foreground",
-    emerald: "bg-emerald-50 text-emerald-600",
-    amber: "bg-amber-50 text-amber-600",
-    rose: "bg-rose-50 text-rose-600",
-  }[tone];
-  return (
-    <div className="rounded-xl border border-border bg-card p-5 transition-shadow hover:shadow-sm">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{label}</p>
-          <p className="mt-2 text-3xl font-semibold text-foreground tabular-nums">{value}</p>
-        </div>
-        <div className={cn("h-9 w-9 rounded-lg flex items-center justify-center", toneClass)}>
-          <Icon className="h-[18px] w-[18px]" />
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function ActionMenu() {
   return (
@@ -585,14 +554,6 @@ export default function PortalConnectionsContent() {
                 New Connection
               </Button>
             </div>
-          </div>
-
-          {/* Summary */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <SummaryCard label="Total" value={counts.total} Icon={Globe} tone="neutral" />
-            <SummaryCard label="Working" value={counts.healthy} Icon={CheckCircle2} tone="emerald" />
-            <SummaryCard label="Needs Attention" value={counts.attention} Icon={AlertTriangle} tone="amber" />
-            <SummaryCard label="Offline" value={counts.disconnected} Icon={XCircle} tone="rose" />
           </div>
 
           {/* Search + filters + view toggle */}
