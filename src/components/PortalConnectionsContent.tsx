@@ -604,7 +604,7 @@ export default function PortalConnectionsContent() {
           {view === "cards" ? (
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
               {filtered.map((c) => (
-                <ConnectionCard key={c.id} conn={c} onHistory={openHistory} />
+                <ConnectionCard key={c.id} conn={c} onHistory={openHistory} onRun={openRun} onCredentials={openCred} />
               ))}
             </div>
           ) : (
