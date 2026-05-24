@@ -241,7 +241,17 @@ function ActionMenu({ onUpdateLogin }: { onUpdateLogin: () => void }) {
   );
 }
 
-function ConnectionCard({ conn, onHistory }: { conn: Connection; onHistory: (c: Connection) => void }) {
+function ConnectionCard({
+  conn,
+  onHistory,
+  onRun,
+  onCredentials,
+}: {
+  conn: Connection;
+  onHistory: (c: Connection) => void;
+  onRun: (c: Connection) => void;
+  onCredentials: (c: Connection) => void;
+}) {
   const meta = STATUS_META[conn.status];
   const StatusIcon = meta.icon;
   const isAttention = conn.status === "attention";
