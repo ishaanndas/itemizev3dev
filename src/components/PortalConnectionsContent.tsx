@@ -338,48 +338,6 @@ function ConnectionCard({ conn, onHistory }: { conn: Connection; onHistory: (c: 
   );
 }
 
-function ConnectionRow({ conn, onHistory }: { conn: Connection; onHistory: (c: Connection) => void }) {
-  const meta = STATUS_META[conn.status];
-  const StatusIcon = meta.icon;
-  const isAttention = conn.status === "attention" || conn.status === "disconnected";
-
-  return (
-    <tr className="border-b border-border last:border-0 hover:bg-secondary/40 transition-colors">
-      <td className="px-4 py-3.5">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className={cn("h-8 w-8 rounded-md bg-secondary flex items-center justify-center shrink-0 ring-2", meta.ring)}>
-            <Globe className="h-4 w-4 text-muted-foreground" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-medium text-foreground truncate">{conn.name}</p>
-            <p className="text-xs text-muted-foreground truncate">{conn.statusMessage}</p>
-          </div>
-        </div>
-      </td>
-      <td className="px-4 py-3.5">
-        <span className={cn("inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-xs font-medium", meta.pill)}>
-          <StatusIcon className="h-3 w-3" />
-          {meta.label}
-        </span>
-      </td>
-      <td className="px-4 py-3.5 text-sm text-foreground tabular-nums whitespace-nowrap">{conn.lastSync ?? "Never"}</td>
-      <td className="px-4 py-3.5 text-sm text-foreground whitespace-nowrap">{conn.schedule}</td>
-      <td className="px-4 py-3.5 text-sm text-foreground tabular-nums text-right">{conn.docsSynced}</td>
-      <td className="px-4 py-3.5">
-        <div className="flex items-center justify-end gap-1.5">
-          <Button size="sm" variant={isAttention ? "default" : "outline"}>
-            {isAttention ? (<><KeyRound className="h-3.5 w-3.5" />Reconnect</>) : (<><Play className="h-3.5 w-3.5" />Sync</>)}
-          </Button>
-          <Button size="sm" variant="ghost" onClick={() => onHistory(conn)}>
-            <History className="h-3.5 w-3.5" />
-            History
-          </Button>
-          <ActionMenu />
-        </div>
-      </td>
-    </tr>
-  );
-}
 
 function HistorySheet({ conn, open, onOpenChange }: { conn: Connection | null; open: boolean; onOpenChange: (o: boolean) => void }) {
   if (!conn) return null;
