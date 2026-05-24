@@ -711,6 +711,8 @@ export default function PortalConnectionsContent() {
       </div>
 
       <HistorySheet conn={historyConn} open={historyOpen} onOpenChange={setHistoryOpen} />
+      <RunSheet conn={runConn} open={runOpen} onOpenChange={setRunOpen} />
+      <CredentialsSheet conn={credConn} open={credOpen} onOpenChange={setCredOpen} />
     </div>
   );
 }
