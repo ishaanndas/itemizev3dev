@@ -687,12 +687,12 @@ export default function PortalConnectionsContent() {
                     review={{ label: "History", onClick: () => openHistory(c), icon: <History className="h-3.5 w-3.5" /> }}
                     primary={
                       isAttention
-                        ? { label: "Reconnect", onClick: () => {}, icon: <KeyRound className="h-3.5 w-3.5" /> }
-                        : { label: "Sync", onClick: () => {}, icon: <Play className="h-3.5 w-3.5" /> }
+                        ? { label: "Reconnect", onClick: () => openCred(c), icon: <KeyRound className="h-3.5 w-3.5" /> }
+                        : { label: "Sync", onClick: () => openRun(c), icon: <Play className="h-3.5 w-3.5" /> }
                     }
                     more={[
                       { label: "Edit", onClick: () => {}, icon: <Pencil className="h-3.5 w-3.5" /> },
-                      { label: "Update login", onClick: () => {}, icon: <KeyRound className="h-3.5 w-3.5" /> },
+                      { label: "Update login", onClick: () => openCred(c), icon: <KeyRound className="h-3.5 w-3.5" /> },
                       { label: "Pause syncing", onClick: () => {}, icon: <Pause className="h-3.5 w-3.5" /> },
                       { label: "Remove", onClick: () => {}, icon: <Trash2 className="h-3.5 w-3.5" />, destructive: true },
                     ]}
