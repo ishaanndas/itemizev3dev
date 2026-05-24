@@ -42,6 +42,8 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
+import { DataTable, DataTableColumn } from "@/components/data-table/DataTable";
+import RowActions from "@/components/data-table/RowActions";
 import { cn } from "@/lib/utils";
 
 type Status = "healthy" | "attention" | "disconnected";
@@ -336,48 +338,6 @@ function ConnectionCard({ conn, onHistory }: { conn: Connection; onHistory: (c: 
   );
 }
 
-function ConnectionRow({ conn, onHistory }: { conn: Connection; onHistory: (c: Connection) => void }) {
-  const meta = STATUS_META[conn.status];
-  const StatusIcon = meta.icon;
-  const isAttention = conn.status === "attention" || conn.status === "disconnected";
-
-  return (
-    <tr className="border-b border-border last:border-0 hover:bg-secondary/40 transition-colors">
-      <td className="px-4 py-3.5">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className={cn("h-8 w-8 rounded-md bg-secondary flex items-center justify-center shrink-0 ring-2", meta.ring)}>
-            <Globe className="h-4 w-4 text-muted-foreground" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-medium text-foreground truncate">{conn.name}</p>
-            <p className="text-xs text-muted-foreground truncate">{conn.statusMessage}</p>
-          </div>
-        </div>
-      </td>
-      <td className="px-4 py-3.5">
-        <span className={cn("inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-xs font-medium", meta.pill)}>
-          <StatusIcon className="h-3 w-3" />
-          {meta.label}
-        </span>
-      </td>
-      <td className="px-4 py-3.5 text-sm text-foreground tabular-nums whitespace-nowrap">{conn.lastSync ?? "Never"}</td>
-      <td className="px-4 py-3.5 text-sm text-foreground whitespace-nowrap">{conn.schedule}</td>
-      <td className="px-4 py-3.5 text-sm text-foreground tabular-nums text-right">{conn.docsSynced}</td>
-      <td className="px-4 py-3.5">
-        <div className="flex items-center justify-end gap-1.5">
-          <Button size="sm" variant={isAttention ? "default" : "outline"}>
-            {isAttention ? (<><KeyRound className="h-3.5 w-3.5" />Reconnect</>) : (<><Play className="h-3.5 w-3.5" />Sync</>)}
-          </Button>
-          <Button size="sm" variant="ghost" onClick={() => onHistory(conn)}>
-            <History className="h-3.5 w-3.5" />
-            History
-          </Button>
-          <ActionMenu />
-        </div>
-      </td>
-    </tr>
-  );
-}
 
 function HistorySheet({ conn, open, onOpenChange }: { conn: Connection | null; open: boolean; onOpenChange: (o: boolean) => void }) {
   if (!conn) return null;
@@ -625,27 +585,98 @@ export default function PortalConnectionsContent() {
               ))}
             </div>
           ) : (
-            <div className="rounded-xl border border-border bg-card overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead className="bg-secondary/50">
-                    <tr className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                      <th className="px-4 py-3">Connection</th>
-                      <th className="px-4 py-3">Status</th>
-                      <th className="px-4 py-3">Last checked</th>
-                      <th className="px-4 py-3">How often</th>
-                      <th className="px-4 py-3 text-right">Bills</th>
-                      <th className="px-4 py-3 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filtered.map((c) => (
-                      <ConnectionRow key={c.id} conn={c} onHistory={openHistory} />
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            <DataTable<Connection>
+              storageKey="portal-connections"
+              data={filtered}
+              rowKey={(c) => c.id}
+              columns={[
+                {
+                  key: "name",
+                  label: "Connection",
+                  accessor: (c) => c.name,
+                  width: 260,
+                  render: (c) => {
+                    const meta = STATUS_META[c.status];
+                    return (
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={cn("h-7 w-7 rounded-md bg-secondary flex items-center justify-center shrink-0 ring-2", meta.ring)}>
+                          <Globe className="h-3.5 w-3.5 text-muted-foreground" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">{c.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">{c.statusMessage}</p>
+                        </div>
+                      </div>
+                    );
+                  },
+                },
+                {
+                  key: "status",
+                  label: "Status",
+                  accessor: (c) => STATUS_META[c.status].label,
+                  width: 150,
+                  render: (c) => {
+                    const meta = STATUS_META[c.status];
+                    const Icon = meta.icon;
+                    return (
+                      <span className={cn("inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[11px] font-medium", meta.pill)}>
+                        <Icon className="h-3 w-3" />
+                        {meta.label}
+                      </span>
+                    );
+                  },
+                },
+                {
+                  key: "lastSync",
+                  label: "Last checked",
+                  accessor: (c) => c.lastSync ?? "Never",
+                  width: 160,
+                  render: (c) => <span className="text-xs text-foreground tabular-nums">{c.lastSync ?? "Never"}</span>,
+                },
+                {
+                  key: "schedule",
+                  label: "How often",
+                  accessor: (c) => c.schedule,
+                  width: 130,
+                  render: (c) => <span className="text-xs text-foreground">{c.schedule}</span>,
+                },
+                {
+                  key: "docsSynced",
+                  label: "Bills pulled",
+                  accessor: (c) => String(c.docsSynced),
+                  align: "right",
+                  width: 110,
+                  render: (c) => <span className="text-sm font-semibold tabular-nums text-foreground">{c.docsSynced}</span>,
+                },
+                {
+                  key: "portalUrl",
+                  label: "Portal URL",
+                  accessor: (c) => c.portalUrl,
+                  defaultVisible: false,
+                  width: 220,
+                  render: (c) => <span className="font-mono text-xs text-muted-foreground truncate">{c.portalUrl}</span>,
+                },
+              ]}
+              renderRowActions={(c) => {
+                const isAttention = c.status === "attention" || c.status === "disconnected";
+                return (
+                  <RowActions
+                    review={{ label: "History", onClick: () => openHistory(c), icon: <History className="h-3.5 w-3.5" /> }}
+                    primary={
+                      isAttention
+                        ? { label: "Reconnect", onClick: () => {}, icon: <KeyRound className="h-3.5 w-3.5" /> }
+                        : { label: "Sync", onClick: () => {}, icon: <Play className="h-3.5 w-3.5" /> }
+                    }
+                    more={[
+                      { label: "Edit", onClick: () => {}, icon: <Pencil className="h-3.5 w-3.5" /> },
+                      { label: "Update login", onClick: () => {}, icon: <KeyRound className="h-3.5 w-3.5" /> },
+                      { label: "Pause syncing", onClick: () => {}, icon: <Pause className="h-3.5 w-3.5" /> },
+                      { label: "Remove", onClick: () => {}, icon: <Trash2 className="h-3.5 w-3.5" />, destructive: true },
+                    ]}
+                  />
+                );
+              }}
+            />
           )}
 
           {filtered.length === 0 && (
