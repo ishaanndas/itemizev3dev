@@ -42,6 +42,8 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
+import { DataTable, DataTableColumn } from "@/components/data-table/DataTable";
+import RowActions from "@/components/data-table/RowActions";
 import { cn } from "@/lib/utils";
 
 type Status = "healthy" | "attention" | "disconnected";
