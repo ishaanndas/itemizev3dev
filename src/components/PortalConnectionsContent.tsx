@@ -44,6 +44,7 @@ import {
 } from "@/components/ui/sheet";
 import { DataTable, DataTableColumn } from "@/components/data-table/DataTable";
 import RowActions from "@/components/data-table/RowActions";
+import { RunSheet, CredentialsSheet } from "./PortalConnectionSheets";
 import { cn } from "@/lib/utils";
 
 type Status = "healthy" | "attention" | "disconnected";
@@ -218,7 +219,7 @@ const FILTERS: { key: FilterKey; label: string }[] = [
 ];
 
 
-function ActionMenu() {
+function ActionMenu({ onUpdateLogin }: { onUpdateLogin: () => void }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -227,9 +228,9 @@ function ActionMenu() {
           More
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-52">
+      <DropdownMenuContent align="end" className="w-52 z-[60]">
         <DropdownMenuItem><Pencil className="h-4 w-4" /> Edit</DropdownMenuItem>
-        <DropdownMenuItem><KeyRound className="h-4 w-4" /> Update login</DropdownMenuItem>
+        <DropdownMenuItem onClick={onUpdateLogin}><KeyRound className="h-4 w-4" /> Update login</DropdownMenuItem>
         <DropdownMenuItem><Pause className="h-4 w-4" /> Pause syncing</DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="text-destructive focus:text-destructive">
@@ -240,7 +241,17 @@ function ActionMenu() {
   );
 }
 
-function ConnectionCard({ conn, onHistory }: { conn: Connection; onHistory: (c: Connection) => void }) {
+function ConnectionCard({
+  conn,
+  onHistory,
+  onRun,
+  onCredentials,
+}: {
+  conn: Connection;
+  onHistory: (c: Connection) => void;
+  onRun: (c: Connection) => void;
+  onCredentials: (c: Connection) => void;
+}) {
   const meta = STATUS_META[conn.status];
   const StatusIcon = meta.icon;
   const isAttention = conn.status === "attention";
@@ -288,12 +299,12 @@ function ConnectionCard({ conn, onHistory }: { conn: Connection; onHistory: (c: 
 
             <div className="mt-5 flex items-center gap-2 flex-wrap">
               {isAttention || isDisconnected ? (
-                <Button size="sm">
+                <Button size="sm" onClick={() => onCredentials(conn)}>
                   <KeyRound className="h-4 w-4" />
                   Reconnect
                 </Button>
               ) : (
-                <Button size="sm">
+                <Button size="sm" onClick={() => onRun(conn)}>
                   <Play className="h-4 w-4" />
                   Sync Now
                 </Button>
@@ -303,7 +314,7 @@ function ConnectionCard({ conn, onHistory }: { conn: Connection; onHistory: (c: 
                 View History
               </Button>
               <div className="ml-auto">
-                <ActionMenu />
+                <ActionMenu onUpdateLogin={() => onCredentials(conn)} />
               </div>
             </div>
           </div>
@@ -464,10 +475,22 @@ export default function PortalConnectionsContent() {
   const [view, setView] = useState<"cards" | "table">("cards");
   const [historyConn, setHistoryConn] = useState<Connection | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [runConn, setRunConn] = useState<Connection | null>(null);
+  const [runOpen, setRunOpen] = useState(false);
+  const [credConn, setCredConn] = useState<Connection | null>(null);
+  const [credOpen, setCredOpen] = useState(false);
 
   const openHistory = (c: Connection) => {
     setHistoryConn(c);
     setHistoryOpen(true);
+  };
+  const openRun = (c: Connection) => {
+    setRunConn(c);
+    setRunOpen(true);
+  };
+  const openCred = (c: Connection) => {
+    setCredConn(c);
+    setCredOpen(true);
   };
 
   const counts = useMemo(() => {
@@ -581,7 +604,7 @@ export default function PortalConnectionsContent() {
           {view === "cards" ? (
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
               {filtered.map((c) => (
-                <ConnectionCard key={c.id} conn={c} onHistory={openHistory} />
+                <ConnectionCard key={c.id} conn={c} onHistory={openHistory} onRun={openRun} onCredentials={openCred} />
               ))}
             </div>
           ) : (
@@ -664,12 +687,12 @@ export default function PortalConnectionsContent() {
                     review={{ label: "History", onClick: () => openHistory(c), icon: <History className="h-3.5 w-3.5" /> }}
                     primary={
                       isAttention
-                        ? { label: "Reconnect", onClick: () => {}, icon: <KeyRound className="h-3.5 w-3.5" /> }
-                        : { label: "Sync", onClick: () => {}, icon: <Play className="h-3.5 w-3.5" /> }
+                        ? { label: "Reconnect", onClick: () => openCred(c), icon: <KeyRound className="h-3.5 w-3.5" /> }
+                        : { label: "Sync", onClick: () => openRun(c), icon: <Play className="h-3.5 w-3.5" /> }
                     }
                     more={[
                       { label: "Edit", onClick: () => {}, icon: <Pencil className="h-3.5 w-3.5" /> },
-                      { label: "Update login", onClick: () => {}, icon: <KeyRound className="h-3.5 w-3.5" /> },
+                      { label: "Update login", onClick: () => openCred(c), icon: <KeyRound className="h-3.5 w-3.5" /> },
                       { label: "Pause syncing", onClick: () => {}, icon: <Pause className="h-3.5 w-3.5" /> },
                       { label: "Remove", onClick: () => {}, icon: <Trash2 className="h-3.5 w-3.5" />, destructive: true },
                     ]}
@@ -688,6 +711,8 @@ export default function PortalConnectionsContent() {
       </div>
 
       <HistorySheet conn={historyConn} open={historyOpen} onOpenChange={setHistoryOpen} />
+      <RunSheet conn={runConn} open={runOpen} onOpenChange={setRunOpen} />
+      <CredentialsSheet conn={credConn} open={credOpen} onOpenChange={setCredOpen} />
     </div>
   );
 }
