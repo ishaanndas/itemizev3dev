@@ -1,6 +1,13 @@
-import { ReactNode, useEffect, useRef, useState } from "react";
+import { ReactNode } from "react";
 import { Check, Eye, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 export interface RowActionItem {
   label: string;
@@ -17,7 +24,8 @@ interface RowActionsProps {
 
 /**
  * Compact, icon-only row actions used by every DataTable.
- * Renders inline so it sits perfectly inside the centered Actions column.
+ * The "More" menu uses Radix DropdownMenu so it renders in a portal
+ * and is never clipped by table overflow.
  */
 export default function RowActions({ primary, review, more }: RowActionsProps) {
   return (
@@ -69,54 +77,50 @@ function IconButton({
 }
 
 function MoreMenu({ items }: { items: RowActionItem[] }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [open]);
+  // Split destructive items so we can put them under a separator
+  const normal = items.filter((i) => !i.destructive);
+  const destructive = items.filter((i) => i.destructive);
 
   return (
-    <div className="relative inline-flex" ref={ref}>
-      <button
-        title="More actions"
-        aria-label="More actions"
-        onClick={(e) => {
-          e.stopPropagation();
-          setOpen((v) => !v);
-        }}
-        className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-      >
-        <MoreHorizontal className="h-3.5 w-3.5" />
-      </button>
-      {open && (
-        <div className="absolute right-0 top-full z-50 mt-1 w-44 overflow-hidden rounded-lg border border-border bg-card py-1 shadow-xl">
-          {items.map((item, i) => (
-            <button
-              key={i}
-              onClick={(e) => {
-                e.stopPropagation();
-                setOpen(false);
-                item.onClick();
-              }}
-              className={cn(
-                "flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors",
-                item.destructive
-                  ? "text-destructive hover:bg-destructive/10"
-                  : "text-foreground hover:bg-secondary",
-              )}
-            >
-              {item.icon && <span className="shrink-0 opacity-70">{item.icon}</span>}
-              <span className="truncate">{item.label}</span>
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          title="More actions"
+          aria-label="More actions"
+          onClick={(e) => e.stopPropagation()}
+          className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+        >
+          <MoreHorizontal className="h-3.5 w-3.5" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" sideOffset={4} className="w-48 z-[60]">
+        {normal.map((item, i) => (
+          <DropdownMenuItem
+            key={`n-${i}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              item.onClick();
+            }}
+          >
+            {item.icon && <span className="opacity-70">{item.icon}</span>}
+            <span className="truncate">{item.label}</span>
+          </DropdownMenuItem>
+        ))}
+        {destructive.length > 0 && normal.length > 0 && <DropdownMenuSeparator />}
+        {destructive.map((item, i) => (
+          <DropdownMenuItem
+            key={`d-${i}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              item.onClick();
+            }}
+            className="text-destructive focus:text-destructive"
+          >
+            {item.icon && <span className="opacity-70">{item.icon}</span>}
+            <span className="truncate">{item.label}</span>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
