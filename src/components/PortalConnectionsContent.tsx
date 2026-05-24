@@ -219,7 +219,7 @@ const FILTERS: { key: FilterKey; label: string }[] = [
 ];
 
 
-function ActionMenu() {
+function ActionMenu({ onUpdateLogin }: { onUpdateLogin: () => void }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -228,9 +228,9 @@ function ActionMenu() {
           More
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-52">
+      <DropdownMenuContent align="end" className="w-52 z-[60]">
         <DropdownMenuItem><Pencil className="h-4 w-4" /> Edit</DropdownMenuItem>
-        <DropdownMenuItem><KeyRound className="h-4 w-4" /> Update login</DropdownMenuItem>
+        <DropdownMenuItem onClick={onUpdateLogin}><KeyRound className="h-4 w-4" /> Update login</DropdownMenuItem>
         <DropdownMenuItem><Pause className="h-4 w-4" /> Pause syncing</DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="text-destructive focus:text-destructive">
