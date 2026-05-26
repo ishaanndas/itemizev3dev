@@ -350,7 +350,7 @@ function ConnectionCard({
 }
 
 
-function RunRowItem({ r, pillClass }: { r: RunRow; pillClass: string }) {
+function RunRowItem({ r, pillClass, onViewBills }: { r: RunRow; pillClass: string; onViewBills: (r: RunRow) => void }) {
   const [open, setOpen] = useState(false);
 
   // Simple, business-friendly synthetic steps for the run summary
