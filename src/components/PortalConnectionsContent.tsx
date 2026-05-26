@@ -350,7 +350,7 @@ function ConnectionCard({
 }
 
 
-function RunRowItem({ r, pillClass }: { r: RunRow; pillClass: string }) {
+function RunRowItem({ r, pillClass, onViewBills }: { r: RunRow; pillClass: string; onViewBills: (r: RunRow) => void }) {
   const [open, setOpen] = useState(false);
 
   // Simple, business-friendly synthetic steps for the run summary
@@ -436,7 +436,7 @@ function RunRowItem({ r, pillClass }: { r: RunRow; pillClass: string }) {
 
             {r.files > 0 && (
               <div className="flex justify-end">
-                <Button size="sm" variant="outline">
+                <Button size="sm" variant="outline" onClick={() => onViewBills(r)}>
                   <FileText className="h-3.5 w-3.5" />
                   View {r.files} {r.files === 1 ? "bill" : "bills"}
                 </Button>
@@ -462,7 +462,164 @@ function SummaryItem({ icon, label, value }: { icon: React.ReactNode; label: str
 }
 
 
+interface Bill {
+  id: string;
+  vendor: string;
+  invoice: string;
+  issued: string;
+  due: string;
+  amount: number;
+  status: "New" | "Already imported";
+}
+
+// Deterministic mock bills generator based on run
+function mockBillsForRun(conn: Connection, r: RunRow): Bill[] {
+  const seed = r.id.charCodeAt(r.id.length - 1) + r.files;
+  const bills: Bill[] = [];
+  const issuedBase = new Date(2026, 3, 1); // April 2026
+  for (let i = 0; i < r.files; i++) {
+    const dayOffset = ((seed * (i + 1)) % 28);
+    const issued = new Date(issuedBase);
+    issued.setDate(issued.getDate() + dayOffset);
+    const due = new Date(issued);
+    due.setDate(due.getDate() + 30);
+    const amount = 250 + ((seed * 137 * (i + 1)) % 9750);
+    const isDup = i > 0 && i % 7 === 0;
+    bills.push({
+      id: `${r.id}-b${i + 1}`,
+      vendor: conn.name,
+      invoice: `INV-${(100000 + ((seed * 991 + i * 53) % 899999)).toString()}`,
+      issued: issued.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+      due: due.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+      amount,
+      status: isDup ? "Already imported" : "New",
+    });
+  }
+  return bills;
+}
+
+function BillsSheet({
+  conn,
+  run,
+  open,
+  onOpenChange,
+}: {
+  conn: Connection | null;
+  run: RunRow | null;
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+}) {
+  if (!conn || !run) return null;
+  const bills = mockBillsForRun(conn, run);
+  const total = bills.reduce((s, b) => s + b.amount, 0);
+  const newCount = bills.filter((b) => b.status === "New").length;
+  const fmt = (n: number) =>
+    n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent className="w-full sm:max-w-2xl overflow-y-auto p-0">
+        <div className="px-6 pt-6 pb-5 border-b border-border">
+          <SheetHeader className="text-left space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center ring-4 ring-primary/10">
+                <FileText className="h-5 w-5 text-muted-foreground" />
+              </div>
+              <div className="min-w-0">
+                <SheetTitle className="text-lg">Bills pulled from {conn.name}</SheetTitle>
+                <SheetDescription className="text-xs">
+                  {run.date} · {run.range}
+                </SheetDescription>
+              </div>
+            </div>
+          </SheetHeader>
+
+          <div className="mt-5 grid grid-cols-3 gap-3">
+            <div className="rounded-lg border border-border bg-card p-3">
+              <p className="text-[11px] text-muted-foreground uppercase tracking-wide">Bills pulled</p>
+              <p className="text-xl font-semibold text-foreground tabular-nums mt-1">{bills.length}</p>
+            </div>
+            <div className="rounded-lg border border-border bg-card p-3">
+              <p className="text-[11px] text-muted-foreground uppercase tracking-wide">New to import</p>
+              <p className="text-xl font-semibold text-foreground tabular-nums mt-1">{newCount}</p>
+            </div>
+            <div className="rounded-lg border border-border bg-card p-3">
+              <p className="text-[11px] text-muted-foreground uppercase tracking-wide">Total amount</p>
+              <p className="text-xl font-semibold text-foreground tabular-nums mt-1">{fmt(total)}</p>
+            </div>
+          </div>
+
+          <div className="mt-4 flex items-center gap-2">
+            <Button size="sm">
+              <Download className="h-4 w-4" />
+              Download all
+            </Button>
+            <Button size="sm" variant="outline">
+              <FileText className="h-4 w-4" />
+              Send to review queue
+            </Button>
+          </div>
+        </div>
+
+        <div className="px-6 py-5">
+          <h4 className="text-sm font-semibold text-foreground mb-3">Bills in this sync</h4>
+          <div className="rounded-lg border border-border bg-card divide-y divide-border">
+            {bills.map((b) => (
+              <div key={b.id} className="p-3.5 flex items-center justify-between gap-3 hover:bg-secondary/40 transition-colors">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm font-medium text-foreground truncate">{b.invoice}</span>
+                    <span
+                      className={cn(
+                        "inline-flex items-center px-2 py-0.5 rounded-full border text-[11px] font-medium",
+                        b.status === "New"
+                          ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                          : "bg-secondary border-border text-muted-foreground",
+                      )}
+                    >
+                      {b.status}
+                    </span>
+                  </div>
+                  <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
+                    <span className="inline-flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      Issued {b.issued}
+                    </span>
+                    <span>Due {b.due}</span>
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="text-sm font-semibold text-foreground tabular-nums">{fmt(b.amount)}</p>
+                  <div className="mt-1 flex items-center justify-end gap-1">
+                    <Button size="sm" variant="ghost" className="h-7 px-2 text-xs">
+                      <FileText className="h-3 w-3" />
+                      Open
+                    </Button>
+                    <Button size="sm" variant="ghost" className="h-7 px-2 text-xs">
+                      <Download className="h-3 w-3" />
+                      PDF
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="mt-3 text-xs text-muted-foreground">
+            New bills are queued for review automatically. Duplicates are skipped.
+          </p>
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
 function HistorySheet({ conn, open, onOpenChange }: { conn: Connection | null; open: boolean; onOpenChange: (o: boolean) => void }) {
+  const [billsRun, setBillsRun] = useState<RunRow | null>(null);
+  const [billsOpen, setBillsOpen] = useState(false);
+  const openBills = (r: RunRow) => {
+    setBillsRun(r);
+    setBillsOpen(true);
+  };
   if (!conn) return null;
   const meta = STATUS_META[conn.status];
   const totals = conn.recentRuns.reduce(
@@ -477,6 +634,7 @@ function HistorySheet({ conn, open, onOpenChange }: { conn: Connection | null; o
   );
 
   return (
+    <>
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-xl overflow-y-auto p-0">
         <div className="px-6 pt-6 pb-5 border-b border-border">
@@ -527,7 +685,7 @@ function HistorySheet({ conn, open, onOpenChange }: { conn: Connection | null; o
               return (
                 <li key={r.id} className="relative pl-10">
                   <span className={cn("absolute left-[10px] top-4 h-3 w-3 rounded-full ring-4 ring-background", rm.dot)} />
-                  <RunRowItem r={r} pillClass={rm.pill} />
+                  <RunRowItem r={r} pillClass={rm.pill} onViewBills={openBills} />
                 </li>
               );
             })}
@@ -545,6 +703,8 @@ function HistorySheet({ conn, open, onOpenChange }: { conn: Connection | null; o
         </div>
       </SheetContent>
     </Sheet>
+    <BillsSheet conn={conn} run={billsRun} open={billsOpen} onOpenChange={setBillsOpen} />
+    </>
   );
 }
 
