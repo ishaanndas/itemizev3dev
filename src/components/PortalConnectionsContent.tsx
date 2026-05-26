@@ -436,7 +436,7 @@ function RunRowItem({ r, pillClass, onViewBills }: { r: RunRow; pillClass: strin
 
             {r.files > 0 && (
               <div className="flex justify-end">
-                <Button size="sm" variant="outline">
+                <Button size="sm" variant="outline" onClick={() => onViewBills(r)}>
                   <FileText className="h-3.5 w-3.5" />
                   View {r.files} {r.files === 1 ? "bill" : "bills"}
                 </Button>
