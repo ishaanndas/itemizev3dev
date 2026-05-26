@@ -409,46 +409,13 @@ function HistorySheet({ conn, open, onOpenChange }: { conn: Connection | null; o
 
         <div className="px-6 py-5">
           <h4 className="text-sm font-semibold text-foreground mb-3">Recent activity</h4>
-          <ol className="relative space-y-3 before:absolute before:left-[15px] before:top-2 before:bottom-2 before:w-px before:bg-border">
+          <ol className="relative space-y-2 before:absolute before:left-[15px] before:top-2 before:bottom-2 before:w-px before:bg-border">
             {conn.recentRuns.map((r) => {
               const rm = RESULT_META[r.result];
               return (
                 <li key={r.id} className="relative pl-10">
-                  <span className={cn("absolute left-[10px] top-3 h-3 w-3 rounded-full ring-4 ring-background", rm.dot)} />
-                  <div className="rounded-lg border border-border bg-card p-3.5 hover:shadow-sm transition-shadow">
-                    <div className="flex items-start justify-between gap-3 flex-wrap">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className={cn("inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] font-medium", rm.pill)}>
-                            {r.result}
-                          </span>
-                          <span className="text-sm font-medium text-foreground tabular-nums">{r.date}</span>
-                        </div>
-                        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                          <span className="inline-flex items-center gap-1"><Calendar className="h-3 w-3" />{r.range}</span>
-                          <span className="inline-flex items-center gap-1"><Clock className="h-3 w-3" />{r.duration}</span>
-                          <span className="inline-flex items-center gap-1"><FileText className="h-3 w-3" />{r.files} {r.files === 1 ? "file" : "files"}</span>
-                          <span className="inline-flex items-center gap-1">
-                            {r.trigger === "Manual" ? "Started by " : "Auto · "}
-                            <span className="text-foreground font-medium">{r.triggeredBy ?? "System"}</span>
-                          </span>
-                        </div>
-                        {r.note && (
-                          <p className="mt-2 text-xs text-foreground bg-secondary/60 border border-border rounded-md px-2.5 py-1.5">
-                            {r.note}
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        {r.files > 0 && (
-                          <Button size="sm" variant="ghost">
-                            <FileText className="h-3.5 w-3.5" />
-                            View files
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                  <span className={cn("absolute left-[10px] top-4 h-3 w-3 rounded-full ring-4 ring-background", rm.dot)} />
+                  <RunRowItem r={r} pillClass={rm.pill} />
                 </li>
               );
             })}
