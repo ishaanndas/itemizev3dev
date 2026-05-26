@@ -350,6 +350,118 @@ function ConnectionCard({
 }
 
 
+function RunRowItem({ r, pillClass }: { r: RunRow; pillClass: string }) {
+  const [open, setOpen] = useState(false);
+
+  // Simple, business-friendly synthetic steps for the run summary
+  const steps = [
+    { label: "Signed in to portal", ok: true },
+    { label: "Looked for new bills", ok: true },
+    {
+      label: r.files > 0 ? `Downloaded ${r.files} ${r.files === 1 ? "bill" : "bills"}` : "No new bills to download",
+      ok: r.result !== "Failed",
+    },
+  ];
+
+  return (
+    <Collapsible open={open} onOpenChange={setOpen}>
+      <div className={cn(
+        "rounded-lg border bg-card transition-shadow",
+        open ? "border-primary/30 shadow-sm" : "border-border hover:shadow-sm",
+      )}>
+        <CollapsibleTrigger asChild>
+          <button
+            type="button"
+            className="w-full text-left p-3.5 flex items-center justify-between gap-3"
+          >
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className={cn("inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] font-medium", pillClass)}>
+                  {r.result}
+                </span>
+                <span className="text-sm font-medium text-foreground tabular-nums">{r.date}</span>
+              </div>
+              <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                <span className="inline-flex items-center gap-1">
+                  <FileText className="h-3 w-3" />
+                  {r.files} {r.files === 1 ? "bill" : "bills"}
+                </span>
+                <span className="inline-flex items-center gap-1">
+                  <Clock className="h-3 w-3" />{r.duration}
+                </span>
+                <span className="truncate">
+                  {r.trigger === "Manual" ? "Started by " : "Auto · "}
+                  <span className="text-foreground font-medium">{r.triggeredBy ?? "System"}</span>
+                </span>
+              </div>
+            </div>
+            <ChevronDown className={cn("h-4 w-4 text-muted-foreground shrink-0 transition-transform", open && "rotate-180")} />
+          </button>
+        </CollapsibleTrigger>
+
+        <CollapsibleContent>
+          <div className="px-3.5 pb-3.5 pt-0 space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
+            <div className="h-px bg-border" />
+
+            {/* Friendly summary grid */}
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <SummaryItem icon={<Calendar className="h-3.5 w-3.5" />} label="Looked at bills from" value={r.range} />
+              <SummaryItem icon={<Clock className="h-3.5 w-3.5" />} label="Took" value={r.duration} />
+              <SummaryItem icon={<FileText className="h-3.5 w-3.5" />} label="Bills pulled in" value={`${r.files}`} />
+              <SummaryItem icon={<Play className="h-3.5 w-3.5" />} label="Triggered" value={r.trigger === "Manual" ? "By a person" : "Automatically"} />
+            </div>
+
+            {/* What happened — simple step list */}
+            <div className="rounded-md border border-border bg-secondary/30 p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-2">What happened</p>
+              <ul className="space-y-1.5">
+                {steps.map((s, i) => (
+                  <li key={i} className="flex items-center gap-2 text-xs text-foreground">
+                    {s.ok ? (
+                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                    ) : (
+                      <XCircle className="h-3.5 w-3.5 text-red-500 shrink-0" />
+                    )}
+                    <span>{s.label}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {r.note && (
+              <p className="text-xs text-foreground bg-amber-50 border border-amber-200 rounded-md px-2.5 py-1.5">
+                {r.note}
+              </p>
+            )}
+
+            {r.files > 0 && (
+              <div className="flex justify-end">
+                <Button size="sm" variant="outline">
+                  <FileText className="h-3.5 w-3.5" />
+                  View {r.files} {r.files === 1 ? "bill" : "bills"}
+                </Button>
+              </div>
+            )}
+          </div>
+        </CollapsibleContent>
+      </div>
+    </Collapsible>
+  );
+}
+
+function SummaryItem({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div className="rounded-md border border-border bg-card px-2.5 py-2">
+      <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+        {icon}
+        <span>{label}</span>
+      </div>
+      <p className="mt-0.5 text-sm font-medium text-foreground tabular-nums truncate">{value}</p>
+    </div>
+  );
+}
+
+
 function HistorySheet({ conn, open, onOpenChange }: { conn: Connection | null; open: boolean; onOpenChange: (o: boolean) => void }) {
   if (!conn) return null;
   const meta = STATUS_META[conn.status];
@@ -409,46 +521,13 @@ function HistorySheet({ conn, open, onOpenChange }: { conn: Connection | null; o
 
         <div className="px-6 py-5">
           <h4 className="text-sm font-semibold text-foreground mb-3">Recent activity</h4>
-          <ol className="relative space-y-3 before:absolute before:left-[15px] before:top-2 before:bottom-2 before:w-px before:bg-border">
+          <ol className="relative space-y-2 before:absolute before:left-[15px] before:top-2 before:bottom-2 before:w-px before:bg-border">
             {conn.recentRuns.map((r) => {
               const rm = RESULT_META[r.result];
               return (
                 <li key={r.id} className="relative pl-10">
-                  <span className={cn("absolute left-[10px] top-3 h-3 w-3 rounded-full ring-4 ring-background", rm.dot)} />
-                  <div className="rounded-lg border border-border bg-card p-3.5 hover:shadow-sm transition-shadow">
-                    <div className="flex items-start justify-between gap-3 flex-wrap">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className={cn("inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] font-medium", rm.pill)}>
-                            {r.result}
-                          </span>
-                          <span className="text-sm font-medium text-foreground tabular-nums">{r.date}</span>
-                        </div>
-                        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                          <span className="inline-flex items-center gap-1"><Calendar className="h-3 w-3" />{r.range}</span>
-                          <span className="inline-flex items-center gap-1"><Clock className="h-3 w-3" />{r.duration}</span>
-                          <span className="inline-flex items-center gap-1"><FileText className="h-3 w-3" />{r.files} {r.files === 1 ? "file" : "files"}</span>
-                          <span className="inline-flex items-center gap-1">
-                            {r.trigger === "Manual" ? "Started by " : "Auto · "}
-                            <span className="text-foreground font-medium">{r.triggeredBy ?? "System"}</span>
-                          </span>
-                        </div>
-                        {r.note && (
-                          <p className="mt-2 text-xs text-foreground bg-secondary/60 border border-border rounded-md px-2.5 py-1.5">
-                            {r.note}
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        {r.files > 0 && (
-                          <Button size="sm" variant="ghost">
-                            <FileText className="h-3.5 w-3.5" />
-                            View files
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                  <span className={cn("absolute left-[10px] top-4 h-3 w-3 rounded-full ring-4 ring-background", rm.dot)} />
+                  <RunRowItem r={r} pillClass={rm.pill} />
                 </li>
               );
             })}
