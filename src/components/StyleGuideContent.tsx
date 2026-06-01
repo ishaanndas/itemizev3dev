@@ -331,7 +331,7 @@ export default function StyleGuideContent() {
             <div className="min-w-0">
 
               {/* ---------- PRINCIPLES ---------- */}
-              <Section id="principles" title="Design Principles" description="The five rules every screen must respect.">
+              <Section id="principles" title="Design Principles" description="The rules every screen must respect.">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {[
                     { t: "Information density", d: "Itemize is a finance tool — show the data. Prefer 32–36px row heights, 12–13px body, tabular numerics. Avoid 'airy SaaS' padding." },
@@ -342,6 +342,7 @@ export default function StyleGuideContent() {
                     { t: "Symmetric light & dark", d: "Both themes are designed equally. Never use raw white/black — only semantic tokens." },
                     { t: "No decorative stat cards", d: "Don't sprinkle KPI/counter cards (\"3 pending\", \"$12k total\") on every page just to fill space. Add stat cards only when the number drives a real decision or action on that page. If the number is already visible in the table or duplicates a sidebar count, leave it out." },
                     { t: "Tables mirror Excel", d: "Tables are the primary work surface for finance users. Every grid must feel like Excel: inline editing where applicable, drag-to-reorder columns, pin left/right, show/hide, resize, sort, multi-select, keyboard nav. Use AG Grid as the underlying library — never hand-roll a <table> for record lists." },
+                    { t: "AI is the differentiator", d: "We live inside a familiar B2B category, but AI is why we win. Every surface should make the AI visible and useful — confidence cues on extracted fields, inline explanations of what the model did, one-click overrides, and AI-suggested next actions. Don't hide it behind a chat icon, and don't dilute it into generic enterprise UI." },
                   ].map((p) => (
                     <div key={p.t} className="bg-card border border-border rounded-xl p-5">
                       <div className="text-sm font-semibold text-foreground">{p.t}</div>
