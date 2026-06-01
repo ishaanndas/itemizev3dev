@@ -331,7 +331,7 @@ export default function StyleGuideContent() {
             <div className="min-w-0">
 
               {/* ---------- PRINCIPLES ---------- */}
-              <Section id="principles" title="Design Principles" description="The five rules every screen must respect.">
+              <Section id="principles" title="Design Principles" description="The rules every screen must respect.">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {[
                     { t: "Information density", d: "Itemize is a finance tool — show the data. Prefer 32–36px row heights, 12–13px body, tabular numerics. Avoid 'airy SaaS' padding." },
