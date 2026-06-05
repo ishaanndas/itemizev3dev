@@ -8,10 +8,10 @@ import { samplePayments, formatUSD } from "./cash/data";
 import { ConfidenceBadge } from "./cash/confidence";
 
 const cards = [
-  { label: "Matched Today", value: "82", subtitle: "$184,250.50 auto-applied", accent: "border-l-emerald-500" },
-  { label: "Awaiting Review", value: "27", subtitle: "Medium confidence matches", accent: "border-l-amber-500" },
-  { label: "Exceptions", value: "9", subtitle: "Short-pay, unmatched, dupes", accent: "border-l-destructive" },
-  { label: "Unapplied Cash", value: "$12,480", subtitle: "6 payments · oldest 4 days", accent: "border-l-primary" },
+  { label: "Matched Today", value: "82", subtitle: "$184,250.50 auto-applied", accent: "border-l-emerald-500", route: "/cash/matching" },
+  { label: "Awaiting Review", value: "27", subtitle: "Medium confidence matches", accent: "border-l-amber-500", route: "/cash/matching" },
+  { label: "Exceptions", value: "9", subtitle: "Short-pay, unmatched, dupes", accent: "border-l-destructive", route: "/cash/exceptions" },
+  { label: "Unapplied Cash", value: "$12,480", subtitle: "6 payments · oldest 4 days", accent: "border-l-primary", route: "/cash/open-ar" },
 ];
 
 const aging = [
