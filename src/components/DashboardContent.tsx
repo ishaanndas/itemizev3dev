@@ -2,8 +2,10 @@ import {
   FileText, Upload, RefreshCw,
   Activity, Clock,
   CheckCircle, Flag, ArrowDown, ArrowUp, UserCircle, Users2,
+  ChevronRight,
 } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import TopBar from "./TopBar";
 import PendingReviewTable from "./PendingReviewTable";
 
