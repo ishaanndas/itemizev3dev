@@ -65,6 +65,7 @@ const activityFeed = [
 
 export default function DashboardContent() {
   const [activeTab, setActiveTab] = useState<DashboardTab>("Overview");
+  const navigate = useNavigate();
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-background">
