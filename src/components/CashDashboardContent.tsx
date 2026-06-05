@@ -97,7 +97,10 @@ export default function CashDashboardContent() {
           {/* Row: Match rate + AR aging + Sources */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
             {/* Auto-match rate */}
-            <div className="stat-card flex flex-col justify-between">
+            <button
+              onClick={() => navigate("/cash/analytics")}
+              className="stat-card flex flex-col justify-between text-left transition-all hover:shadow-sm hover:bg-accent/10 cursor-pointer"
+            >
               <h3 className="text-sm font-semibold text-foreground mb-4">Auto-match Rate</h3>
               <div className="flex items-center justify-center flex-1">
                 <div className="relative h-28 w-28">
@@ -115,10 +118,13 @@ export default function CashDashboardContent() {
                 <ArrowDown className="h-3 w-3 rotate-180" />
                 <span>+6% vs last week · learning improving</span>
               </div>
-            </div>
+            </button>
 
             {/* AR Aging */}
-            <div className="stat-card lg:col-span-2">
+            <button
+              onClick={() => navigate("/cash/open-ar")}
+              className="stat-card lg:col-span-2 text-left transition-all hover:shadow-sm hover:bg-accent/10 cursor-pointer"
+            >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-foreground">AR Aging</h3>
                 <span className="text-xs text-muted-foreground">Total open: $328,110</span>
@@ -144,11 +150,14 @@ export default function CashDashboardContent() {
                   </div>
                 ))}
               </div>
-            </div>
+            </button>
           </div>
 
           {/* Payment sources */}
-          <div className="stat-card mb-6">
+          <button
+            onClick={() => navigate("/cash/payments")}
+            className="stat-card mb-6 text-left transition-all hover:shadow-sm hover:bg-accent/10 cursor-pointer w-full"
+          >
             <h3 className="text-sm font-semibold text-foreground mb-4">Today's Payment Capture</h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {sources.map((s) => (
@@ -163,7 +172,7 @@ export default function CashDashboardContent() {
                 </div>
               ))}
             </div>
-          </div>
+          </button>
 
           {/* Recent matches */}
           <div className="stat-card">
