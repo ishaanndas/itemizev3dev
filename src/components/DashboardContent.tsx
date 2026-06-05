@@ -18,28 +18,28 @@ const actionCards = [
     value: "7",
     subtitle: "Oldest: 4 days",
     accent: "border-l-primary",
-    hoverAccent: "hover:border-l-primary",
+    route: "/pending-review",
   },
   {
     label: "Overdue Invoices",
     value: "5",
     subtitle: "$42,380.00 total",
     accent: "border-l-destructive",
-    hoverAccent: "hover:border-l-destructive",
+    route: "/documents",
   },
   {
     label: "My Tasks Due This Week",
     value: "12",
     subtitle: "3 urgent · $87,215.50 total",
     accent: "border-l-amber-500",
-    hoverAccent: "hover:border-l-amber-500",
+    route: "/my-tasks",
   },
   {
     label: "Exceptions & Flags",
     value: "4",
     subtitle: "3 duplicates · 1 mismatch",
     accent: "border-l-yellow-500",
-    hoverAccent: "hover:border-l-yellow-500",
+    route: "/documents",
   },
 ];
 
