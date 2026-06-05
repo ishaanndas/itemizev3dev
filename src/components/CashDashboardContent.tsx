@@ -8,10 +8,10 @@ import { samplePayments, formatUSD } from "./cash/data";
 import { ConfidenceBadge } from "./cash/confidence";
 
 const cards = [
-  { label: "Matched Today", value: "82", subtitle: "$184,250.50 auto-applied", accent: "border-l-emerald-500" },
-  { label: "Awaiting Review", value: "27", subtitle: "Medium confidence matches", accent: "border-l-amber-500" },
-  { label: "Exceptions", value: "9", subtitle: "Short-pay, unmatched, dupes", accent: "border-l-destructive" },
-  { label: "Unapplied Cash", value: "$12,480", subtitle: "6 payments · oldest 4 days", accent: "border-l-primary" },
+  { label: "Matched Today", value: "82", subtitle: "$184,250.50 auto-applied", accent: "border-l-emerald-500", route: "/cash/matching" },
+  { label: "Awaiting Review", value: "27", subtitle: "Medium confidence matches", accent: "border-l-amber-500", route: "/cash/matching" },
+  { label: "Exceptions", value: "9", subtitle: "Short-pay, unmatched, dupes", accent: "border-l-destructive", route: "/cash/exceptions" },
+  { label: "Unapplied Cash", value: "$12,480", subtitle: "6 payments · oldest 4 days", accent: "border-l-primary", route: "/cash/open-ar" },
 ];
 
 const aging = [
@@ -82,18 +82,25 @@ export default function CashDashboardContent() {
           {/* Stat cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             {cards.map((c) => (
-              <div key={c.label} className={`stat-card border-l-4 ${c.accent}`}>
+              <button
+                key={c.label}
+                onClick={() => navigate(c.route)}
+                className={`stat-card border-l-4 text-left transition-all hover:shadow-sm hover:bg-accent/10 cursor-pointer ${c.accent}`}
+              >
                 <div className="text-xs font-medium text-muted-foreground mb-2">{c.label}</div>
                 <div className="text-3xl font-bold tabular-nums text-foreground mb-1">{c.value}</div>
                 <div className="text-[12px] text-muted-foreground">{c.subtitle}</div>
-              </div>
+              </button>
             ))}
           </div>
 
           {/* Row: Match rate + AR aging + Sources */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
             {/* Auto-match rate */}
-            <div className="stat-card flex flex-col justify-between">
+            <button
+              onClick={() => navigate("/cash/analytics")}
+              className="stat-card flex flex-col justify-between text-left transition-all hover:shadow-sm hover:bg-accent/10 cursor-pointer"
+            >
               <h3 className="text-sm font-semibold text-foreground mb-4">Auto-match Rate</h3>
               <div className="flex items-center justify-center flex-1">
                 <div className="relative h-28 w-28">
@@ -111,10 +118,13 @@ export default function CashDashboardContent() {
                 <ArrowDown className="h-3 w-3 rotate-180" />
                 <span>+6% vs last week · learning improving</span>
               </div>
-            </div>
+            </button>
 
             {/* AR Aging */}
-            <div className="stat-card lg:col-span-2">
+            <button
+              onClick={() => navigate("/cash/open-ar")}
+              className="stat-card lg:col-span-2 text-left transition-all hover:shadow-sm hover:bg-accent/10 cursor-pointer"
+            >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-foreground">AR Aging</h3>
                 <span className="text-xs text-muted-foreground">Total open: $328,110</span>
@@ -140,11 +150,14 @@ export default function CashDashboardContent() {
                   </div>
                 ))}
               </div>
-            </div>
+            </button>
           </div>
 
           {/* Payment sources */}
-          <div className="stat-card mb-6">
+          <button
+            onClick={() => navigate("/cash/payments")}
+            className="stat-card mb-6 text-left transition-all hover:shadow-sm hover:bg-accent/10 cursor-pointer w-full"
+          >
             <h3 className="text-sm font-semibold text-foreground mb-4">Today's Payment Capture</h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {sources.map((s) => (
@@ -159,7 +172,7 @@ export default function CashDashboardContent() {
                 </div>
               ))}
             </div>
-          </div>
+          </button>
 
           {/* Recent matches */}
           <div className="stat-card">
