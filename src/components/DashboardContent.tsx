@@ -2,8 +2,10 @@ import {
   FileText, Upload, RefreshCw,
   Activity, Clock,
   CheckCircle, Flag, ArrowDown, ArrowUp, UserCircle, Users2,
+  ChevronRight,
 } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import TopBar from "./TopBar";
 import PendingReviewTable from "./PendingReviewTable";
 
@@ -16,28 +18,28 @@ const actionCards = [
     value: "7",
     subtitle: "Oldest: 4 days",
     accent: "border-l-primary",
-    hoverAccent: "hover:border-l-primary",
+    route: "/pending-review",
   },
   {
     label: "Overdue Invoices",
     value: "5",
     subtitle: "$42,380.00 total",
     accent: "border-l-destructive",
-    hoverAccent: "hover:border-l-destructive",
+    route: "/documents",
   },
   {
     label: "My Tasks Due This Week",
     value: "12",
     subtitle: "3 urgent · $87,215.50 total",
     accent: "border-l-amber-500",
-    hoverAccent: "hover:border-l-amber-500",
+    route: "/my-tasks",
   },
   {
     label: "Exceptions & Flags",
     value: "4",
     subtitle: "3 duplicates · 1 mismatch",
     accent: "border-l-yellow-500",
-    hoverAccent: "hover:border-l-yellow-500",
+    route: "/documents",
   },
 ];
 
@@ -63,6 +65,7 @@ const activityFeed = [
 
 export default function DashboardContent() {
   const [activeTab, setActiveTab] = useState<DashboardTab>("Overview");
+  const navigate = useNavigate();
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-background">
@@ -93,9 +96,13 @@ export default function DashboardContent() {
                 {actionCards.map((card) => (
                   <button
                     key={card.label}
-                    className={`stat-card border-l-4 ${card.accent} text-left transition-all hover:shadow-md group`}
+                    onClick={() => navigate(card.route)}
+                    className={`stat-card border-l-4 ${card.accent} text-left transition-all hover:shadow-sm hover:bg-accent/10 cursor-pointer group relative`}
                   >
-                    <div className="text-xs font-medium text-muted-foreground mb-2">{card.label}</div>
+                    <div className="flex items-start justify-between">
+                      <div className="text-xs font-medium text-muted-foreground mb-2">{card.label}</div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                    </div>
                     <div className="text-3xl font-bold tabular-nums text-foreground mb-1">{card.value}</div>
                     <div className="text-[12px] text-muted-foreground">{card.subtitle}</div>
                   </button>
