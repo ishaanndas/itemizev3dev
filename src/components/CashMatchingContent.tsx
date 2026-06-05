@@ -96,28 +96,30 @@ export default function CashMatchingContent() {
           </div>
 
           {/* Confidence buckets */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+          <div className="flex items-center gap-2 mb-5">
             {(["green", "yellow", "red"] as Confidence[]).map((level) => {
               const count = grouped[level].length;
               const total = grouped[level].reduce((s, p) => s + p.amount, 0);
-              const labels = { green: "High Confidence", yellow: "Medium · Review", red: "Low · Manual" };
-              const subtitle = { green: "Auto-apply ready", yellow: "Confirm or adjust", red: "Find a match" };
+              const labels = { green: "High", yellow: "Medium", red: "Low" };
+              const dotColor = level === "green" ? "bg-emerald-500" : level === "yellow" ? "bg-amber-500" : "bg-destructive";
               return (
                 <button
                   key={level}
                   onClick={() => setFilter(filter === level ? "all" : level)}
-                  className={`stat-card text-left transition-all border-l-4 ${
-                    level === "green" ? "border-l-emerald-500" :
-                    level === "yellow" ? "border-l-amber-500" :
-                    "border-l-destructive"
-                  } ${filter === level ? "ring-2 ring-primary/20" : ""}`}
+                  className={`flex items-center gap-2 text-sm font-medium border rounded-lg px-3 py-1.5 transition-all ${
+                    filter === level
+                      ? "bg-card border-primary/30 text-foreground shadow-sm ring-1 ring-primary/10"
+                      : "bg-secondary/60 border-border text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  }`}
                 >
-                  <div className="text-xs font-medium text-muted-foreground mb-2">{labels[level]}</div>
-                  <div className="flex items-baseline justify-between">
-                    <div className="text-3xl font-bold tabular-nums text-foreground">{count}</div>
-                    <div className="text-sm font-medium tabular-nums text-muted-foreground">{formatUSD(total)}</div>
-                  </div>
-                  <div className="text-[12px] text-muted-foreground mt-1">{subtitle[level]}</div>
+                  <span className={`inline-block h-1.5 w-1.5 rounded-full ${dotColor}`} />
+                  {labels[level]}
+                  <span className="text-xs font-semibold tabular-nums text-foreground bg-background/60 border border-border/60 rounded px-1.5 py-0.5">
+                    {count}
+                  </span>
+                  <span className="text-xs tabular-nums text-muted-foreground/80">
+                    {formatUSD(total)}
+                  </span>
                 </button>
               );
             })}
