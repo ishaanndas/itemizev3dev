@@ -82,11 +82,15 @@ export default function CashDashboardContent() {
           {/* Stat cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             {cards.map((c) => (
-              <div key={c.label} className={`stat-card border-l-4 ${c.accent}`}>
+              <button
+                key={c.label}
+                onClick={() => navigate(c.route)}
+                className={`stat-card border-l-4 text-left transition-all hover:shadow-sm hover:bg-accent/10 cursor-pointer ${c.accent}`}
+              >
                 <div className="text-xs font-medium text-muted-foreground mb-2">{c.label}</div>
                 <div className="text-3xl font-bold tabular-nums text-foreground mb-1">{c.value}</div>
                 <div className="text-[12px] text-muted-foreground">{c.subtitle}</div>
-              </div>
+              </button>
             ))}
           </div>
 
