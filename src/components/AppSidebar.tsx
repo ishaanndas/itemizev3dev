@@ -37,6 +37,77 @@ import { useNavigate } from "react-router-dom";
 import { useSidebarState } from "@/contexts/SidebarContext";
 import { useProduct, type Product } from "@/contexts/ProductContext";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Check, Plus, Settings as SettingsIcon } from "lucide-react";
+
+const ORG_STORAGE_KEY = "itemize.activeOrg";
+const ORGANIZATIONS = [
+  { id: "acme", name: "Acme Corp", plan: "Enterprise" },
+  { id: "northwind", name: "Northwind Trading", plan: "Business" },
+  { id: "globex", name: "Globex Industries", plan: "Business" },
+  { id: "initech", name: "Initech LLC", plan: "Starter" },
+];
+
+function OrgSwitcher() {
+  const [open, setOpen] = useState(false);
+  const [orgId, setOrgId] = useState<string>(() => {
+    if (typeof window === "undefined") return "acme";
+    return window.localStorage.getItem(ORG_STORAGE_KEY) || "acme";
+  });
+  const current = ORGANIZATIONS.find((o) => o.id === orgId) ?? ORGANIZATIONS[0];
+
+  const select = (id: string) => {
+    setOrgId(id);
+    window.localStorage.setItem(ORG_STORAGE_KEY, id);
+    setOpen(false);
+  };
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button className="w-full flex items-center justify-between px-3 py-[7px] rounded-lg border border-border/70 hover:bg-secondary/60 transition-colors text-sm">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="h-5 w-5 rounded bg-primary/10 text-primary flex items-center justify-center text-[10px] font-semibold shrink-0">
+              {current.name.slice(0, 1)}
+            </div>
+            <span className="font-medium text-foreground truncate">{current.name}</span>
+          </div>
+          <ChevronsUpDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="start" sideOffset={6} className="w-[240px] p-1.5">
+        <div className="px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+          Organizations
+        </div>
+        <div className="max-h-72 overflow-y-auto">
+          {ORGANIZATIONS.map((o) => (
+            <button
+              key={o.id}
+              onClick={() => select(o.id)}
+              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-secondary text-left"
+            >
+              <div className="h-6 w-6 rounded bg-primary/10 text-primary flex items-center justify-center text-[11px] font-semibold shrink-0">
+                {o.name.slice(0, 1)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium text-foreground truncate">{o.name}</div>
+                <div className="text-[11px] text-muted-foreground">{o.plan}</div>
+              </div>
+              {o.id === orgId && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
+            </button>
+          ))}
+        </div>
+        <div className="border-t border-border my-1" />
+        <button className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-secondary text-left text-sm text-foreground/80">
+          <Plus className="h-3.5 w-3.5" /> Create organization
+        </button>
+        <button className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-secondary text-left text-sm text-foreground/80">
+          <SettingsIcon className="h-3.5 w-3.5" /> Organization settings
+        </button>
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 interface NavItem {
   name: string;
@@ -386,10 +457,7 @@ export default function AppSidebar({ activePage }: { activePage?: string }) {
 
       {!collapsed && (
         <div className="px-3 py-2.5 border-b border-border/60 shrink-0">
-          <button className="w-full flex items-center justify-between px-3 py-[7px] rounded-lg border border-border/70 hover:bg-secondary/60 transition-colors text-sm">
-            <span className="font-medium text-foreground">Acme Corp</span>
-            <ChevronsUpDown className="h-3.5 w-3.5 text-muted-foreground" />
-          </button>
+          <OrgSwitcher />
         </div>
       )}
 
