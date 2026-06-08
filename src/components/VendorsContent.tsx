@@ -211,7 +211,7 @@ function HealthPill({ score }: { score: number }) {
     : score >= 0.7 ? "text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/30"
     : "text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30";
   return (
-    <span className={`inline-flex items-center gap-1 text-[10px] font-semibold rounded-full px-1.5 py-0.5 border tabular-nums ${tone}`}>
+    <span className={`inline-flex items-center gap-1 text-xs font-semibold rounded-full px-1.5 py-0.5 border tabular-nums ${tone}`}>
       <Sparkles className="h-2.5 w-2.5" /> {pct}
     </span>
   );
@@ -223,13 +223,13 @@ function StatTile({ icon: Icon, label, value, sub, accent }: {
   return (
     <div className="rounded-xl border border-border bg-card p-3 min-w-0">
       <div className="flex items-center justify-between gap-2 mb-1">
-        <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground truncate">{label}</span>
+        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground truncate">{label}</span>
         <div className={`h-6 w-6 rounded-md flex items-center justify-center ${accent ?? "bg-primary/10 text-primary"}`}>
           <Icon className="h-3 w-3" />
         </div>
       </div>
       <div className="text-lg font-bold text-foreground tabular-nums truncate">{value}</div>
-      {sub && <div className="text-[11px] text-muted-foreground truncate">{sub}</div>}
+      {sub && <div className="text-xs text-muted-foreground truncate">{sub}</div>}
     </div>
   );
 }
@@ -295,7 +295,7 @@ export default function VendorsContent() {
           </div>
           <div className="min-w-0">
             <div className="font-medium text-foreground truncate text-[13px]">{v.name}</div>
-            <div className="text-[11px] text-muted-foreground truncate">{v.category}{v.email ? ` · ${v.email}` : ""}</div>
+            <div className="text-xs text-muted-foreground truncate">{v.category}{v.email ? ` · ${v.email}` : ""}</div>
           </div>
         </div>
       ),
@@ -304,8 +304,8 @@ export default function VendorsContent() {
       key: "externalId", label: "External ID", width: 120,
       accessor: (v) => v.externalId ?? "",
       render: (v) => v.externalId
-        ? <span className="font-mono text-[11px] text-foreground/80">{v.externalId}</span>
-        : <span className="text-[11px] text-muted-foreground">—</span>,
+        ? <span className="font-mono text-xs text-foreground/80">{v.externalId}</span>
+        : <span className="text-xs text-muted-foreground">—</span>,
     },
     {
       key: "aliases", label: "Aliases", width: 340,
@@ -320,17 +320,17 @@ export default function VendorsContent() {
         return (
           <div className="flex items-center gap-1 flex-wrap min-w-0" data-no-row-click onClick={(e) => e.stopPropagation()}>
             {allConfirmed.slice(0, 3).map((a) => (
-              <span key={a} className="inline-flex items-center gap-1 text-[10px] font-medium rounded px-1.5 py-0.5 bg-secondary text-foreground/80 border border-border">
+              <span key={a} className="inline-flex items-center gap-1 text-xs font-medium rounded px-1.5 py-0.5 bg-secondary text-foreground/80 border border-border">
                 <Tag className="h-2.5 w-2.5" /> {a}
               </span>
             ))}
             {allConfirmed.length > 3 && (
-              <span className="text-[10px] text-muted-foreground">+{allConfirmed.length - 3}</span>
+              <span className="text-xs text-muted-foreground">+{allConfirmed.length - 3}</span>
             )}
             {pendingSuggestions.slice(0, 2).map((s) => (
               <span
                 key={s.alias}
-                className="inline-flex items-center gap-0.5 text-[10px] font-medium rounded border border-violet-500/40 bg-violet-500/10 text-violet-700 dark:text-violet-300 pl-1.5 pr-0.5 py-0.5"
+                className="inline-flex items-center gap-0.5 text-xs font-medium rounded border border-violet-500/40 bg-violet-500/10 text-violet-700 dark:text-violet-300 pl-1.5 pr-0.5 py-0.5"
                 title={`${Math.round(s.confidence * 100)}% match · ${s.source}`}
               >
                 <Sparkles className="h-2.5 w-2.5" />
@@ -355,13 +355,13 @@ export default function VendorsContent() {
             {pendingSuggestions.length > 2 && (
               <button
                 onClick={() => openEdit(v)}
-                className="inline-flex items-center gap-1 text-[10px] font-semibold rounded px-1.5 py-0.5 bg-violet-500/10 text-violet-700 dark:text-violet-300 border border-violet-500/30 hover:bg-violet-500/20 transition-colors"
+                className="inline-flex items-center gap-1 text-xs font-semibold rounded px-1.5 py-0.5 bg-violet-500/10 text-violet-700 dark:text-violet-300 border border-violet-500/30 hover:bg-violet-500/20 transition-colors"
               >
                 <Sparkles className="h-2.5 w-2.5" /> +{pendingSuggestions.length - 2} more
               </button>
             )}
             {allConfirmed.length === 0 && pendingSuggestions.length === 0 && (
-              <span className="text-[11px] text-muted-foreground">—</span>
+              <span className="text-xs text-muted-foreground">—</span>
             )}
           </div>
         );
@@ -392,20 +392,20 @@ export default function VendorsContent() {
     {
       key: "lastProcessed", label: "Last activity", width: 110,
       accessor: (v) => v.lastProcessed,
-      render: (v) => <span className="text-[11px] text-muted-foreground">{v.lastProcessed}</span>,
+      render: (v) => <span className="text-xs text-muted-foreground">{v.lastProcessed}</span>,
       defaultVisible: false,
     },
     {
       key: "paymentMethod", label: "Method", width: 110,
       accessor: (v) => v.paymentMethod,
-      render: (v) => <span className="text-[11px] text-foreground/80">{v.paymentMethod}</span>,
+      render: (v) => <span className="text-xs text-foreground/80">{v.paymentMethod}</span>,
       defaultVisible: false,
     },
     {
       key: "status", label: "Status", width: 130,
       accessor: (v) => v.status,
       render: (v) => (
-        <span className={`inline-flex items-center gap-1 text-[10px] font-medium border rounded-full px-2 py-0.5 ${statusStyles[v.status]}`}>
+        <span className={`inline-flex items-center gap-1 text-xs font-medium border rounded-full px-2 py-0.5 ${statusStyles[v.status]}`}>
           <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
           {v.status}
         </span>
@@ -422,7 +422,7 @@ export default function VendorsContent() {
           {/* Header */}
           <div className="flex flex-wrap items-start justify-between gap-3 mb-5">
             <div className="min-w-0">
-              <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mb-1.5">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1.5">
                 <span>Accounts Payable</span>
                 <ChevronRight className="h-3 w-3" />
                 <span>Vendors</span>
@@ -469,7 +469,7 @@ export default function VendorsContent() {
                   <div className="text-sm font-semibold text-foreground">
                     AI found {totalSuggestions} alias matches and {aiMergeSuggestions.length} possible duplicate vendors
                   </div>
-                  <div className="text-[11px] text-muted-foreground mt-0.5">
+                  <div className="text-xs text-muted-foreground mt-0.5">
                     Aliases auto-detected from invoices, POs, emails, and check stubs. Review before they post.
                   </div>
                 </div>
@@ -515,7 +515,7 @@ export default function VendorsContent() {
                     <GitMerge className="h-3 w-3" /> Merge {selectedRows.size >= 2 ? selectedRows.size : ""}
                   </button>
                   <button className="text-xs font-medium px-2.5 py-1.5 rounded-md border border-border bg-card hover:bg-secondary transition-colors">Set inactive</button>
-                  <button onClick={() => setSelectedRows(new Set())} className="text-[11px] text-muted-foreground hover:text-foreground">Clear</button>
+                  <button onClick={() => setSelectedRows(new Set())} className="text-xs text-muted-foreground hover:text-foreground">Clear</button>
                 </div>
               ) : (
                 <div className="flex items-center gap-0.5 p-0.5 rounded-md bg-secondary/60 border border-border">
@@ -523,7 +523,7 @@ export default function VendorsContent() {
                     <button
                       key={s}
                       onClick={() => setStatusFilter(s)}
-                      className={`text-[11px] font-medium px-2 py-1 rounded transition-colors ${
+                      className={`text-xs font-medium px-2 py-1 rounded transition-colors ${
                         statusFilter === s ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
@@ -609,13 +609,13 @@ function AddVendorPanel({ onClose }: { onClose: () => void }) {
               <Sparkles className="h-3.5 w-3.5 text-amber-700 dark:text-amber-400 mt-0.5 shrink-0" />
               <div className="min-w-0 flex-1">
                 <div className="text-xs font-semibold text-foreground">Possible duplicate detected</div>
-                <div className="text-[11px] text-muted-foreground mt-0.5">AI matched this name to {aiInferred.similarVendors.length} existing vendor(s):</div>
+                <div className="text-xs text-muted-foreground mt-0.5">AI matched this name to {aiInferred.similarVendors.length} existing vendor(s):</div>
                 <div className="flex items-center gap-1 mt-1.5 flex-wrap">
                   {aiInferred.similarVendors.map(v => (
-                    <span key={v} className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-card border border-border">{v}</span>
+                    <span key={v} className="text-xs font-medium px-2 py-0.5 rounded-full bg-card border border-border">{v}</span>
                   ))}
                 </div>
-                <button className="text-[11px] font-medium text-primary mt-2 hover:underline">Add as alias to existing vendor instead →</button>
+                <button className="text-xs font-medium text-primary mt-2 hover:underline">Add as alias to existing vendor instead →</button>
               </div>
             </div>
           </div>
@@ -629,7 +629,7 @@ function AddVendorPanel({ onClose }: { onClose: () => void }) {
               placeholder="e.g. VEN-1042"
               className="w-full px-3 py-2 pr-24 text-sm rounded-md bg-card border border-border focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary font-mono"
             />
-            <button className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[10px] font-semibold inline-flex items-center gap-1 px-2 py-1 rounded bg-violet-500/10 text-violet-700 dark:text-violet-400 hover:bg-violet-500/20 transition-colors">
+            <button className="absolute right-1.5 top-1/2 -translate-y-1/2 text-xs font-semibold inline-flex items-center gap-1 px-2 py-1 rounded bg-violet-500/10 text-violet-700 dark:text-violet-400 hover:bg-violet-500/20 transition-colors">
               <Sparkles className="h-2.5 w-2.5" /> Suggest
             </button>
           </div>
@@ -641,12 +641,12 @@ function AddVendorPanel({ onClose }: { onClose: () => void }) {
               <span className="text-xs font-medium px-2 py-1 rounded-md bg-violet-500/10 text-violet-700 dark:text-violet-400 border border-violet-500/30 inline-flex items-center gap-1">
                 <Sparkles className="h-2.5 w-2.5" /> {aiInferred.category}
               </span>
-              <span className="text-[11px] text-muted-foreground">based on name and similar vendors</span>
+              <span className="text-xs text-muted-foreground">based on name and similar vendors</span>
             </div>
           </Field>
         )}
 
-        <div className="rounded-lg border border-dashed border-border p-3 text-[11px] text-muted-foreground">
+        <div className="rounded-lg border border-dashed border-border p-3 text-xs text-muted-foreground">
           After creation, AI will scan your last 90 days of documents for matching aliases, payment methods, and contact info — pre-filling everything for you.
         </div>
       </div>
@@ -676,7 +676,7 @@ function EditVendorPanel({ vendor, onClose }: { vendor: Vendor; onClose: () => v
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
               <SheetTitle className="text-base truncate">{vendor.name}</SheetTitle>
-              <span className={`inline-flex items-center gap-1 text-[10px] font-medium border rounded-full px-2 py-0.5 ${statusStyles[vendor.status]}`}>
+              <span className={`inline-flex items-center gap-1 text-xs font-medium border rounded-full px-2 py-0.5 ${statusStyles[vendor.status]}`}>
                 <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
                 {vendor.status}
               </span>
@@ -730,12 +730,12 @@ function EditVendorPanel({ vendor, onClose }: { vendor: Vendor; onClose: () => v
                   <AlertCircle className="h-3.5 w-3.5 text-amber-700 dark:text-amber-400 mt-0.5 shrink-0" />
                   <div className="min-w-0 flex-1">
                     <div className="text-xs font-semibold text-foreground">AI detected {vendor.aiHealthIssues.length} issue(s)</div>
-                    <ul className="text-[11px] text-muted-foreground mt-1 space-y-0.5">
+                    <ul className="text-xs text-muted-foreground mt-1 space-y-0.5">
                       {vendor.aiHealthIssues.map(i => (
                         <li key={i} className="flex items-center gap-1.5"><span className="h-1 w-1 rounded-full bg-amber-500" /> {i}</li>
                       ))}
                     </ul>
-                    <button className="text-[11px] font-medium text-primary mt-2 hover:underline">Auto-fix with AI →</button>
+                    <button className="text-xs font-medium text-primary mt-2 hover:underline">Auto-fix with AI →</button>
                   </div>
                 </div>
               </div>
@@ -757,7 +757,7 @@ function EditVendorPanel({ vendor, onClose }: { vendor: Vendor; onClose: () => v
             <Field label="Status">
               <div className="inline-flex items-center gap-0.5 p-0.5 rounded-md bg-secondary border border-border">
                 {(["Active", "Needs review", "Inactive"] as VendorStatus[]).map(s => (
-                  <button key={s} className={`text-[11px] font-medium px-2.5 py-1 rounded transition-colors ${vendor.status === s ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+                  <button key={s} className={`text-xs font-medium px-2.5 py-1 rounded transition-colors ${vendor.status === s ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
                     {s}
                   </button>
                 ))}
@@ -765,7 +765,7 @@ function EditVendorPanel({ vendor, onClose }: { vendor: Vendor; onClose: () => v
             </Field>
 
             <div className="space-y-2">
-              <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Contact</div>
+              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Contact</div>
               <ContactRow icon={Mail} value={vendor.email ?? "—"} />
               <ContactRow icon={Phone} value={vendor.phone ?? "—"} />
               <ContactRow icon={MapPin} value={vendor.address ?? "—"} />
@@ -782,9 +782,9 @@ function EditVendorPanel({ vendor, onClose }: { vendor: Vendor; onClose: () => v
                   <div className="flex items-center gap-1.5">
                     <Sparkles className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
                     <span className="text-xs font-semibold text-foreground">AI-suggested aliases</span>
-                    <span className="text-[10px] text-muted-foreground">({vendor.suggestedAliases.length})</span>
+                    <span className="text-xs text-muted-foreground">({vendor.suggestedAliases.length})</span>
                   </div>
-                  <button className="text-[11px] font-medium text-violet-700 dark:text-violet-400 hover:underline">Accept all</button>
+                  <button className="text-xs font-medium text-violet-700 dark:text-violet-400 hover:underline">Accept all</button>
                 </div>
                 <div className="space-y-1.5">
                   {vendor.suggestedAliases.map(s => {
@@ -794,16 +794,16 @@ function EditVendorPanel({ vendor, onClose }: { vendor: Vendor; onClose: () => v
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-xs font-medium text-foreground truncate">{s.alias}</span>
-                            <span className="text-[10px] font-semibold text-violet-700 dark:text-violet-400 tabular-nums">
+                            <span className="text-xs font-semibold text-violet-700 dark:text-violet-400 tabular-nums">
                               {Math.round(s.confidence * 100)}% match
                             </span>
                           </div>
-                          <div className="text-[10px] text-muted-foreground mt-0.5 truncate">
+                          <div className="text-xs text-muted-foreground mt-0.5 truncate">
                             Seen in {s.docCount} doc{s.docCount > 1 ? "s" : ""} · {s.source}
                           </div>
                         </div>
                         {accepted ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 px-2 py-1">
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400 px-2 py-1">
                             <CheckCircle2 className="h-3 w-3" /> Added
                           </span>
                         ) : (
@@ -813,7 +813,7 @@ function EditVendorPanel({ vendor, onClose }: { vendor: Vendor; onClose: () => v
                             </button>
                             <button
                               onClick={() => setAcceptedAliases(prev => new Set(prev).add(s.alias))}
-                              className="text-[11px] font-semibold inline-flex items-center gap-1 px-2 py-1 rounded bg-violet-600 text-white hover:bg-violet-700 transition-colors"
+                              className="text-xs font-semibold inline-flex items-center gap-1 px-2 py-1 rounded bg-violet-600 text-white hover:bg-violet-700 transition-colors"
                             >
                               <Check className="h-3 w-3" /> Accept
                             </button>
@@ -828,22 +828,22 @@ function EditVendorPanel({ vendor, onClose }: { vendor: Vendor; onClose: () => v
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Current aliases ({vendor.aliases.length + acceptedAliases.size})</span>
-                <button className="text-[11px] font-medium text-primary hover:underline">+ Add manually</button>
+                <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Current aliases ({vendor.aliases.length + acceptedAliases.size})</span>
+                <button className="text-xs font-medium text-primary hover:underline">+ Add manually</button>
               </div>
               <div className="space-y-1.5">
                 {[...vendor.aliases, ...Array.from(acceptedAliases)].map(a => (
                   <div key={a} className="flex items-center gap-2 p-2 rounded-md bg-card border border-border">
                     <Tag className="h-3 w-3 text-muted-foreground shrink-0" />
                     <span className="text-xs text-foreground truncate flex-1">{a}</span>
-                    <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 dark:text-emerald-400">
+                    <span className="inline-flex items-center gap-1 text-xs text-emerald-700 dark:text-emerald-400">
                       <CheckCircle2 className="h-3 w-3" /> Mapped
                     </span>
                     <Lock className="h-3 w-3 text-muted-foreground" />
                   </div>
                 ))}
                 {vendor.aliases.length === 0 && acceptedAliases.size === 0 && (
-                  <div className="text-[11px] text-muted-foreground py-3 text-center border border-dashed border-border rounded-md">
+                  <div className="text-xs text-muted-foreground py-3 text-center border border-dashed border-border rounded-md">
                     No aliases yet. Accept AI suggestions above to get started.
                   </div>
                 )}
@@ -857,7 +857,7 @@ function EditVendorPanel({ vendor, onClose }: { vendor: Vendor; onClose: () => v
             <Field label="Preferred payment method">
               <div className="inline-flex items-center gap-0.5 p-0.5 rounded-md bg-secondary border border-border flex-wrap">
                 {(["ACH", "Wire", "Check", "Virtual Card"] as const).map(m => (
-                  <button key={m} className={`text-[11px] font-medium px-2.5 py-1 rounded transition-colors inline-flex items-center gap-1 ${vendor.paymentMethod === m ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+                  <button key={m} className={`text-xs font-medium px-2.5 py-1 rounded transition-colors inline-flex items-center gap-1 ${vendor.paymentMethod === m ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
                     <Landmark className="h-3 w-3" /> {m}
                   </button>
                 ))}
@@ -867,9 +867,9 @@ function EditVendorPanel({ vendor, onClose }: { vendor: Vendor; onClose: () => v
             <div className="rounded-lg border border-violet-200 dark:border-violet-500/30 bg-violet-50 dark:bg-violet-500/5 p-3">
               <div className="flex items-start gap-2">
                 <Sparkles className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400 mt-0.5 shrink-0" />
-                <div className="text-[11px] text-foreground">
+                <div className="text-xs text-foreground">
                   <span className="font-semibold">AI recommendation:</span> Switch to Virtual Card to earn ~1.5% rebate (≈ $2,100/yr based on YTD spend).
-                  <button className="block text-[11px] font-medium text-violet-700 dark:text-violet-400 mt-1 hover:underline">Apply suggestion →</button>
+                  <button className="block text-xs font-medium text-violet-700 dark:text-violet-400 mt-1 hover:underline">Apply suggestion →</button>
                 </div>
               </div>
             </div>
@@ -886,7 +886,7 @@ function EditVendorPanel({ vendor, onClose }: { vendor: Vendor; onClose: () => v
             <Field label="Tax ID (EIN)">
               <div className="flex items-center gap-2">
                 <input defaultValue={vendor.taxIdMasked ?? ""} className="flex-1 px-3 py-2 text-sm rounded-md bg-card border border-border focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary font-mono" />
-                <button className="text-[11px] font-medium px-2.5 py-2 rounded-md border border-border hover:bg-secondary transition-colors inline-flex items-center gap-1">
+                <button className="text-xs font-medium px-2.5 py-2 rounded-md border border-border hover:bg-secondary transition-colors inline-flex items-center gap-1">
                   <Shield className="h-3 w-3" /> Verify
                 </button>
               </div>
@@ -898,10 +898,10 @@ function EditVendorPanel({ vendor, onClose }: { vendor: Vendor; onClose: () => v
                   <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
                   <div className="min-w-0">
                     <div className="text-xs font-medium text-foreground truncate">W9-{vendor.id}-2025.pdf</div>
-                    <div className="text-[10px] text-muted-foreground">Uploaded 8 months ago</div>
+                    <div className="text-xs text-muted-foreground">Uploaded 8 months ago</div>
                   </div>
                 </div>
-                <button className="text-[11px] font-medium text-primary hover:underline shrink-0">Request refresh</button>
+                <button className="text-xs font-medium text-primary hover:underline shrink-0">Request refresh</button>
               </div>
             </Field>
           </div>
@@ -922,9 +922,9 @@ function EditVendorPanel({ vendor, onClose }: { vendor: Vendor; onClose: () => v
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="text-xs font-medium text-foreground">{a.label}</div>
-                  <div className="text-[11px] text-muted-foreground truncate">{a.detail}</div>
+                  <div className="text-xs text-muted-foreground truncate">{a.detail}</div>
                 </div>
-                <div className="text-[10px] text-muted-foreground shrink-0 tabular-nums">{a.when}</div>
+                <div className="text-xs text-muted-foreground shrink-0 tabular-nums">{a.when}</div>
               </div>
             ))}
           </div>
@@ -951,12 +951,12 @@ function Field({ label, hint, required, children }: { label: string; hint?: stri
   return (
     <label className="block min-w-0">
       <div className="flex items-center justify-between mb-1">
-        <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           {label} {required && <span className="text-destructive">*</span>}
         </span>
       </div>
       {children}
-      {hint && <div className="text-[10px] text-muted-foreground mt-1">{hint}</div>}
+      {hint && <div className="text-xs text-muted-foreground mt-1">{hint}</div>}
     </label>
   );
 }
@@ -1027,19 +1027,19 @@ function MergeVendorsPanel({ seed, onClose }: { seed: Vendor[]; onClose: () => v
 
         {usingAi && aiGroups.length > 1 && (
           <div className="flex items-center gap-2 mt-3">
-            <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">AI duplicate groups</span>
+            <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">AI duplicate groups</span>
             <div className="flex items-center gap-0.5 p-0.5 rounded-md bg-secondary border border-border">
               {aiGroups.map((g, i) => (
                 <button
                   key={i}
                   onClick={() => { setGroupIdx(i); setPrimaryId(g[0].id); }}
-                  className={`text-[11px] font-medium px-2 py-1 rounded transition-colors ${groupIdx === i ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                  className={`text-xs font-medium px-2 py-1 rounded transition-colors ${groupIdx === i ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
                 >
                   Group {i + 1}
                 </button>
               ))}
             </div>
-            <span className="ml-auto text-[10px] text-muted-foreground tabular-nums">{groupIdx + 1} of {aiGroups.length}</span>
+            <span className="ml-auto text-xs text-muted-foreground tabular-nums">{groupIdx + 1} of {aiGroups.length}</span>
           </div>
         )}
       </SheetHeader>
@@ -1049,7 +1049,7 @@ function MergeVendorsPanel({ seed, onClose }: { seed: Vendor[]; onClose: () => v
         <div className="rounded-lg border border-violet-200 dark:border-violet-500/30 bg-violet-50 dark:bg-violet-500/5 p-3">
           <div className="flex items-start gap-2">
             <Sparkles className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400 mt-0.5 shrink-0" />
-            <div className="text-[11px] text-foreground min-w-0">
+            <div className="text-xs text-foreground min-w-0">
               <span className="font-semibold">AI confidence: {usingAi ? "97%" : "user-initiated"}.</span>{" "}
               {usingAi
                 ? "Matched on Tax ID, remit address, and overlapping invoice patterns across 24 documents."
@@ -1060,7 +1060,7 @@ function MergeVendorsPanel({ seed, onClose }: { seed: Vendor[]; onClose: () => v
 
         {/* Choose primary */}
         <div>
-          <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-2">Choose primary record</div>
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Choose primary record</div>
           <div className="space-y-1.5">
             {candidates.map(v => {
               const isPrimary = v.id === primaryId;
@@ -1087,7 +1087,7 @@ function MergeVendorsPanel({ seed, onClose }: { seed: Vendor[]; onClose: () => v
                       )}
                       <HealthPill score={v.aiHealth} />
                     </div>
-                    <div className="text-[10px] text-muted-foreground mt-0.5 truncate">
+                    <div className="text-xs text-muted-foreground mt-0.5 truncate">
                       {v.externalId ?? "no ID"} · {v.docCount} docs · {fmtUSD(v.totalSpend)} YTD
                     </div>
                   </div>
@@ -1100,7 +1100,7 @@ function MergeVendorsPanel({ seed, onClose }: { seed: Vendor[]; onClose: () => v
 
         {/* Merge preview */}
         <div>
-          <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-2">After merge</div>
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">After merge</div>
           <div className="rounded-lg border border-border bg-card p-3 space-y-2.5">
             <div className="flex items-center gap-2 pb-2 border-b border-border">
               <div className="h-7 w-7 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
@@ -1108,7 +1108,7 @@ function MergeVendorsPanel({ seed, onClose }: { seed: Vendor[]; onClose: () => v
               </div>
               <div className="min-w-0 flex-1">
                 <div className="text-sm font-semibold text-foreground truncate">{primary.name}</div>
-                <div className="text-[10px] text-muted-foreground truncate">{primary.externalId ?? "no external ID"}</div>
+                <div className="text-xs text-muted-foreground truncate">{primary.externalId ?? "no external ID"}</div>
               </div>
               <span className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-primary text-primary-foreground">Survives</span>
             </div>
@@ -1120,10 +1120,10 @@ function MergeVendorsPanel({ seed, onClose }: { seed: Vendor[]; onClose: () => v
             </div>
 
             <div>
-              <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">Merged aliases</div>
+              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">Merged aliases</div>
               <div className="flex items-center gap-1 flex-wrap">
                 {mergedAliases.map(a => (
-                  <span key={a} className="inline-flex items-center gap-1 text-[10px] font-medium rounded px-1.5 py-0.5 bg-secondary text-foreground/80 border border-border">
+                  <span key={a} className="inline-flex items-center gap-1 text-xs font-medium rounded px-1.5 py-0.5 bg-secondary text-foreground/80 border border-border">
                     <Tag className="h-2.5 w-2.5" /> {a}
                   </span>
                 ))}
@@ -1131,10 +1131,10 @@ function MergeVendorsPanel({ seed, onClose }: { seed: Vendor[]; onClose: () => v
             </div>
 
             <div>
-              <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">Will merge into primary</div>
+              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">Will merge into primary</div>
               <div className="space-y-1">
                 {others.map(v => (
-                  <div key={v.id} className="flex items-center gap-2 text-[11px] text-foreground">
+                  <div key={v.id} className="flex items-center gap-2 text-xs text-foreground">
                     <span className="truncate flex-1">{v.name}</span>
                     <ArrowRight className="h-3 w-3 text-muted-foreground" />
                     <span className="text-muted-foreground truncate">{primary.name}</span>
@@ -1148,7 +1148,7 @@ function MergeVendorsPanel({ seed, onClose }: { seed: Vendor[]; onClose: () => v
         <div className="rounded-lg border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/5 p-3">
           <div className="flex items-start gap-2">
             <AlertCircle className="h-3.5 w-3.5 text-amber-700 dark:text-amber-400 mt-0.5 shrink-0" />
-            <div className="text-[11px] text-foreground">
+            <div className="text-xs text-foreground">
               <span className="font-semibold">This action is irreversible.</span> All historical documents, payments, and audit entries from merged vendors will be re-pointed to <span className="font-semibold">{primary.name}</span>.
             </div>
           </div>

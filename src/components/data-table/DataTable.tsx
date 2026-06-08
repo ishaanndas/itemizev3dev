@@ -262,10 +262,10 @@ function ColumnManager({
       {open && (
         <div className="absolute right-0 top-full z-50 mt-1 w-80 overflow-hidden rounded-xl border border-border bg-card shadow-xl">
           <div className="flex items-center justify-between border-b border-border px-3 py-2">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Manage columns
             </span>
-            <span className="text-[10px] text-muted-foreground">Drag to reorder</span>
+            <span className="text-xs text-muted-foreground">Drag to reorder</span>
           </div>
 
           <div className="max-h-96 overflow-y-auto py-1">
