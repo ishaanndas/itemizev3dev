@@ -672,9 +672,9 @@ function EditVendorPanel({ vendor, onClose }: { vendor: Vendor; onClose: () => v
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
               <SheetTitle className="text-base truncate">{vendor.name}</SheetTitle>
-              <span className={`inline-flex items-center gap-1 text-xs font-medium border rounded-full px-2 py-0.5 ${statusStyles[vendor.status]}`}>
+              <span className={`inline-flex items-center gap-1 text-xs font-medium border rounded-full px-2 py-0.5 ${statusStyles[status]}`}>
                 <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
-                {vendor.status}
+                {status}
               </span>
               <HealthPill score={vendor.aiHealth} />
             </div>
