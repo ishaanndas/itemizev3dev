@@ -523,7 +523,7 @@ export default function VendorsContent() {
                     <button
                       key={s}
                       onClick={() => setStatusFilter(s)}
-                      className={`text-xs font-medium px-2 py-1 rounded transition-colors ${
+                      className={`text-sm font-medium px-2 py-1 rounded transition-colors ${
                         statusFilter === s ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
                       }`}
                     >

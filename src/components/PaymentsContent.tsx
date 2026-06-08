@@ -371,7 +371,7 @@ export default function PaymentsContent() {
               toolbarLeft={
                 selectedRows.size > 0 ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-sm text-muted-foreground">
                       {selectedRows.size} selected · <span className="font-semibold text-foreground tabular-nums">{fmtUSD(selectedTotal)}</span>
                       {selectedDiscount > 0 && (
                         <span className="text-emerald-600 dark:text-emerald-400 ml-1">
