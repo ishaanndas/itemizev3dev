@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, ShieldCheck, MoreHorizontal, Users, Clock, Pencil, Trash2, Copy, Search } from "lucide-react";
+import { Plus, ShieldCheck, MoreHorizontal, Users, Clock, Pencil, Trash2, Copy, Search, LayoutGrid, Table as TableIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -9,6 +9,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { DataTable, type DataTableColumn } from "@/components/data-table/DataTable";
+import RowActions from "@/components/data-table/RowActions";
 
 interface Workflow {
   id: string;
@@ -60,23 +62,105 @@ const statusStyles: Record<string, string> = {
   inactive: "bg-muted text-muted-foreground border-border",
 };
 
+type StatusFilter = "all" | "active" | "draft" | "inactive";
+type ViewMode = "cards" | "table";
+
 export default function WorkflowListContent() {
   const navigate = useNavigate();
   const [workflows] = useState<Workflow[]>(sampleWorkflows);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [viewMode, setViewMode] = useState<ViewMode>("table");
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return workflows;
-    const q = search.toLowerCase();
-    return workflows.filter(
-      (wf) => wf.name.toLowerCase().includes(q) || wf.description.toLowerCase().includes(q)
-    );
-  }, [workflows, search]);
+    const q = search.trim().toLowerCase();
+    return workflows.filter((wf) => {
+      if (statusFilter !== "all" && wf.status !== statusFilter) return false;
+      if (!q) return true;
+      return wf.name.toLowerCase().includes(q) || wf.description.toLowerCase().includes(q);
+    });
+  }, [workflows, search, statusFilter]);
+
+  const statusCounts = useMemo(
+    () => ({
+      all: workflows.length,
+      active: workflows.filter((w) => w.status === "active").length,
+      draft: workflows.filter((w) => w.status === "draft").length,
+      inactive: workflows.filter((w) => w.status === "inactive").length,
+    }),
+    [workflows]
+  );
+
+  const statusPills: { value: StatusFilter; label: string }[] = [
+    { value: "all", label: "All" },
+    { value: "active", label: "Active" },
+    { value: "draft", label: "Draft" },
+    { value: "inactive", label: "Inactive" },
+  ];
+
+  const columns: DataTableColumn<Workflow>[] = [
+    {
+      key: "name",
+      label: "Name",
+      width: 280,
+      render: (wf) => (
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="h-7 w-7 rounded-md bg-primary/5 border border-primary/10 flex items-center justify-center shrink-0">
+            <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+          </div>
+          <span className="text-sm font-medium text-foreground truncate">{wf.name}</span>
+        </div>
+      ),
+      accessor: (wf) => wf.name,
+    },
+    {
+      key: "description",
+      label: "Description",
+      width: 360,
+      render: (wf) => <span className="text-xs text-muted-foreground truncate">{wf.description}</span>,
+      accessor: (wf) => wf.description,
+    },
+    {
+      key: "status",
+      label: "Status",
+      width: 110,
+      render: (wf) => (
+        <Badge variant="outline" className={`text-[10px] font-medium ${statusStyles[wf.status]}`}>
+          {wf.status}
+        </Badge>
+      ),
+      accessor: (wf) => wf.status,
+    },
+    {
+      key: "approvers",
+      label: "Approvers",
+      width: 110,
+      render: (wf) => (
+        <span className="text-xs text-foreground flex items-center gap-1">
+          <Users className="h-3 w-3 text-muted-foreground" />
+          {wf.approvers}
+        </span>
+      ),
+      accessor: (wf) => String(wf.approvers),
+    },
+    {
+      key: "lastModified",
+      label: "Last Modified",
+      width: 160,
+      render: (wf) => (
+        <span className="text-xs text-muted-foreground flex items-center gap-1">
+          <Clock className="h-3 w-3" />
+          {wf.lastModified}
+        </span>
+      ),
+      accessor: (wf) => wf.lastModified,
+    },
+  ];
 
   return (
     <div className="flex-1 overflow-y-auto">
-      <div className="max-w-5xl mx-auto px-8 py-8">
-        <div className="flex items-center justify-between mb-8">
+      <div className="max-w-6xl mx-auto px-8 py-8">
+        <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Workflows</h1>
             <p className="text-sm text-muted-foreground mt-1">Define how documents are routed, reviewed, and processed</p>
@@ -90,14 +174,57 @@ export default function WorkflowListContent() {
           </button>
         </div>
 
-        <div className="relative mb-5">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search workflows..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
-          />
+        {/* Filters bar */}
+        <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
+            {statusPills.map((pill) => {
+              const active = statusFilter === pill.value;
+              return (
+                <button
+                  key={pill.value}
+                  onClick={() => setStatusFilter(pill.value)}
+                  className={`text-sm font-medium px-3 py-1.5 rounded-lg border transition-colors ${
+                    active
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-card text-muted-foreground border-border hover:text-foreground hover:bg-secondary"
+                  }`}
+                >
+                  {pill.label}
+                  <span className={`ml-1.5 text-xs ${active ? "opacity-80" : "opacity-60"}`}>
+                    {statusCounts[pill.value]}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <div className="relative w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search workflows..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 h-9"
+              />
+            </div>
+            <div className="flex items-center rounded-lg border border-border overflow-hidden">
+              <button
+                onClick={() => setViewMode("table")}
+                className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-2 transition-colors ${viewMode === "table" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:text-foreground"}`}
+                title="Table view"
+              >
+                <TableIcon className="h-3.5 w-3.5" />
+              </button>
+              <button
+                onClick={() => setViewMode("cards")}
+                className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-2 transition-colors ${viewMode === "cards" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:text-foreground"}`}
+                title="Card view"
+              >
+                <LayoutGrid className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
         </div>
 
         {filtered.length === 0 ? (
@@ -105,8 +232,8 @@ export default function WorkflowListContent() {
             <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-4">
               <ShieldCheck className="h-6 w-6 text-muted-foreground" />
             </div>
-            <h3 className="text-base font-semibold text-foreground mb-1">No workflows yet</h3>
-            <p className="text-sm text-muted-foreground mb-5">Create a workflow to define how documents are processed</p>
+            <h3 className="text-base font-semibold text-foreground mb-1">No workflows found</h3>
+            <p className="text-sm text-muted-foreground mb-5">Try adjusting your filters or create a new workflow</p>
             <button
               onClick={() => navigate("/workflows/new")}
               className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors"
@@ -115,6 +242,23 @@ export default function WorkflowListContent() {
               New Workflow
             </button>
           </div>
+        ) : viewMode === "table" ? (
+          <DataTable
+            storageKey="workflows-list"
+            columns={columns}
+            data={filtered}
+            rowKey={(wf) => wf.id}
+            onRowClick={(wf) => navigate(`/workflows/${wf.id}`)}
+            renderRowActions={(wf) => (
+              <RowActions
+                primary={{
+                  label: "Edit",
+                  icon: <Pencil className="h-3.5 w-3.5" />,
+                  onClick: () => navigate(`/workflows/${wf.id}`),
+                }}
+              />
+            )}
+          />
         ) : (
           <div className="space-y-3">
             {filtered.map((wf) => (
