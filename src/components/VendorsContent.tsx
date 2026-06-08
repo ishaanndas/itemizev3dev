@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   Sparkles,
   Plus,
@@ -29,6 +29,8 @@ import {
   ArrowRight,
 } from "lucide-react";
 import TopBar from "./TopBar";
+import { DataTable, DataTableColumn } from "@/components/data-table/DataTable";
+import RowActions from "@/components/data-table/RowActions";
 import {
   Sheet,
   SheetContent,
