@@ -262,10 +262,10 @@ function ColumnManager({
       {open && (
         <div className="absolute right-0 top-full z-50 mt-1 w-80 overflow-hidden rounded-xl border border-border bg-card shadow-xl">
           <div className="flex items-center justify-between border-b border-border px-3 py-2">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Manage columns
             </span>
-            <span className="text-[10px] text-muted-foreground">Drag to reorder</span>
+            <span className="text-xs text-muted-foreground">Drag to reorder</span>
           </div>
 
           <div className="max-h-96 overflow-y-auto py-1">
@@ -621,7 +621,7 @@ export function DataTable<T>({
                       reorder(from, to);
                     }}
                     className={cn(
-                      "group/th border-b bg-secondary px-3 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground",
+                      "group/th border-b bg-secondary px-3 py-3 text-sm font-medium uppercase tracking-wider text-muted-foreground",
                       index < visibleColumns.length - 1 && "border-r border-border/40",
                       col.align === "right" && "text-right",
                       col.align === "center" && "text-center",
@@ -689,7 +689,7 @@ export function DataTable<T>({
 
               {renderRowActions && (
                 <th
-                  className="sticky right-0 z-30 border-b border-l border-border bg-secondary px-3 py-3 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground"
+                  className="sticky right-0 z-30 border-b border-l border-border bg-secondary px-3 py-3 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground"
                   style={{ boxShadow: "-1px 0 0 0 hsl(var(--border))" }}
                 >
                   Actions

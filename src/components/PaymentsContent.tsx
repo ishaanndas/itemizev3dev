@@ -151,7 +151,7 @@ export default function PaymentsContent() {
       render: (r) => (
         <div className="min-w-0">
           <div className="font-medium text-foreground truncate">{r.vendor}</div>
-          <div className="text-[11px] text-muted-foreground truncate">{r.vendorEmail}</div>
+          <div className="text-xs text-muted-foreground truncate">{r.vendorEmail}</div>
         </div>
       ),
     },
@@ -160,7 +160,7 @@ export default function PaymentsContent() {
       render: (r) => (
         <div className="min-w-0">
           <div className="font-mono text-xs text-foreground">{r.invoiceNo}</div>
-          {r.poNo && <div className="text-[11px] text-muted-foreground font-mono">{r.poNo}</div>}
+          {r.poNo && <div className="text-xs text-muted-foreground font-mono">{r.poNo}</div>}
         </div>
       ),
     },
@@ -169,7 +169,7 @@ export default function PaymentsContent() {
       render: (r) => (
         <div>
           <div className="text-xs text-foreground">{r.dueDate}</div>
-          <div className={`text-[11px] ${r.daysToDue < 0 ? "text-destructive font-medium" : r.daysToDue <= 3 ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"}`}>
+          <div className={`text-xs ${r.daysToDue < 0 ? "text-destructive font-medium" : r.daysToDue <= 3 ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"}`}>
             {r.daysToDue < 0 ? `${Math.abs(r.daysToDue)}d overdue` : r.daysToDue === 0 ? "due today" : `in ${r.daysToDue}d`}
           </div>
         </div>
@@ -181,7 +181,7 @@ export default function PaymentsContent() {
         <div className="text-right">
           <div className="font-semibold tabular-nums text-foreground">{fmtUSD(r.amount)}</div>
           {r.discountAmount && (
-            <div className="text-[11px] text-emerald-600 dark:text-emerald-400 tabular-nums">
+            <div className="text-xs text-emerald-600 dark:text-emerald-400 tabular-nums">
               −{fmtUSD(r.discountAmount)} disc
             </div>
           )}
@@ -192,10 +192,10 @@ export default function PaymentsContent() {
       key: "method", label: "Method", width: 150,
       render: (r) => (
         <div>
-          <span className="inline-flex items-center gap-1 text-[11px] font-medium rounded-full px-2 py-0.5 bg-secondary text-foreground/80 border border-border">
+          <span className="inline-flex items-center gap-1 text-xs font-medium rounded-full px-2 py-0.5 bg-secondary text-foreground/80 border border-border">
             {methodIcon[r.method]} {r.method}
           </span>
-          <div className="text-[11px] text-muted-foreground mt-0.5">{r.account}</div>
+          <div className="text-xs text-muted-foreground mt-0.5">{r.account}</div>
         </div>
       ),
     },
@@ -207,11 +207,11 @@ export default function PaymentsContent() {
           <div className="min-w-0">
             <div className={`text-xs font-medium ${suggestionStyles[r.aiSuggestion]}`}>
               {r.aiSuggestion}
-              <span className="ml-1.5 text-[10px] font-normal text-muted-foreground tabular-nums">
+              <span className="ml-1.5 text-xs font-normal text-muted-foreground tabular-nums">
                 {Math.round(r.confidence * 100)}%
               </span>
             </div>
-            <div className="text-[11px] text-muted-foreground line-clamp-2">{r.aiReason}</div>
+            <div className="text-xs text-muted-foreground line-clamp-2">{r.aiReason}</div>
           </div>
         </div>
       ),
@@ -224,7 +224,7 @@ export default function PaymentsContent() {
     {
       key: "status", label: "Status", width: 110,
       render: (r) => (
-        <span className={`inline-flex text-[11px] font-medium border rounded-full px-2 py-0.5 ${statusStyles[r.status]}`}>
+        <span className={`inline-flex text-xs font-medium border rounded-full px-2 py-0.5 ${statusStyles[r.status]}`}>
           {r.status}
         </span>
       ),
@@ -275,7 +275,7 @@ export default function PaymentsContent() {
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium text-foreground">
                   AI grouped <span className="tabular-nums">{aiRecommended.length}</span> invoices into a recommended run
-                  <span className="ml-2 inline-flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                  <span className="ml-2 inline-flex items-center gap-1 text-xs font-medium uppercase tracking-wide text-primary bg-primary/10 px-1.5 py-0.5 rounded">
                     Suggested
                   </span>
                 </div>
@@ -313,7 +313,7 @@ export default function PaymentsContent() {
               >
                 <span className="flex items-center gap-2">
                   {t.label}
-                  <span className={`text-[11px] tabular-nums rounded-full px-1.5 py-0.5 ${tab === t.key ? "bg-primary/10 text-primary" : "bg-secondary text-muted-foreground"}`}>
+                  <span className={`text-xs tabular-nums rounded-full px-1.5 py-0.5 ${tab === t.key ? "bg-primary/10 text-primary" : "bg-secondary text-muted-foreground"}`}>
                     {t.count}
                   </span>
                 </span>
@@ -329,7 +329,7 @@ export default function PaymentsContent() {
                 <button
                   key={f}
                   onClick={() => setMethodFilter(f)}
-                  className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                  className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
                     methodFilter === f ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
@@ -371,7 +371,7 @@ export default function PaymentsContent() {
               toolbarLeft={
                 selectedRows.size > 0 ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-sm text-muted-foreground">
                       {selectedRows.size} selected · <span className="font-semibold text-foreground tabular-nums">{fmtUSD(selectedTotal)}</span>
                       {selectedDiscount > 0 && (
                         <span className="text-emerald-600 dark:text-emerald-400 ml-1">
@@ -381,14 +381,14 @@ export default function PaymentsContent() {
                     </span>
                     <button
                       onClick={() => setRunSheetOpen(true)}
-                      className="text-xs font-medium px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center gap-1.5"
+                      className="text-sm font-medium px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center gap-1.5"
                     >
                       <Send className="h-3 w-3" /> Pay {selectedRows.size}
                     </button>
-                    <button className="text-xs font-medium px-3 py-1.5 rounded-md border border-border hover:bg-secondary transition-colors flex items-center gap-1.5">
+                    <button className="text-sm font-medium px-3 py-1.5 rounded-md border border-border hover:bg-secondary transition-colors flex items-center gap-1.5">
                       <CalendarClock className="h-3 w-3" /> Schedule
                     </button>
-                    <button className="text-xs font-medium px-3 py-1.5 rounded-md border border-border hover:bg-secondary transition-colors flex items-center gap-1.5">
+                    <button className="text-sm font-medium px-3 py-1.5 rounded-md border border-border hover:bg-secondary transition-colors flex items-center gap-1.5">
                       <Pause className="h-3 w-3" /> Hold
                     </button>
                   </div>
@@ -421,10 +421,10 @@ export default function PaymentsContent() {
         <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto">
           <SheetHeader className="space-y-2 pb-4 border-b">
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+              <span className="inline-flex items-center gap-1 text-xs font-medium uppercase tracking-wide text-primary bg-primary/10 px-1.5 py-0.5 rounded">
                 <Sparkles className="h-3 w-3" /> AI suggested
               </span>
-              <span className="text-[11px] text-muted-foreground">Run #249 · auto-generated</span>
+              <span className="text-xs text-muted-foreground">Run #249 · auto-generated</span>
             </div>
             <SheetTitle>Pay run · {aiRecommended.length} invoices</SheetTitle>
             <SheetDescription>
@@ -441,13 +441,13 @@ export default function PaymentsContent() {
 
           {/* From account */}
           <div className="rounded-md border border-border p-3 mb-4">
-            <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1">Funding account</div>
+            <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">Funding account</div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Landmark className="h-4 w-4 text-muted-foreground" />
                 <div>
                   <div className="text-sm font-medium text-foreground">SVB Operating ··4521</div>
-                  <div className="text-[11px] text-muted-foreground">Available: <span className="tabular-nums">$1,284,012.55</span></div>
+                  <div className="text-xs text-muted-foreground">Available: <span className="tabular-nums">$1,284,012.55</span></div>
                 </div>
               </div>
               <button className="text-xs text-primary font-medium hover:underline">Change</button>
@@ -456,7 +456,7 @@ export default function PaymentsContent() {
 
           {/* Line items */}
           <div className="space-y-1.5 mb-4">
-            <div className="flex items-center justify-between text-[11px] uppercase tracking-wide text-muted-foreground mb-1">
+            <div className="flex items-center justify-between text-xs uppercase tracking-wide text-muted-foreground mb-1">
               <span>Invoices in this run</span>
               <button className="text-primary hover:underline normal-case tracking-normal">Add invoice</button>
             </div>
@@ -464,12 +464,12 @@ export default function PaymentsContent() {
               <div key={r.id} className="flex items-center gap-2 rounded-md border border-border px-3 py-2 hover:bg-secondary/40 transition-colors">
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium text-foreground truncate">{r.vendor}</div>
-                  <div className="text-[11px] text-muted-foreground font-mono truncate">{r.invoiceNo} · {r.method}</div>
+                  <div className="text-xs text-muted-foreground font-mono truncate">{r.invoiceNo} · {r.method}</div>
                 </div>
                 <div className="text-right">
                   <div className="text-sm font-semibold tabular-nums text-foreground">{fmtUSD(r.amount)}</div>
                   {r.discountAmount && (
-                    <div className="text-[11px] tabular-nums text-emerald-600 dark:text-emerald-400">−{fmtUSD(r.discountAmount)}</div>
+                    <div className="text-xs tabular-nums text-emerald-600 dark:text-emerald-400">−{fmtUSD(r.discountAmount)}</div>
                   )}
                 </div>
                 <button className="text-muted-foreground hover:text-foreground p-1" title="Remove">
@@ -532,10 +532,10 @@ function StatTile({
 }) {
   return (
     <div className="rounded-lg border border-border bg-card px-3 py-2.5">
-      <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">{label}</div>
+      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{label}</div>
       <div className={`text-lg font-bold tabular-nums mt-0.5 ${accent ?? "text-foreground"}`}>{value}</div>
       {sub && (
-        <div className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
+        <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
           {icon}
           {sub}
         </div>
@@ -547,9 +547,9 @@ function StatTile({
 function RunStat({ label, value, sub, accent }: { label: string; value: string; sub?: string; accent?: string }) {
   return (
     <div className="rounded-md border border-border bg-card px-3 py-2">
-      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
       <div className={`text-sm font-semibold tabular-nums mt-0.5 ${accent ?? "text-foreground"}`}>{value}</div>
-      {sub && <div className="text-[10px] text-muted-foreground mt-0.5">{sub}</div>}
+      {sub && <div className="text-xs text-muted-foreground mt-0.5">{sub}</div>}
     </div>
   );
 }
@@ -622,7 +622,7 @@ function TransactionsView() {
       render: (r) => (
         <div className="min-w-0">
           <div className="font-mono text-xs text-foreground">{r.txId}</div>
-          <div className="text-[11px] text-muted-foreground truncate">{r.rail}</div>
+          <div className="text-xs text-muted-foreground truncate">{r.rail}</div>
         </div>
       ),
     },
@@ -631,7 +631,7 @@ function TransactionsView() {
       render: (r) => (
         <div className="min-w-0">
           <div className="font-medium text-foreground truncate">{r.vendor}</div>
-          <div className="text-[11px] text-muted-foreground">{r.invoices} invoice{r.invoices === 1 ? "" : "s"}</div>
+          <div className="text-xs text-muted-foreground">{r.invoices} invoice{r.invoices === 1 ? "" : "s"}</div>
         </div>
       ),
     },
@@ -640,7 +640,7 @@ function TransactionsView() {
       render: (r) => (
         <div className="text-right">
           <div className="font-semibold tabular-nums text-foreground">{fmtUSD(r.amount)}</div>
-          {r.fee > 0 && <div className="text-[11px] text-muted-foreground tabular-nums">fee {fmtUSD(r.fee)}</div>}
+          {r.fee > 0 && <div className="text-xs text-muted-foreground tabular-nums">fee {fmtUSD(r.fee)}</div>}
         </div>
       ),
     },
@@ -648,10 +648,10 @@ function TransactionsView() {
       key: "method", label: "Method", width: 150,
       render: (r) => (
         <div>
-          <span className="inline-flex items-center gap-1 text-[11px] font-medium rounded-full px-2 py-0.5 bg-secondary text-foreground/80 border border-border">
+          <span className="inline-flex items-center gap-1 text-xs font-medium rounded-full px-2 py-0.5 bg-secondary text-foreground/80 border border-border">
             {methodIcon[r.method]} {r.method}
           </span>
-          <div className="text-[11px] text-muted-foreground mt-0.5">{r.account}</div>
+          <div className="text-xs text-muted-foreground mt-0.5">{r.account}</div>
         </div>
       ),
     },
@@ -671,13 +671,13 @@ function TransactionsView() {
       key: "status", label: "Status", width: 200,
       render: (r) => (
         <div className="min-w-0">
-          <span className={`inline-flex text-[11px] font-medium border rounded-full px-2 py-0.5 ${txStatusStyles[r.status]}`}>
+          <span className={`inline-flex text-xs font-medium border rounded-full px-2 py-0.5 ${txStatusStyles[r.status]}`}>
             {r.status}
           </span>
           {r.aiNote && (
             <div className="flex items-start gap-1 mt-1">
               <Sparkles className="h-2.5 w-2.5 text-primary mt-0.5 shrink-0" />
-              <span className="text-[11px] text-muted-foreground line-clamp-2">{r.aiNote}</span>
+              <span className="text-xs text-muted-foreground line-clamp-2">{r.aiNote}</span>
             </div>
           )}
         </div>
@@ -698,7 +698,7 @@ function TransactionsView() {
               <div className="text-xs text-muted-foreground">AI updated vendor banking and validated routing for {failedCount} record{failedCount === 1 ? "" : "s"}.</div>
             </div>
           </div>
-          <button className="text-xs font-medium px-3 py-1.5 rounded-md bg-destructive text-destructive-foreground hover:opacity-90 transition-opacity flex items-center gap-1.5 shrink-0">
+          <button className="text-sm font-medium px-3 py-1.5 rounded-md bg-destructive text-destructive-foreground hover:opacity-90 transition-opacity flex items-center gap-1.5 shrink-0">
             <RefreshIcon /> Retry all
           </button>
         </div>
@@ -719,12 +719,12 @@ function TransactionsView() {
               <button
                 key={s}
                 onClick={() => setStatusFilter(s)}
-                className={`px-3 py-1 text-xs font-medium rounded-md transition-colors inline-flex items-center gap-1.5 ${
+                className={`px-3 py-1 text-sm font-medium rounded-md transition-colors inline-flex items-center gap-1.5 ${
                   statusFilter === s ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {s}
-                <span className="text-[10px] tabular-nums opacity-70">{count}</span>
+                <span className="text-xs tabular-nums opacity-70">{count}</span>
               </button>
             );
           })}
@@ -755,13 +755,13 @@ function TransactionsView() {
           selected.size > 0 ? (
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">{selected.size} selected</span>
-              <button className="text-xs font-medium px-3 py-1.5 rounded-md border border-border hover:bg-secondary transition-colors flex items-center gap-1.5">
+              <button className="text-sm font-medium px-3 py-1.5 rounded-md border border-border hover:bg-secondary transition-colors flex items-center gap-1.5">
                 <RefreshIcon /> Retry
               </button>
-              <button className="text-xs font-medium px-3 py-1.5 rounded-md border border-border hover:bg-secondary transition-colors flex items-center gap-1.5">
+              <button className="text-sm font-medium px-3 py-1.5 rounded-md border border-border hover:bg-secondary transition-colors flex items-center gap-1.5">
                 <RefreshIcon /> Sync
               </button>
-              <button className="text-xs font-medium px-3 py-1.5 rounded-md border border-destructive/30 text-destructive hover:bg-destructive/10 transition-colors flex items-center gap-1.5">
+              <button className="text-sm font-medium px-3 py-1.5 rounded-md border border-destructive/30 text-destructive hover:bg-destructive/10 transition-colors flex items-center gap-1.5">
                 <X className="h-3 w-3" /> Void
               </button>
             </div>
@@ -862,7 +862,7 @@ function ActivityView() {
           <div className="flex items-center gap-2 text-xs font-medium text-foreground">
             <Filter className="h-3.5 w-3.5 text-muted-foreground" /> Filters
             {activeFilters > 0 && (
-              <span className="text-[10px] font-semibold uppercase tracking-wide text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+              <span className="text-xs font-semibold uppercase tracking-wide text-primary bg-primary/10 px-1.5 py-0.5 rounded">
                 {activeFilters} active
               </span>
             )}
@@ -915,7 +915,7 @@ function ActivityView() {
             />
           </FilterField>
         </div>
-        <div className="mt-2 text-[11px] text-muted-foreground">
+        <div className="mt-2 text-xs text-muted-foreground">
           Showing <span className="tabular-nums text-foreground font-medium">{filtered.length}</span> of {activityEvents.length} events
         </div>
       </div>
@@ -923,7 +923,7 @@ function ActivityView() {
       <div className="rounded-lg border border-border bg-card overflow-hidden">
         {Object.entries(groups).map(([date, events]) => (
           <div key={date}>
-            <div className="px-4 py-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground bg-secondary/40 border-b border-border">
+            <div className="px-4 py-2 text-xs font-medium uppercase tracking-wide text-muted-foreground bg-secondary/40 border-b border-border">
               {date}
             </div>
             <ol className="divide-y divide-border">
@@ -938,7 +938,7 @@ function ActivityView() {
                       <div className="flex items-baseline gap-2 flex-wrap">
                         <span className="text-sm text-foreground">{e.message}</span>
                         {e.ref && (
-                          <span className="font-mono text-[11px] text-muted-foreground bg-secondary px-1.5 py-0.5 rounded">
+                          <span className="font-mono text-xs text-muted-foreground bg-secondary px-1.5 py-0.5 rounded">
                             {e.ref}
                           </span>
                         )}
@@ -946,7 +946,7 @@ function ActivityView() {
                       {e.detail && (
                         <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{e.detail}</p>
                       )}
-                      <div className="text-[11px] text-muted-foreground mt-1 flex items-center gap-2">
+                      <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
                         <span className="font-medium text-foreground/70">{e.actor}</span>
                         <span>·</span>
                         <span>{e.actorRole}</span>
@@ -954,7 +954,7 @@ function ActivityView() {
                         <span>{e.source}</span>
                       </div>
                     </div>
-                    <div className="text-[11px] text-muted-foreground tabular-nums shrink-0">{e.at}</div>
+                    <div className="text-xs text-muted-foreground tabular-nums shrink-0">{e.at}</div>
                   </li>
                 );
               })}
@@ -985,7 +985,7 @@ function RefreshIcon() {
 function FilterField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block min-w-0">
-      <span className="block text-[10px] font-medium uppercase tracking-wide text-muted-foreground mb-1">{label}</span>
+      <span className="block text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">{label}</span>
       {children}
     </label>
   );
