@@ -341,18 +341,21 @@ export default function PaymentsContent() {
               ))}
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <button className="flex items-center gap-1.5 text-sm border border-border rounded-lg px-3 py-1.5 hover:bg-secondary transition-colors text-foreground">
-                <Filter className="h-3.5 w-3.5" />
-                Approver
-                <ChevronDown className="h-3 w-3" />
-              </button>
-              <button className="flex items-center gap-1.5 text-sm border border-border rounded-lg px-3 py-1.5 hover:bg-secondary transition-colors text-foreground">
-                <Filter className="h-3.5 w-3.5" />
-                Due window
-                <ChevronDown className="h-3 w-3" />
-              </button>
+              <FilterDropdown
+                label="Approver"
+                value={approverFilter}
+                onChange={setApproverFilter}
+                options={["All approvers", "Jane Doe", "Marcus Liu", "Priya Patel", "Sam Chen", "Unassigned"]}
+              />
+              <FilterDropdown
+                label="Due window"
+                value={dueWindowFilter}
+                onChange={setDueWindowFilter}
+                options={["Any time", "Overdue", "Due today", "Next 7 days", "Next 30 days", "Beyond 30 days"]}
+              />
             </div>
           </div>
+
 
 
           {tab === "transactions" ? (
