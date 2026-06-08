@@ -23,6 +23,7 @@ import {
 import TopBar from "./TopBar";
 import { DataTable, DataTableColumn } from "@/components/data-table/DataTable";
 import RowActions from "@/components/data-table/RowActions";
+import FilterDropdown from "@/components/data-table/FilterDropdown";
 import {
   Sheet,
   SheetContent,
