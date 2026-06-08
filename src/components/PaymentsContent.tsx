@@ -351,60 +351,67 @@ export default function PaymentsContent() {
           </div>
 
 
-          <DataTable<Invoice>
-            storageKey="ap-payments"
-            columns={columns}
-            data={filtered}
-            rowKey={(i) => i.id}
-            selectable
-            searchable
-            searchPlaceholder="Search vendor, invoice, PO…"
-            selectedRows={selectedRows}
-            onToggleRow={toggleRow}
-            onToggleAll={toggleAll}
-            toolbarLeft={
-              selectedRows.size > 0 ? (
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">
-                    {selectedRows.size} selected · <span className="font-semibold text-foreground tabular-nums">{fmtUSD(selectedTotal)}</span>
-                    {selectedDiscount > 0 && (
-                      <span className="text-emerald-600 dark:text-emerald-400 ml-1">
-                        (capture {fmtUSD(selectedDiscount)})
-                      </span>
-                    )}
-                  </span>
-                  <button
-                    onClick={() => setRunSheetOpen(true)}
-                    className="text-xs font-medium px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center gap-1.5"
-                  >
-                    <Send className="h-3 w-3" /> Pay {selectedRows.size}
-                  </button>
-                  <button className="text-xs font-medium px-3 py-1.5 rounded-md border border-border hover:bg-secondary transition-colors flex items-center gap-1.5">
-                    <CalendarClock className="h-3 w-3" /> Schedule
-                  </button>
-                  <button className="text-xs font-medium px-3 py-1.5 rounded-md border border-border hover:bg-secondary transition-colors flex items-center gap-1.5">
-                    <Pause className="h-3 w-3" /> Hold
-                  </button>
-                </div>
-              ) : null
-            }
-            renderRowActions={(r) => (
-              <RowActions
-                review={{ label: "View", onClick: () => {}, icon: <Eye className="h-3.5 w-3.5" /> }}
-                primary={{
-                  label: r.status === "Failed" ? "Retry" : "Pay",
-                  onClick: () => setRunSheetOpen(true),
-                  icon: <Check className="h-3.5 w-3.5" />,
-                }}
-                more={[
-                  { label: "Schedule", onClick: () => {}, icon: <CalendarClock className="h-3.5 w-3.5" /> },
-                  { label: "Send remittance", onClick: () => {}, icon: <Mail className="h-3.5 w-3.5" /> },
-                  { label: "Mark paid externally", onClick: () => {}, icon: <FileCheck className="h-3.5 w-3.5" /> },
-                  { label: "Place on hold", onClick: () => {}, icon: <Pause className="h-3.5 w-3.5" />, destructive: true },
-                ]}
-              />
-            )}
-          />
+          {tab === "transactions" ? (
+            <TransactionsView />
+          ) : tab === "activity" ? (
+            <ActivityView />
+          ) : (
+            <DataTable<Invoice>
+              storageKey="ap-payments"
+              columns={columns}
+              data={filtered}
+              rowKey={(i) => i.id}
+              selectable
+              searchable
+              searchPlaceholder="Search vendor, invoice, PO…"
+              selectedRows={selectedRows}
+              onToggleRow={toggleRow}
+              onToggleAll={toggleAll}
+              toolbarLeft={
+                selectedRows.size > 0 ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">
+                      {selectedRows.size} selected · <span className="font-semibold text-foreground tabular-nums">{fmtUSD(selectedTotal)}</span>
+                      {selectedDiscount > 0 && (
+                        <span className="text-emerald-600 dark:text-emerald-400 ml-1">
+                          (capture {fmtUSD(selectedDiscount)})
+                        </span>
+                      )}
+                    </span>
+                    <button
+                      onClick={() => setRunSheetOpen(true)}
+                      className="text-xs font-medium px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center gap-1.5"
+                    >
+                      <Send className="h-3 w-3" /> Pay {selectedRows.size}
+                    </button>
+                    <button className="text-xs font-medium px-3 py-1.5 rounded-md border border-border hover:bg-secondary transition-colors flex items-center gap-1.5">
+                      <CalendarClock className="h-3 w-3" /> Schedule
+                    </button>
+                    <button className="text-xs font-medium px-3 py-1.5 rounded-md border border-border hover:bg-secondary transition-colors flex items-center gap-1.5">
+                      <Pause className="h-3 w-3" /> Hold
+                    </button>
+                  </div>
+                ) : null
+              }
+              renderRowActions={(r) => (
+                <RowActions
+                  review={{ label: "View", onClick: () => {}, icon: <Eye className="h-3.5 w-3.5" /> }}
+                  primary={{
+                    label: r.status === "Failed" ? "Retry" : "Pay",
+                    onClick: () => setRunSheetOpen(true),
+                    icon: <Check className="h-3.5 w-3.5" />,
+                  }}
+                  more={[
+                    { label: "Schedule", onClick: () => {}, icon: <CalendarClock className="h-3.5 w-3.5" /> },
+                    { label: "Send remittance", onClick: () => {}, icon: <Mail className="h-3.5 w-3.5" /> },
+                    { label: "Mark paid externally", onClick: () => {}, icon: <FileCheck className="h-3.5 w-3.5" /> },
+                    { label: "Place on hold", onClick: () => {}, icon: <Pause className="h-3.5 w-3.5" />, destructive: true },
+                  ]}
+                />
+              )}
+            />
+          )}
+
         </div>
       </div>
 
