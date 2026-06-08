@@ -110,6 +110,8 @@ const suggestionStyles: Record<AiSuggestion, string> = {
 export default function PaymentsContent() {
   const [tab, setTab] = useState<TabKey>("queue");
   const [methodFilter, setMethodFilter] = useState<Method | "All">("All");
+  const [approverFilter, setApproverFilter] = useState<string>("All approvers");
+  const [dueWindowFilter, setDueWindowFilter] = useState<string>("Any time");
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [runSheetOpen, setRunSheetOpen] = useState(false);
 
