@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 
 const DEFAULT_COLUMN_WIDTH = 160;
 const SELECT_COLUMN_WIDTH = 44;
-const ACTIONS_COLUMN_WIDTH = 132;
+const ACTIONS_COLUMN_WIDTH = 72;
 
 export interface DataTableColumn<T> {
   key: string;
