@@ -753,7 +753,11 @@ function EditVendorPanel({ vendor, onClose }: { vendor: Vendor; onClose: () => v
             <Field label="Status">
               <div className="inline-flex items-center gap-0.5 p-0.5 rounded-md bg-secondary border border-border">
                 {(["Active", "Needs review", "Inactive"] as VendorStatus[]).map(s => (
-                  <button key={s} className={`text-xs font-medium px-2.5 py-1 rounded transition-colors ${vendor.status === s ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+                  <button
+                    key={s}
+                    onClick={() => setStatus(s)}
+                    className={`text-xs font-medium px-2.5 py-1 rounded transition-colors ${status === s ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                  >
                     {s}
                   </button>
                 ))}
