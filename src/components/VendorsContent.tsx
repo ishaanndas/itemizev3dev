@@ -950,3 +950,192 @@ function ContactRow({ icon: Icon, value }: { icon: any; value: string }) {
     </div>
   );
 }
+
+// ---------------- Merge panel ----------------
+function MergeVendorsPanel({ seed, onClose }: { seed: Vendor[]; onClose: () => void }) {
+  // If user opened from "Review duplicates" with no seed, show AI-detected duplicate groups first
+  const [groupIdx, setGroupIdx] = useState(0);
+  const aiGroups: Vendor[][] = useMemo(() => {
+    return [
+      vendors.filter(v => ["v3"].includes(v.id)).concat(
+        // synthesize a duplicate for demo
+        [{ ...vendors.find(v => v.id === "v3")!, id: "v3-dup", name: "Apple Computer Inc", externalId: "VEN-2204", docCount: 6, totalSpend: 12_400, amountDue: 0, aliases: ["Apple Computer"], suggestedAliases: [], aiHealth: 0.78, aiHealthIssues: ["Possible duplicate of Apple Inc"] }],
+      ),
+      vendors.filter(v => ["v4"].includes(v.id)).concat(
+        [{ ...vendors.find(v => v.id === "v4")!, id: "v4-dup", name: "Tech Pro Solutions", externalId: "VEN-2310", docCount: 9, totalSpend: 18_900, amountDue: 0, aliases: ["TPS"], suggestedAliases: [], aiHealth: 0.74, aiHealthIssues: ["Possible duplicate of TechPro Inc"] }],
+      ),
+    ];
+  }, []);
+
+  const usingAi = seed.length === 0;
+  const candidates: Vendor[] = usingAi ? aiGroups[groupIdx] : seed;
+
+  const [primaryId, setPrimaryId] = useState<string>(
+    candidates.reduce((a, b) => (a.docCount >= b.docCount ? a : b)).id,
+  );
+  const primary = candidates.find(v => v.id === primaryId)!;
+  const others = candidates.filter(v => v.id !== primaryId);
+
+  const totalDocs = candidates.reduce((s, v) => s + v.docCount, 0);
+  const totalSpend = candidates.reduce((s, v) => s + v.totalSpend, 0);
+  const mergedAliases = Array.from(new Set(candidates.flatMap(v => [v.name, ...v.aliases])));
+
+  return (
+    <>
+      <SheetHeader className="px-5 py-4 border-b border-border shrink-0">
+        <div className="flex items-start gap-3">
+          <div className="h-10 w-10 rounded-lg bg-violet-500/15 text-violet-700 dark:text-violet-400 flex items-center justify-center shrink-0">
+            <GitMerge className="h-5 w-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <SheetTitle className="text-base">Merge vendors</SheetTitle>
+            <SheetDescription className="text-xs">
+              {usingAi
+                ? "AI-detected duplicate group. Choose the primary record — others will be merged into it."
+                : `Merging ${candidates.length} selected vendors into a single record.`}
+            </SheetDescription>
+          </div>
+        </div>
+
+        {usingAi && aiGroups.length > 1 && (
+          <div className="flex items-center gap-2 mt-3">
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">AI duplicate groups</span>
+            <div className="flex items-center gap-0.5 p-0.5 rounded-md bg-secondary border border-border">
+              {aiGroups.map((g, i) => (
+                <button
+                  key={i}
+                  onClick={() => { setGroupIdx(i); setPrimaryId(g[0].id); }}
+                  className={`text-[11px] font-medium px-2 py-1 rounded transition-colors ${groupIdx === i ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  Group {i + 1}
+                </button>
+              ))}
+            </div>
+            <span className="ml-auto text-[10px] text-muted-foreground tabular-nums">{groupIdx + 1} of {aiGroups.length}</span>
+          </div>
+        )}
+      </SheetHeader>
+
+      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+        {/* AI confidence banner */}
+        <div className="rounded-lg border border-violet-200 dark:border-violet-500/30 bg-violet-50 dark:bg-violet-500/5 p-3">
+          <div className="flex items-start gap-2">
+            <Sparkles className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400 mt-0.5 shrink-0" />
+            <div className="text-[11px] text-foreground min-w-0">
+              <span className="font-semibold">AI confidence: {usingAi ? "97%" : "user-initiated"}.</span>{" "}
+              {usingAi
+                ? "Matched on Tax ID, remit address, and overlapping invoice patterns across 24 documents."
+                : "Verify the selected vendors are truly duplicates before merging — this action is irreversible."}
+            </div>
+          </div>
+        </div>
+
+        {/* Choose primary */}
+        <div>
+          <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-2">Choose primary record</div>
+          <div className="space-y-1.5">
+            {candidates.map(v => {
+              const isPrimary = v.id === primaryId;
+              return (
+                <label
+                  key={v.id}
+                  className={`flex items-center gap-3 p-2.5 rounded-lg border cursor-pointer transition-colors ${isPrimary ? "border-primary bg-primary/5" : "border-border bg-card hover:bg-secondary/50"}`}
+                >
+                  <input
+                    type="radio"
+                    name="primary"
+                    checked={isPrimary}
+                    onChange={() => setPrimaryId(v.id)}
+                    className="text-primary"
+                  />
+                  <div className="h-8 w-8 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <Building2 className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs font-semibold text-foreground truncate">{v.name}</span>
+                      {isPrimary && (
+                        <span className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-primary text-primary-foreground">Primary</span>
+                      )}
+                      <HealthPill score={v.aiHealth} />
+                    </div>
+                    <div className="text-[10px] text-muted-foreground mt-0.5 truncate">
+                      {v.externalId ?? "no ID"} · {v.docCount} docs · {fmtUSD(v.totalSpend)} YTD
+                    </div>
+                  </div>
+                  {isPrimary && <Check className="h-4 w-4 text-primary shrink-0" />}
+                </label>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Merge preview */}
+        <div>
+          <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-2">After merge</div>
+          <div className="rounded-lg border border-border bg-card p-3 space-y-2.5">
+            <div className="flex items-center gap-2 pb-2 border-b border-border">
+              <div className="h-7 w-7 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <Building2 className="h-3.5 w-3.5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-semibold text-foreground truncate">{primary.name}</div>
+                <div className="text-[10px] text-muted-foreground truncate">{primary.externalId ?? "no external ID"}</div>
+              </div>
+              <span className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-primary text-primary-foreground">Survives</span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              <MiniStat label="Docs" value={`${totalDocs}`} />
+              <MiniStat label="Spend YTD" value={fmtUSD(totalSpend)} />
+              <MiniStat label="Aliases" value={`${mergedAliases.length}`} />
+            </div>
+
+            <div>
+              <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">Merged aliases</div>
+              <div className="flex items-center gap-1 flex-wrap">
+                {mergedAliases.map(a => (
+                  <span key={a} className="inline-flex items-center gap-1 text-[10px] font-medium rounded px-1.5 py-0.5 bg-secondary text-foreground/80 border border-border">
+                    <Tag className="h-2.5 w-2.5" /> {a}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">Will merge into primary</div>
+              <div className="space-y-1">
+                {others.map(v => (
+                  <div key={v.id} className="flex items-center gap-2 text-[11px] text-foreground">
+                    <span className="truncate flex-1">{v.name}</span>
+                    <ArrowRight className="h-3 w-3 text-muted-foreground" />
+                    <span className="text-muted-foreground truncate">{primary.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/5 p-3">
+          <div className="flex items-start gap-2">
+            <AlertCircle className="h-3.5 w-3.5 text-amber-700 dark:text-amber-400 mt-0.5 shrink-0" />
+            <div className="text-[11px] text-foreground">
+              <span className="font-semibold">This action is irreversible.</span> All historical documents, payments, and audit entries from merged vendors will be re-pointed to <span className="font-semibold">{primary.name}</span>.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="px-5 py-3 border-t border-border bg-card flex items-center justify-end gap-2 shrink-0">
+        <button onClick={onClose} className="text-sm font-medium px-3 py-2 rounded-md hover:bg-secondary transition-colors">Cancel</button>
+        <button
+          disabled={candidates.length < 2}
+          className="text-sm font-medium bg-primary text-primary-foreground px-3.5 py-2 rounded-md hover:opacity-90 transition-opacity inline-flex items-center gap-1.5 disabled:opacity-50"
+        >
+          <GitMerge className="h-3.5 w-3.5" /> Merge {candidates.length} vendors
+        </button>
+      </div>
+    </>
+  );
+}
