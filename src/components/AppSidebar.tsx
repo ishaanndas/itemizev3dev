@@ -128,8 +128,6 @@ const apNavigation: NavGroup[] = [
     defaultOpen: true,
     items: [
       { name: "Vendor Management", icon: Users, href: "/vendors" },
-      { name: "Vendor Analytics", icon: BarChart3 },
-      { name: "Merge Vendors", icon: GitMerge },
     ],
   },
 ];
