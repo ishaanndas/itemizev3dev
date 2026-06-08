@@ -488,177 +488,62 @@ export default function VendorsContent() {
             </div>
           </div>
 
-          {/* Toolbar */}
-          <div className="rounded-xl border border-border bg-card p-2.5 mb-3 flex items-center gap-2 flex-wrap min-w-0">
-            <div className="relative flex-1 min-w-[180px] max-w-md">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search vendors, aliases, IDs…"
-                className="w-full pl-8 pr-3 py-1.5 text-xs rounded-md bg-secondary/60 border border-transparent focus:bg-card focus:border-border focus:outline-none"
-              />
-            </div>
-            <div className="flex items-center gap-0.5 p-0.5 rounded-md bg-secondary/60 border border-border">
-              {(["All", "Active", "Needs review", "Inactive"] as const).map(s => (
-                <button
-                  key={s}
-                  onClick={() => setStatusFilter(s)}
-                  className={`text-[11px] font-medium px-2 py-1 rounded transition-colors ${
-                    statusFilter === s ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {s} {s !== "All" && <span className="ml-1 text-muted-foreground tabular-nums">{vendors.filter(v => v.status === s).length}</span>}
-                </button>
-              ))}
-            </div>
-            <div className="ml-auto text-[11px] text-muted-foreground tabular-nums">
-              {filtered.length} of {vendors.length}
-            </div>
-          </div>
-
-          {/* Bulk action bar */}
-          {selectedIds.size > 0 && (
-            <div className="rounded-xl border border-primary/30 bg-primary/5 px-3 py-2 mb-3 flex items-center justify-between gap-2 flex-wrap">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="text-xs font-semibold text-foreground tabular-nums">{selectedIds.size} selected</span>
-                <button onClick={() => setSelectedIds(new Set())} className="text-[11px] text-muted-foreground hover:text-foreground">Clear</button>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={() => openMerge()}
-                  disabled={selectedIds.size < 2}
-                  className="text-xs font-medium px-2.5 py-1.5 rounded-md bg-primary text-primary-foreground hover:opacity-90 transition-opacity inline-flex items-center gap-1 disabled:opacity-50"
-                >
-                  <GitMerge className="h-3 w-3" /> Merge {selectedIds.size >= 2 ? `${selectedIds.size} vendors` : "(select 2+)"}
-                </button>
-                <button className="text-xs font-medium px-2.5 py-1.5 rounded-md border border-border bg-card hover:bg-secondary transition-colors">Set inactive</button>
-                <button className="text-xs font-medium px-2.5 py-1.5 rounded-md border border-border bg-card hover:bg-secondary transition-colors">Export</button>
-              </div>
-            </div>
-          )}
-
-          {/* Vendor table */}
-          <div className="rounded-xl border border-border bg-card overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border bg-secondary/40">
-                    <th className="text-left text-[10px] font-semibold uppercase tracking-wide text-muted-foreground px-3 py-2 w-8">
-                      <input
-                        type="checkbox"
-                        className="rounded border-border"
-                        checked={filtered.length > 0 && selectedIds.size === filtered.length}
-                        onChange={toggleSelectAll}
-                      />
-                    </th>
-                    <th className="text-left text-[10px] font-semibold uppercase tracking-wide text-muted-foreground px-3 py-2">Vendor</th>
-                    <th className="text-left text-[10px] font-semibold uppercase tracking-wide text-muted-foreground px-3 py-2">External ID</th>
-                    <th className="text-left text-[10px] font-semibold uppercase tracking-wide text-muted-foreground px-3 py-2">Aliases</th>
-                    <th className="text-right text-[10px] font-semibold uppercase tracking-wide text-muted-foreground px-3 py-2">Docs</th>
-                    <th className="text-right text-[10px] font-semibold uppercase tracking-wide text-muted-foreground px-3 py-2">Spend YTD</th>
-                    <th className="text-right text-[10px] font-semibold uppercase tracking-wide text-muted-foreground px-3 py-2">Due</th>
-                    <th className="text-left text-[10px] font-semibold uppercase tracking-wide text-muted-foreground px-3 py-2">AI health</th>
-                    <th className="text-left text-[10px] font-semibold uppercase tracking-wide text-muted-foreground px-3 py-2">Status</th>
-                    <th className="text-right text-[10px] font-semibold uppercase tracking-wide text-muted-foreground px-3 py-2 w-20"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map(v => (
-                    <tr
-                      key={v.id}
-                      onClick={() => openEdit(v)}
-                      className={`border-b border-border last:border-0 hover:bg-secondary/40 cursor-pointer transition-colors ${selectedIds.has(v.id) ? "bg-primary/5" : ""}`}
+          {/* Vendor table (standard customizable DataTable) */}
+          <DataTable<Vendor>
+            storageKey="ap-vendors"
+            columns={columns}
+            data={filtered}
+            rowKey={(v) => v.id}
+            selectable
+            searchable
+            searchValue={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search vendors, aliases, IDs…"
+            selectedRows={selectedRows}
+            onToggleRow={toggleRow}
+            onToggleAll={toggleAll}
+            onRowClick={(v) => openEdit(v)}
+            toolbarLeft={
+              selectedRows.size > 0 ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-foreground tabular-nums">{selectedRows.size} selected</span>
+                  <button
+                    onClick={() => openMerge()}
+                    disabled={selectedRows.size < 2}
+                    className="text-xs font-medium px-2.5 py-1.5 rounded-md bg-primary text-primary-foreground hover:opacity-90 transition-opacity inline-flex items-center gap-1 disabled:opacity-50"
+                  >
+                    <GitMerge className="h-3 w-3" /> Merge {selectedRows.size >= 2 ? selectedRows.size : ""}
+                  </button>
+                  <button className="text-xs font-medium px-2.5 py-1.5 rounded-md border border-border bg-card hover:bg-secondary transition-colors">Set inactive</button>
+                  <button onClick={() => setSelectedRows(new Set())} className="text-[11px] text-muted-foreground hover:text-foreground">Clear</button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-0.5 p-0.5 rounded-md bg-secondary/60 border border-border">
+                  {(["All", "Active", "Needs review", "Inactive"] as const).map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setStatusFilter(s)}
+                      className={`text-[11px] font-medium px-2 py-1 rounded transition-colors ${
+                        statusFilter === s ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                      }`}
                     >
-                      <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
-                        <input
-                          type="checkbox"
-                          className="rounded border-border"
-                          checked={selectedIds.has(v.id)}
-                          onChange={() => toggleSelect(v.id)}
-                        />
-                      </td>
-                      <td className="px-3 py-2.5">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <div className="h-7 w-7 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                            <Building2 className="h-3.5 w-3.5" />
-                          </div>
-                          <div className="min-w-0">
-                            <div className="font-medium text-foreground truncate text-[13px]">{v.name}</div>
-                            <div className="text-[11px] text-muted-foreground truncate">{v.category}{v.email ? ` · ${v.email}` : ""}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-3 py-2.5">
-                        {v.externalId ? (
-                          <span className="font-mono text-[11px] text-foreground/80">{v.externalId}</span>
-                        ) : (
-                          <span className="text-[11px] text-muted-foreground">—</span>
-                        )}
-                      </td>
-                      <td className="px-3 py-2.5">
-                        <div className="flex items-center gap-1 flex-wrap min-w-0 max-w-[220px]">
-                          {v.aliases.slice(0, 2).map(a => (
-                            <span key={a} className="inline-flex items-center gap-1 text-[10px] font-medium rounded px-1.5 py-0.5 bg-secondary text-foreground/70 border border-border">
-                              <Tag className="h-2.5 w-2.5" /> {a}
-                            </span>
-                          ))}
-                          {v.aliases.length > 2 && (
-                            <span className="text-[10px] text-muted-foreground">+{v.aliases.length - 2}</span>
-                          )}
-                          {v.suggestedAliases.length > 0 && (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold rounded px-1.5 py-0.5 bg-violet-500/10 text-violet-700 dark:text-violet-400 border border-violet-500/30">
-                              <Sparkles className="h-2.5 w-2.5" /> +{v.suggestedAliases.length} AI
-                            </span>
-                          )}
-                          {v.aliases.length === 0 && v.suggestedAliases.length === 0 && (
-                            <span className="text-[11px] text-muted-foreground">—</span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-3 py-2.5 text-right tabular-nums text-[13px] text-foreground">{v.docCount}</td>
-                      <td className="px-3 py-2.5 text-right tabular-nums text-[13px] text-foreground font-medium">{fmtUSD(v.totalSpend)}</td>
-                      <td className="px-3 py-2.5 text-right tabular-nums text-[13px]">
-                        {v.amountDue > 0 ? (
-                          <span className="text-amber-700 dark:text-amber-400 font-medium">{fmtUSD(v.amountDue)}</span>
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </td>
-                      <td className="px-3 py-2.5"><HealthPill score={v.aiHealth} /></td>
-                      <td className="px-3 py-2.5">
-                        <span className={`inline-flex items-center gap-1 text-[10px] font-medium border rounded-full px-2 py-0.5 ${statusStyles[v.status]}`}>
-                          <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
-                          {v.status}
-                        </span>
-                      </td>
-                      <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-end gap-0.5">
-                          <button onClick={() => openEdit(v)} className="h-7 w-7 rounded-md hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors" title="Edit">
-                            <Pencil className="h-3.5 w-3.5" />
-                          </button>
-                          <button className="h-7 w-7 rounded-md hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors" title="Delete">
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                          <button className="h-7 w-7 rounded-md hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors" title="More">
-                            <MoreHorizontal className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
+                      {s}{s !== "All" && <span className="ml-1 text-muted-foreground tabular-nums">{vendors.filter((v) => v.status === s).length}</span>}
+                    </button>
                   ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="px-3 py-2 border-t border-border bg-secondary/30 text-[11px] text-muted-foreground flex items-center justify-between">
-              <span>Showing {filtered.length} vendors</span>
-              <div className="flex items-center gap-2">
-                <button className="px-2 py-1 rounded hover:bg-secondary">Previous</button>
-                <span>Page 1 of 1</span>
-                <button className="px-2 py-1 rounded hover:bg-secondary">Next</button>
-              </div>
-            </div>
-          </div>
+                </div>
+              )
+            }
+            renderRowActions={(v) => (
+              <RowActions
+                primary={{ label: "Edit", icon: <Pencil className="h-3.5 w-3.5" />, onClick: () => openEdit(v) }}
+                more={[
+                  { label: "View documents", icon: <FileText className="h-3.5 w-3.5" />, onClick: () => openEdit(v) },
+                  { label: "Merge with…", icon: <GitMerge className="h-3.5 w-3.5" />, onClick: () => openMerge([v]) },
+                  { label: "Delete vendor", icon: <Trash2 className="h-3.5 w-3.5" />, destructive: true, onClick: () => {} },
+                ]}
+              />
+            )}
+          />
         </div>
       </div>
 
