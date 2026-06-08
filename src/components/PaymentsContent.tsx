@@ -597,6 +597,8 @@ const txStatusStyles: Record<TxStatus, string> = {
 
 function TransactionsView() {
   const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [statusFilter, setStatusFilter] = useState<TxStatus | "All">("All");
+
 
   const toggleRow = (i: number) => {
     setSelected((p) => {
@@ -709,11 +711,40 @@ function TransactionsView() {
         <RunStat label="Fees (MTD)" value={fmtUSD(totalFees)} sub="rebates +$21.03" />
       </div>
 
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <div className="flex flex-wrap items-center gap-1 bg-secondary/60 border border-border rounded-lg p-1">
+          {(["All","Settled","In flight","Failed","Returned","Voided"] as const).map((s) => {
+            const count = s === "All" ? transactions.length : transactions.filter((t) => t.status === s).length;
+            return (
+              <button
+                key={s}
+                onClick={() => setStatusFilter(s)}
+                className={`px-3 py-1 text-xs font-medium rounded-md transition-colors inline-flex items-center gap-1.5 ${
+                  statusFilter === s ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {s}
+                <span className="text-[10px] tabular-nums opacity-70">{count}</span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex items-center gap-2">
+          <button className="flex items-center gap-1.5 text-sm border border-border rounded-lg px-3 py-1.5 hover:bg-secondary transition-colors text-foreground">
+            <Filter className="h-3.5 w-3.5" /> Account <ChevronDown className="h-3 w-3" />
+          </button>
+          <button className="flex items-center gap-1.5 text-sm border border-border rounded-lg px-3 py-1.5 hover:bg-secondary transition-colors text-foreground">
+            <RefreshIcon /> Sync now
+          </button>
+        </div>
+      </div>
+
       <DataTable<Transaction>
         storageKey="ap-payments-transactions"
         columns={columns}
-        data={transactions}
+        data={statusFilter === "All" ? transactions : transactions.filter((t) => t.status === statusFilter)}
         rowKey={(t) => t.id}
+
         selectable
         searchable
         searchPlaceholder="Search by tx id, vendor, reference…"
