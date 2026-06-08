@@ -604,6 +604,7 @@ const txStatusStyles: Record<TxStatus, string> = {
 function TransactionsView() {
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [statusFilter, setStatusFilter] = useState<TxStatus | "All">("All");
+  const [accountFilter, setAccountFilter] = useState<string>("All accounts");
 
 
   const toggleRow = (i: number) => {
