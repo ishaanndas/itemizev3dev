@@ -332,8 +332,11 @@ export default function VendorsContent() {
                 </div>
               </div>
               <div className="flex items-center gap-1.5">
-                <button className="text-xs font-medium px-2.5 py-1.5 rounded-md border border-border bg-card hover:bg-secondary transition-colors">
-                  Review duplicates
+                <button
+                  onClick={() => openMerge([])}
+                  className="text-xs font-medium px-2.5 py-1.5 rounded-md border border-border bg-card hover:bg-secondary transition-colors inline-flex items-center gap-1"
+                >
+                  <GitMerge className="h-3 w-3" /> Review duplicates
                 </button>
                 <button className="text-xs font-medium px-2.5 py-1.5 rounded-md bg-violet-600 text-white hover:bg-violet-700 transition-colors inline-flex items-center gap-1">
                   <Sparkles className="h-3 w-3" /> Review all suggestions
@@ -371,6 +374,27 @@ export default function VendorsContent() {
             </div>
           </div>
 
+          {/* Bulk action bar */}
+          {selectedIds.size > 0 && (
+            <div className="rounded-xl border border-primary/30 bg-primary/5 px-3 py-2 mb-3 flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-xs font-semibold text-foreground tabular-nums">{selectedIds.size} selected</span>
+                <button onClick={() => setSelectedIds(new Set())} className="text-[11px] text-muted-foreground hover:text-foreground">Clear</button>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => openMerge()}
+                  disabled={selectedIds.size < 2}
+                  className="text-xs font-medium px-2.5 py-1.5 rounded-md bg-primary text-primary-foreground hover:opacity-90 transition-opacity inline-flex items-center gap-1 disabled:opacity-50"
+                >
+                  <GitMerge className="h-3 w-3" /> Merge {selectedIds.size >= 2 ? `${selectedIds.size} vendors` : "(select 2+)"}
+                </button>
+                <button className="text-xs font-medium px-2.5 py-1.5 rounded-md border border-border bg-card hover:bg-secondary transition-colors">Set inactive</button>
+                <button className="text-xs font-medium px-2.5 py-1.5 rounded-md border border-border bg-card hover:bg-secondary transition-colors">Export</button>
+              </div>
+            </div>
+          )}
+
           {/* Vendor table */}
           <div className="rounded-xl border border-border bg-card overflow-hidden">
             <div className="overflow-x-auto">
@@ -378,7 +402,12 @@ export default function VendorsContent() {
                 <thead>
                   <tr className="border-b border-border bg-secondary/40">
                     <th className="text-left text-[10px] font-semibold uppercase tracking-wide text-muted-foreground px-3 py-2 w-8">
-                      <input type="checkbox" className="rounded border-border" />
+                      <input
+                        type="checkbox"
+                        className="rounded border-border"
+                        checked={filtered.length > 0 && selectedIds.size === filtered.length}
+                        onChange={toggleSelectAll}
+                      />
                     </th>
                     <th className="text-left text-[10px] font-semibold uppercase tracking-wide text-muted-foreground px-3 py-2">Vendor</th>
                     <th className="text-left text-[10px] font-semibold uppercase tracking-wide text-muted-foreground px-3 py-2">External ID</th>
