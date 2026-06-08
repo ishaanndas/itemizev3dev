@@ -3,7 +3,7 @@ import PaymentsContent from "@/components/PaymentsContent";
 
 const Payments = () => (
   <div className="flex h-screen w-full overflow-hidden">
-    <AppSidebar activePage="Pay Documents" />
+    <AppSidebar activePage="Payments" />
     <PaymentsContent />
   </div>
 );
