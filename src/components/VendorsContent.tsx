@@ -660,6 +660,7 @@ function AddVendorPanel({ onClose }: { onClose: () => void }) {
 function EditVendorPanel({ vendor, onClose }: { vendor: Vendor; onClose: () => void }) {
   const [tab, setTab] = useState<"overview" | "aliases" | "payment" | "activity">("overview");
   const [acceptedAliases, setAcceptedAliases] = useState<Set<string>>(new Set());
+  const [status, setStatus] = useState<VendorStatus>(vendor.status);
 
   return (
     <>
