@@ -1,8 +1,8 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   Sparkles,
   Plus,
-  Search,
+  
   Upload,
   Download,
   Building2,
@@ -24,11 +24,13 @@ import {
   Landmark,
   Shield,
   Lock,
-  MoreHorizontal,
+  
   GitMerge,
   ArrowRight,
 } from "lucide-react";
 import TopBar from "./TopBar";
+import { DataTable, DataTableColumn } from "@/components/data-table/DataTable";
+import RowActions from "@/components/data-table/RowActions";
 import {
   Sheet,
   SheetContent,
@@ -237,38 +239,179 @@ export default function VendorsContent() {
   const [statusFilter, setStatusFilter] = useState<"All" | VendorStatus>("All");
   const [selected, setSelected] = useState<Vendor | null>(null);
   const [mode, setMode] = useState<"edit" | "add" | "merge" | null>(null);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [mergeSeed, setMergeSeed] = useState<Vendor[] | null>(null);
 
+  // Inline alias state: per-vendor accepted suggestions + dismissed suggestions
+  const [acceptedAliases, setAcceptedAliases] = useState<Record<string, string[]>>({});
+  const [dismissedAliases, setDismissedAliases] = useState<Record<string, string[]>>({});
+
+  const acceptAlias = useCallback((vendorId: string, alias: string) => {
+    setAcceptedAliases((prev) => ({ ...prev, [vendorId]: [...(prev[vendorId] ?? []), alias] }));
+  }, []);
+  const dismissAlias = useCallback((vendorId: string, alias: string) => {
+    setDismissedAliases((prev) => ({ ...prev, [vendorId]: [...(prev[vendorId] ?? []), alias] }));
+  }, []);
+
   const filtered = useMemo(() => {
-    return vendors.filter(v => {
+    return vendors.filter((v) => {
       if (statusFilter !== "All" && v.status !== statusFilter) return false;
-      if (search && !`${v.name} ${v.aliases.join(" ")} ${v.externalId ?? ""}`.toLowerCase().includes(search.toLowerCase())) return false;
       return true;
     });
-  }, [search, statusFilter]);
+  }, [statusFilter]);
 
-  const totalSuggestions = vendors.reduce((s, v) => s + v.suggestedAliases.length, 0);
-  const needsReview = vendors.filter(v => v.status === "Needs review").length;
+  const totalSuggestions = vendors.reduce(
+    (s, v) => s + v.suggestedAliases.filter((a) => !(dismissedAliases[v.id] ?? []).includes(a.alias) && !(acceptedAliases[v.id] ?? []).includes(a.alias)).length,
+    0,
+  );
+  const needsReview = vendors.filter((v) => v.status === "Needs review").length;
   const totalSpend = vendors.reduce((s, v) => s + v.totalSpend, 0);
 
-  const selectedVendors = vendors.filter(v => selectedIds.has(v.id));
-  const toggleSelect = (id: string) => {
-    setSelectedIds(prev => {
+  const selectedVendors = Array.from(selectedRows).map((i) => filtered[i]).filter(Boolean);
+  const toggleRow = useCallback((i: number) => {
+    setSelectedRows((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      next.has(i) ? next.delete(i) : next.add(i);
       return next;
     });
-  };
-  const toggleSelectAll = () => {
-    if (selectedIds.size === filtered.length) setSelectedIds(new Set());
-    else setSelectedIds(new Set(filtered.map(v => v.id)));
-  };
+  }, []);
+  const toggleAll = useCallback(() => {
+    setSelectedRows((prev) => (prev.size === filtered.length ? new Set() : new Set(filtered.map((_, i) => i))));
+  }, [filtered]);
 
   const openEdit = (v: Vendor) => { setSelected(v); setMode("edit"); };
   const openAdd = () => { setSelected(null); setMode("add"); };
   const openMerge = (seed?: Vendor[]) => { setMergeSeed(seed ?? selectedVendors); setMode("merge"); };
   const closeSheet = () => { setMode(null); setSelected(null); setMergeSeed(null); };
+
+  const columns: DataTableColumn<Vendor>[] = [
+    {
+      key: "vendor", label: "Vendor", width: 240,
+      accessor: (v) => `${v.name} ${v.email ?? ""} ${v.category}`,
+      render: (v) => (
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="h-7 w-7 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <Building2 className="h-3.5 w-3.5" />
+          </div>
+          <div className="min-w-0">
+            <div className="font-medium text-foreground truncate text-[13px]">{v.name}</div>
+            <div className="text-[11px] text-muted-foreground truncate">{v.category}{v.email ? ` · ${v.email}` : ""}</div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "externalId", label: "External ID", width: 120,
+      accessor: (v) => v.externalId ?? "",
+      render: (v) => v.externalId
+        ? <span className="font-mono text-[11px] text-foreground/80">{v.externalId}</span>
+        : <span className="text-[11px] text-muted-foreground">—</span>,
+    },
+    {
+      key: "aliases", label: "Aliases", width: 340,
+      accessor: (v) => [...v.aliases, ...v.suggestedAliases.map(s => s.alias)].join(" "),
+      render: (v) => {
+        const accepted = acceptedAliases[v.id] ?? [];
+        const dismissed = dismissedAliases[v.id] ?? [];
+        const allConfirmed = [...v.aliases, ...accepted];
+        const pendingSuggestions = v.suggestedAliases.filter(
+          (s) => !accepted.includes(s.alias) && !dismissed.includes(s.alias),
+        );
+        return (
+          <div className="flex items-center gap-1 flex-wrap min-w-0" data-no-row-click onClick={(e) => e.stopPropagation()}>
+            {allConfirmed.slice(0, 3).map((a) => (
+              <span key={a} className="inline-flex items-center gap-1 text-[10px] font-medium rounded px-1.5 py-0.5 bg-secondary text-foreground/80 border border-border">
+                <Tag className="h-2.5 w-2.5" /> {a}
+              </span>
+            ))}
+            {allConfirmed.length > 3 && (
+              <span className="text-[10px] text-muted-foreground">+{allConfirmed.length - 3}</span>
+            )}
+            {pendingSuggestions.slice(0, 2).map((s) => (
+              <span
+                key={s.alias}
+                className="inline-flex items-center gap-0.5 text-[10px] font-medium rounded border border-violet-500/40 bg-violet-500/10 text-violet-700 dark:text-violet-300 pl-1.5 pr-0.5 py-0.5"
+                title={`${Math.round(s.confidence * 100)}% match · ${s.source}`}
+              >
+                <Sparkles className="h-2.5 w-2.5" />
+                <span className="truncate max-w-[120px]">{s.alias}</span>
+                <span className="tabular-nums opacity-70">{Math.round(s.confidence * 100)}%</span>
+                <button
+                  onClick={() => acceptAlias(v.id, s.alias)}
+                  title="Accept alias"
+                  className="h-4 w-4 ml-0.5 rounded inline-flex items-center justify-center bg-violet-600 text-white hover:bg-violet-700 transition-colors"
+                >
+                  <Check className="h-2.5 w-2.5" />
+                </button>
+                <button
+                  onClick={() => dismissAlias(v.id, s.alias)}
+                  title="Dismiss"
+                  className="h-4 w-4 rounded inline-flex items-center justify-center text-violet-700 dark:text-violet-300 hover:bg-violet-500/20 transition-colors"
+                >
+                  <X className="h-2.5 w-2.5" />
+                </button>
+              </span>
+            ))}
+            {pendingSuggestions.length > 2 && (
+              <button
+                onClick={() => openEdit(v)}
+                className="inline-flex items-center gap-1 text-[10px] font-semibold rounded px-1.5 py-0.5 bg-violet-500/10 text-violet-700 dark:text-violet-300 border border-violet-500/30 hover:bg-violet-500/20 transition-colors"
+              >
+                <Sparkles className="h-2.5 w-2.5" /> +{pendingSuggestions.length - 2} more
+              </button>
+            )}
+            {allConfirmed.length === 0 && pendingSuggestions.length === 0 && (
+              <span className="text-[11px] text-muted-foreground">—</span>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      key: "docCount", label: "Docs", width: 80, align: "right",
+      accessor: (v) => String(v.docCount),
+      render: (v) => <span className="tabular-nums text-[13px] text-foreground">{v.docCount}</span>,
+    },
+    {
+      key: "totalSpend", label: "Spend YTD", width: 120, align: "right",
+      accessor: (v) => String(v.totalSpend),
+      render: (v) => <span className="tabular-nums text-[13px] text-foreground font-medium">{fmtUSD(v.totalSpend)}</span>,
+    },
+    {
+      key: "amountDue", label: "Due", width: 110, align: "right",
+      accessor: (v) => String(v.amountDue),
+      render: (v) => v.amountDue > 0
+        ? <span className="tabular-nums text-[13px] text-amber-700 dark:text-amber-400 font-medium">{fmtUSD(v.amountDue)}</span>
+        : <span className="text-muted-foreground">—</span>,
+    },
+    {
+      key: "aiHealth", label: "AI health", width: 90,
+      accessor: (v) => String(Math.round(v.aiHealth * 100)),
+      render: (v) => <HealthPill score={v.aiHealth} />,
+    },
+    {
+      key: "lastProcessed", label: "Last activity", width: 110,
+      accessor: (v) => v.lastProcessed,
+      render: (v) => <span className="text-[11px] text-muted-foreground">{v.lastProcessed}</span>,
+      defaultVisible: false,
+    },
+    {
+      key: "paymentMethod", label: "Method", width: 110,
+      accessor: (v) => v.paymentMethod,
+      render: (v) => <span className="text-[11px] text-foreground/80">{v.paymentMethod}</span>,
+      defaultVisible: false,
+    },
+    {
+      key: "status", label: "Status", width: 130,
+      accessor: (v) => v.status,
+      render: (v) => (
+        <span className={`inline-flex items-center gap-1 text-[10px] font-medium border rounded-full px-2 py-0.5 ${statusStyles[v.status]}`}>
+          <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
+          {v.status}
+        </span>
+      ),
+    },
+  ];
 
   return (
     <div className="flex-1 flex flex-col min-h-0 min-w-0 bg-background">
@@ -345,177 +488,62 @@ export default function VendorsContent() {
             </div>
           </div>
 
-          {/* Toolbar */}
-          <div className="rounded-xl border border-border bg-card p-2.5 mb-3 flex items-center gap-2 flex-wrap min-w-0">
-            <div className="relative flex-1 min-w-[180px] max-w-md">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search vendors, aliases, IDs…"
-                className="w-full pl-8 pr-3 py-1.5 text-xs rounded-md bg-secondary/60 border border-transparent focus:bg-card focus:border-border focus:outline-none"
-              />
-            </div>
-            <div className="flex items-center gap-0.5 p-0.5 rounded-md bg-secondary/60 border border-border">
-              {(["All", "Active", "Needs review", "Inactive"] as const).map(s => (
-                <button
-                  key={s}
-                  onClick={() => setStatusFilter(s)}
-                  className={`text-[11px] font-medium px-2 py-1 rounded transition-colors ${
-                    statusFilter === s ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {s} {s !== "All" && <span className="ml-1 text-muted-foreground tabular-nums">{vendors.filter(v => v.status === s).length}</span>}
-                </button>
-              ))}
-            </div>
-            <div className="ml-auto text-[11px] text-muted-foreground tabular-nums">
-              {filtered.length} of {vendors.length}
-            </div>
-          </div>
-
-          {/* Bulk action bar */}
-          {selectedIds.size > 0 && (
-            <div className="rounded-xl border border-primary/30 bg-primary/5 px-3 py-2 mb-3 flex items-center justify-between gap-2 flex-wrap">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="text-xs font-semibold text-foreground tabular-nums">{selectedIds.size} selected</span>
-                <button onClick={() => setSelectedIds(new Set())} className="text-[11px] text-muted-foreground hover:text-foreground">Clear</button>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={() => openMerge()}
-                  disabled={selectedIds.size < 2}
-                  className="text-xs font-medium px-2.5 py-1.5 rounded-md bg-primary text-primary-foreground hover:opacity-90 transition-opacity inline-flex items-center gap-1 disabled:opacity-50"
-                >
-                  <GitMerge className="h-3 w-3" /> Merge {selectedIds.size >= 2 ? `${selectedIds.size} vendors` : "(select 2+)"}
-                </button>
-                <button className="text-xs font-medium px-2.5 py-1.5 rounded-md border border-border bg-card hover:bg-secondary transition-colors">Set inactive</button>
-                <button className="text-xs font-medium px-2.5 py-1.5 rounded-md border border-border bg-card hover:bg-secondary transition-colors">Export</button>
-              </div>
-            </div>
-          )}
-
-          {/* Vendor table */}
-          <div className="rounded-xl border border-border bg-card overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border bg-secondary/40">
-                    <th className="text-left text-[10px] font-semibold uppercase tracking-wide text-muted-foreground px-3 py-2 w-8">
-                      <input
-                        type="checkbox"
-                        className="rounded border-border"
-                        checked={filtered.length > 0 && selectedIds.size === filtered.length}
-                        onChange={toggleSelectAll}
-                      />
-                    </th>
-                    <th className="text-left text-[10px] font-semibold uppercase tracking-wide text-muted-foreground px-3 py-2">Vendor</th>
-                    <th className="text-left text-[10px] font-semibold uppercase tracking-wide text-muted-foreground px-3 py-2">External ID</th>
-                    <th className="text-left text-[10px] font-semibold uppercase tracking-wide text-muted-foreground px-3 py-2">Aliases</th>
-                    <th className="text-right text-[10px] font-semibold uppercase tracking-wide text-muted-foreground px-3 py-2">Docs</th>
-                    <th className="text-right text-[10px] font-semibold uppercase tracking-wide text-muted-foreground px-3 py-2">Spend YTD</th>
-                    <th className="text-right text-[10px] font-semibold uppercase tracking-wide text-muted-foreground px-3 py-2">Due</th>
-                    <th className="text-left text-[10px] font-semibold uppercase tracking-wide text-muted-foreground px-3 py-2">AI health</th>
-                    <th className="text-left text-[10px] font-semibold uppercase tracking-wide text-muted-foreground px-3 py-2">Status</th>
-                    <th className="text-right text-[10px] font-semibold uppercase tracking-wide text-muted-foreground px-3 py-2 w-20"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map(v => (
-                    <tr
-                      key={v.id}
-                      onClick={() => openEdit(v)}
-                      className={`border-b border-border last:border-0 hover:bg-secondary/40 cursor-pointer transition-colors ${selectedIds.has(v.id) ? "bg-primary/5" : ""}`}
+          {/* Vendor table (standard customizable DataTable) */}
+          <DataTable<Vendor>
+            storageKey="ap-vendors"
+            columns={columns}
+            data={filtered}
+            rowKey={(v) => v.id}
+            selectable
+            searchable
+            searchValue={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search vendors, aliases, IDs…"
+            selectedRows={selectedRows}
+            onToggleRow={toggleRow}
+            onToggleAll={toggleAll}
+            onRowClick={(v) => openEdit(v)}
+            toolbarLeft={
+              selectedRows.size > 0 ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-foreground tabular-nums">{selectedRows.size} selected</span>
+                  <button
+                    onClick={() => openMerge()}
+                    disabled={selectedRows.size < 2}
+                    className="text-xs font-medium px-2.5 py-1.5 rounded-md bg-primary text-primary-foreground hover:opacity-90 transition-opacity inline-flex items-center gap-1 disabled:opacity-50"
+                  >
+                    <GitMerge className="h-3 w-3" /> Merge {selectedRows.size >= 2 ? selectedRows.size : ""}
+                  </button>
+                  <button className="text-xs font-medium px-2.5 py-1.5 rounded-md border border-border bg-card hover:bg-secondary transition-colors">Set inactive</button>
+                  <button onClick={() => setSelectedRows(new Set())} className="text-[11px] text-muted-foreground hover:text-foreground">Clear</button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-0.5 p-0.5 rounded-md bg-secondary/60 border border-border">
+                  {(["All", "Active", "Needs review", "Inactive"] as const).map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setStatusFilter(s)}
+                      className={`text-[11px] font-medium px-2 py-1 rounded transition-colors ${
+                        statusFilter === s ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                      }`}
                     >
-                      <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
-                        <input
-                          type="checkbox"
-                          className="rounded border-border"
-                          checked={selectedIds.has(v.id)}
-                          onChange={() => toggleSelect(v.id)}
-                        />
-                      </td>
-                      <td className="px-3 py-2.5">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <div className="h-7 w-7 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                            <Building2 className="h-3.5 w-3.5" />
-                          </div>
-                          <div className="min-w-0">
-                            <div className="font-medium text-foreground truncate text-[13px]">{v.name}</div>
-                            <div className="text-[11px] text-muted-foreground truncate">{v.category}{v.email ? ` · ${v.email}` : ""}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-3 py-2.5">
-                        {v.externalId ? (
-                          <span className="font-mono text-[11px] text-foreground/80">{v.externalId}</span>
-                        ) : (
-                          <span className="text-[11px] text-muted-foreground">—</span>
-                        )}
-                      </td>
-                      <td className="px-3 py-2.5">
-                        <div className="flex items-center gap-1 flex-wrap min-w-0 max-w-[220px]">
-                          {v.aliases.slice(0, 2).map(a => (
-                            <span key={a} className="inline-flex items-center gap-1 text-[10px] font-medium rounded px-1.5 py-0.5 bg-secondary text-foreground/70 border border-border">
-                              <Tag className="h-2.5 w-2.5" /> {a}
-                            </span>
-                          ))}
-                          {v.aliases.length > 2 && (
-                            <span className="text-[10px] text-muted-foreground">+{v.aliases.length - 2}</span>
-                          )}
-                          {v.suggestedAliases.length > 0 && (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold rounded px-1.5 py-0.5 bg-violet-500/10 text-violet-700 dark:text-violet-400 border border-violet-500/30">
-                              <Sparkles className="h-2.5 w-2.5" /> +{v.suggestedAliases.length} AI
-                            </span>
-                          )}
-                          {v.aliases.length === 0 && v.suggestedAliases.length === 0 && (
-                            <span className="text-[11px] text-muted-foreground">—</span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-3 py-2.5 text-right tabular-nums text-[13px] text-foreground">{v.docCount}</td>
-                      <td className="px-3 py-2.5 text-right tabular-nums text-[13px] text-foreground font-medium">{fmtUSD(v.totalSpend)}</td>
-                      <td className="px-3 py-2.5 text-right tabular-nums text-[13px]">
-                        {v.amountDue > 0 ? (
-                          <span className="text-amber-700 dark:text-amber-400 font-medium">{fmtUSD(v.amountDue)}</span>
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </td>
-                      <td className="px-3 py-2.5"><HealthPill score={v.aiHealth} /></td>
-                      <td className="px-3 py-2.5">
-                        <span className={`inline-flex items-center gap-1 text-[10px] font-medium border rounded-full px-2 py-0.5 ${statusStyles[v.status]}`}>
-                          <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
-                          {v.status}
-                        </span>
-                      </td>
-                      <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-end gap-0.5">
-                          <button onClick={() => openEdit(v)} className="h-7 w-7 rounded-md hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors" title="Edit">
-                            <Pencil className="h-3.5 w-3.5" />
-                          </button>
-                          <button className="h-7 w-7 rounded-md hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors" title="Delete">
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                          <button className="h-7 w-7 rounded-md hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors" title="More">
-                            <MoreHorizontal className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
+                      {s}{s !== "All" && <span className="ml-1 text-muted-foreground tabular-nums">{vendors.filter((v) => v.status === s).length}</span>}
+                    </button>
                   ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="px-3 py-2 border-t border-border bg-secondary/30 text-[11px] text-muted-foreground flex items-center justify-between">
-              <span>Showing {filtered.length} vendors</span>
-              <div className="flex items-center gap-2">
-                <button className="px-2 py-1 rounded hover:bg-secondary">Previous</button>
-                <span>Page 1 of 1</span>
-                <button className="px-2 py-1 rounded hover:bg-secondary">Next</button>
-              </div>
-            </div>
-          </div>
+                </div>
+              )
+            }
+            renderRowActions={(v) => (
+              <RowActions
+                primary={{ label: "Edit", icon: <Pencil className="h-3.5 w-3.5" />, onClick: () => openEdit(v) }}
+                more={[
+                  { label: "View documents", icon: <FileText className="h-3.5 w-3.5" />, onClick: () => openEdit(v) },
+                  { label: "Merge with…", icon: <GitMerge className="h-3.5 w-3.5" />, onClick: () => openMerge([v]) },
+                  { label: "Delete vendor", icon: <Trash2 className="h-3.5 w-3.5" />, destructive: true, onClick: () => {} },
+                ]}
+              />
+            )}
+          />
         </div>
       </div>
 
