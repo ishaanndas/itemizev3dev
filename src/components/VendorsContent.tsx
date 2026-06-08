@@ -25,6 +25,8 @@ import {
   Shield,
   Lock,
   MoreHorizontal,
+  GitMerge,
+  ArrowRight,
 } from "lucide-react";
 import TopBar from "./TopBar";
 import {
@@ -234,7 +236,9 @@ export default function VendorsContent() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"All" | VendorStatus>("All");
   const [selected, setSelected] = useState<Vendor | null>(null);
-  const [mode, setMode] = useState<"edit" | "add" | null>(null);
+  const [mode, setMode] = useState<"edit" | "add" | "merge" | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [mergeSeed, setMergeSeed] = useState<Vendor[] | null>(null);
 
   const filtered = useMemo(() => {
     return vendors.filter(v => {
@@ -248,9 +252,23 @@ export default function VendorsContent() {
   const needsReview = vendors.filter(v => v.status === "Needs review").length;
   const totalSpend = vendors.reduce((s, v) => s + v.totalSpend, 0);
 
+  const selectedVendors = vendors.filter(v => selectedIds.has(v.id));
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filtered.length) setSelectedIds(new Set());
+    else setSelectedIds(new Set(filtered.map(v => v.id)));
+  };
+
   const openEdit = (v: Vendor) => { setSelected(v); setMode("edit"); };
   const openAdd = () => { setSelected(null); setMode("add"); };
-  const closeSheet = () => { setMode(null); setSelected(null); };
+  const openMerge = (seed?: Vendor[]) => { setMergeSeed(seed ?? selectedVendors); setMode("merge"); };
+  const closeSheet = () => { setMode(null); setSelected(null); setMergeSeed(null); };
 
   return (
     <div className="flex-1 flex flex-col min-h-0 min-w-0 bg-background">
