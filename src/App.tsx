@@ -15,6 +15,7 @@ import Analytics from "./pages/Analytics.tsx";
 import DocumentDetail from "./pages/DocumentDetail.tsx";
 import WorkflowManagement from "./pages/WorkflowManagement.tsx";
 import WorkflowBuilder from "./pages/WorkflowBuilder.tsx";
+import Payments from "./pages/Payments.tsx";
 import CashDashboard from "./pages/CashDashboard.tsx";
 import CashPayments from "./pages/CashPayments.tsx";
 import CashOpenAR from "./pages/CashOpenAR.tsx";
@@ -47,6 +48,7 @@ const App = () => (
               <Route path="/documents/:id" element={<DocumentDetail />} />
               <Route path="/workflows" element={<WorkflowManagement />} />
               <Route path="/workflows/:id" element={<WorkflowBuilder />} />
+              <Route path="/payments" element={<Payments />} />
               {/* Cash Application MVD */}
               <Route path="/cash" element={<CashDashboard />} />
               <Route path="/cash/payments" element={<CashPayments />} />
