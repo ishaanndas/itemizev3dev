@@ -457,10 +457,7 @@ export default function AppSidebar({ activePage }: { activePage?: string }) {
 
       {!collapsed && (
         <div className="px-3 py-2.5 border-b border-border/60 shrink-0">
-          <button className="w-full flex items-center justify-between px-3 py-[7px] rounded-lg border border-border/70 hover:bg-secondary/60 transition-colors text-sm">
-            <span className="font-medium text-foreground">Acme Corp</span>
-            <ChevronsUpDown className="h-3.5 w-3.5 text-muted-foreground" />
-          </button>
+          <OrgSwitcher />
         </div>
       )}
 
