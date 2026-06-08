@@ -280,7 +280,7 @@ export default function VendorsContent() {
           <div className="flex flex-wrap items-start justify-between gap-3 mb-5">
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mb-1.5">
-                <span>Payables</span>
+                <span>Accounts Payable</span>
                 <ChevronRight className="h-3 w-3" />
                 <span>Vendors</span>
                 <ChevronRight className="h-3 w-3" />

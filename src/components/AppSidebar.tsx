@@ -235,7 +235,7 @@ function ProductSwitcher({ collapsed }: { collapsed: boolean }) {
           }`}
         >
           <FileText className="h-3 w-3" />
-          Payables
+          Accounts Payable
         </button>
         <button
           onClick={() => handleSwitch("cash")}
