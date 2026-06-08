@@ -736,14 +736,18 @@ function TransactionsView() {
           })}
         </div>
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-1.5 text-sm border border-border rounded-lg px-3 py-1.5 hover:bg-secondary transition-colors text-foreground">
-            <Filter className="h-3.5 w-3.5" /> Account <ChevronDown className="h-3 w-3" />
-          </button>
+          <FilterDropdown
+            label="Account"
+            value={accountFilter}
+            onChange={setAccountFilter}
+            options={["All accounts", "Operating · 4421", "Payroll · 9087", "Reserve · 2210", "AmEx Platinum"]}
+          />
           <button className="flex items-center gap-1.5 text-sm border border-border rounded-lg px-3 py-1.5 hover:bg-secondary transition-colors text-foreground">
             <RefreshIcon /> Sync now
           </button>
         </div>
       </div>
+
 
       <DataTable<Transaction>
         storageKey="ap-payments-transactions"
