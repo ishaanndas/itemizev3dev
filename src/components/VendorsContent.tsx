@@ -522,7 +522,13 @@ export default function VendorsContent() {
       {/* Side panel for Add / Edit */}
       <Sheet open={mode !== null} onOpenChange={(o) => !o && closeSheet()}>
         <SheetContent side="right" className="w-full sm:max-w-[560px] p-0 flex flex-col gap-0">
-          {mode === "add" ? <AddVendorPanel onClose={closeSheet} /> : selected && <EditVendorPanel vendor={selected} onClose={closeSheet} />}
+          {mode === "add" ? (
+            <AddVendorPanel onClose={closeSheet} />
+          ) : mode === "merge" ? (
+            <MergeVendorsPanel seed={mergeSeed ?? []} onClose={closeSheet} />
+          ) : selected ? (
+            <EditVendorPanel vendor={selected} onClose={closeSheet} />
+          ) : null}
         </SheetContent>
       </Sheet>
     </div>
