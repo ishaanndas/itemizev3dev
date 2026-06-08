@@ -239,38 +239,179 @@ export default function VendorsContent() {
   const [statusFilter, setStatusFilter] = useState<"All" | VendorStatus>("All");
   const [selected, setSelected] = useState<Vendor | null>(null);
   const [mode, setMode] = useState<"edit" | "add" | "merge" | null>(null);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [mergeSeed, setMergeSeed] = useState<Vendor[] | null>(null);
 
+  // Inline alias state: per-vendor accepted suggestions + dismissed suggestions
+  const [acceptedAliases, setAcceptedAliases] = useState<Record<string, string[]>>({});
+  const [dismissedAliases, setDismissedAliases] = useState<Record<string, string[]>>({});
+
+  const acceptAlias = useCallback((vendorId: string, alias: string) => {
+    setAcceptedAliases((prev) => ({ ...prev, [vendorId]: [...(prev[vendorId] ?? []), alias] }));
+  }, []);
+  const dismissAlias = useCallback((vendorId: string, alias: string) => {
+    setDismissedAliases((prev) => ({ ...prev, [vendorId]: [...(prev[vendorId] ?? []), alias] }));
+  }, []);
+
   const filtered = useMemo(() => {
-    return vendors.filter(v => {
+    return vendors.filter((v) => {
       if (statusFilter !== "All" && v.status !== statusFilter) return false;
-      if (search && !`${v.name} ${v.aliases.join(" ")} ${v.externalId ?? ""}`.toLowerCase().includes(search.toLowerCase())) return false;
       return true;
     });
-  }, [search, statusFilter]);
+  }, [statusFilter]);
 
-  const totalSuggestions = vendors.reduce((s, v) => s + v.suggestedAliases.length, 0);
-  const needsReview = vendors.filter(v => v.status === "Needs review").length;
+  const totalSuggestions = vendors.reduce(
+    (s, v) => s + v.suggestedAliases.filter((a) => !(dismissedAliases[v.id] ?? []).includes(a.alias) && !(acceptedAliases[v.id] ?? []).includes(a.alias)).length,
+    0,
+  );
+  const needsReview = vendors.filter((v) => v.status === "Needs review").length;
   const totalSpend = vendors.reduce((s, v) => s + v.totalSpend, 0);
 
-  const selectedVendors = vendors.filter(v => selectedIds.has(v.id));
-  const toggleSelect = (id: string) => {
-    setSelectedIds(prev => {
+  const selectedVendors = Array.from(selectedRows).map((i) => filtered[i]).filter(Boolean);
+  const toggleRow = useCallback((i: number) => {
+    setSelectedRows((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      next.has(i) ? next.delete(i) : next.add(i);
       return next;
     });
-  };
-  const toggleSelectAll = () => {
-    if (selectedIds.size === filtered.length) setSelectedIds(new Set());
-    else setSelectedIds(new Set(filtered.map(v => v.id)));
-  };
+  }, []);
+  const toggleAll = useCallback(() => {
+    setSelectedRows((prev) => (prev.size === filtered.length ? new Set() : new Set(filtered.map((_, i) => i))));
+  }, [filtered]);
 
   const openEdit = (v: Vendor) => { setSelected(v); setMode("edit"); };
   const openAdd = () => { setSelected(null); setMode("add"); };
   const openMerge = (seed?: Vendor[]) => { setMergeSeed(seed ?? selectedVendors); setMode("merge"); };
   const closeSheet = () => { setMode(null); setSelected(null); setMergeSeed(null); };
+
+  const columns: DataTableColumn<Vendor>[] = [
+    {
+      key: "vendor", label: "Vendor", width: 240,
+      accessor: (v) => `${v.name} ${v.email ?? ""} ${v.category}`,
+      render: (v) => (
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="h-7 w-7 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <Building2 className="h-3.5 w-3.5" />
+          </div>
+          <div className="min-w-0">
+            <div className="font-medium text-foreground truncate text-[13px]">{v.name}</div>
+            <div className="text-[11px] text-muted-foreground truncate">{v.category}{v.email ? ` · ${v.email}` : ""}</div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "externalId", label: "External ID", width: 120,
+      accessor: (v) => v.externalId ?? "",
+      render: (v) => v.externalId
+        ? <span className="font-mono text-[11px] text-foreground/80">{v.externalId}</span>
+        : <span className="text-[11px] text-muted-foreground">—</span>,
+    },
+    {
+      key: "aliases", label: "Aliases", width: 340,
+      accessor: (v) => [...v.aliases, ...v.suggestedAliases.map(s => s.alias)].join(" "),
+      render: (v) => {
+        const accepted = acceptedAliases[v.id] ?? [];
+        const dismissed = dismissedAliases[v.id] ?? [];
+        const allConfirmed = [...v.aliases, ...accepted];
+        const pendingSuggestions = v.suggestedAliases.filter(
+          (s) => !accepted.includes(s.alias) && !dismissed.includes(s.alias),
+        );
+        return (
+          <div className="flex items-center gap-1 flex-wrap min-w-0" data-no-row-click onClick={(e) => e.stopPropagation()}>
+            {allConfirmed.slice(0, 3).map((a) => (
+              <span key={a} className="inline-flex items-center gap-1 text-[10px] font-medium rounded px-1.5 py-0.5 bg-secondary text-foreground/80 border border-border">
+                <Tag className="h-2.5 w-2.5" /> {a}
+              </span>
+            ))}
+            {allConfirmed.length > 3 && (
+              <span className="text-[10px] text-muted-foreground">+{allConfirmed.length - 3}</span>
+            )}
+            {pendingSuggestions.slice(0, 2).map((s) => (
+              <span
+                key={s.alias}
+                className="inline-flex items-center gap-0.5 text-[10px] font-medium rounded border border-violet-500/40 bg-violet-500/10 text-violet-700 dark:text-violet-300 pl-1.5 pr-0.5 py-0.5"
+                title={`${Math.round(s.confidence * 100)}% match · ${s.source}`}
+              >
+                <Sparkles className="h-2.5 w-2.5" />
+                <span className="truncate max-w-[120px]">{s.alias}</span>
+                <span className="tabular-nums opacity-70">{Math.round(s.confidence * 100)}%</span>
+                <button
+                  onClick={() => acceptAlias(v.id, s.alias)}
+                  title="Accept alias"
+                  className="h-4 w-4 ml-0.5 rounded inline-flex items-center justify-center bg-violet-600 text-white hover:bg-violet-700 transition-colors"
+                >
+                  <Check className="h-2.5 w-2.5" />
+                </button>
+                <button
+                  onClick={() => dismissAlias(v.id, s.alias)}
+                  title="Dismiss"
+                  className="h-4 w-4 rounded inline-flex items-center justify-center text-violet-700 dark:text-violet-300 hover:bg-violet-500/20 transition-colors"
+                >
+                  <X className="h-2.5 w-2.5" />
+                </button>
+              </span>
+            ))}
+            {pendingSuggestions.length > 2 && (
+              <button
+                onClick={() => openEdit(v)}
+                className="inline-flex items-center gap-1 text-[10px] font-semibold rounded px-1.5 py-0.5 bg-violet-500/10 text-violet-700 dark:text-violet-300 border border-violet-500/30 hover:bg-violet-500/20 transition-colors"
+              >
+                <Sparkles className="h-2.5 w-2.5" /> +{pendingSuggestions.length - 2} more
+              </button>
+            )}
+            {allConfirmed.length === 0 && pendingSuggestions.length === 0 && (
+              <span className="text-[11px] text-muted-foreground">—</span>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      key: "docCount", label: "Docs", width: 80, align: "right",
+      accessor: (v) => String(v.docCount),
+      render: (v) => <span className="tabular-nums text-[13px] text-foreground">{v.docCount}</span>,
+    },
+    {
+      key: "totalSpend", label: "Spend YTD", width: 120, align: "right",
+      accessor: (v) => String(v.totalSpend),
+      render: (v) => <span className="tabular-nums text-[13px] text-foreground font-medium">{fmtUSD(v.totalSpend)}</span>,
+    },
+    {
+      key: "amountDue", label: "Due", width: 110, align: "right",
+      accessor: (v) => String(v.amountDue),
+      render: (v) => v.amountDue > 0
+        ? <span className="tabular-nums text-[13px] text-amber-700 dark:text-amber-400 font-medium">{fmtUSD(v.amountDue)}</span>
+        : <span className="text-muted-foreground">—</span>,
+    },
+    {
+      key: "aiHealth", label: "AI health", width: 90,
+      accessor: (v) => String(Math.round(v.aiHealth * 100)),
+      render: (v) => <HealthPill score={v.aiHealth} />,
+    },
+    {
+      key: "lastProcessed", label: "Last activity", width: 110,
+      accessor: (v) => v.lastProcessed,
+      render: (v) => <span className="text-[11px] text-muted-foreground">{v.lastProcessed}</span>,
+      defaultVisible: false,
+    },
+    {
+      key: "paymentMethod", label: "Method", width: 110,
+      accessor: (v) => v.paymentMethod,
+      render: (v) => <span className="text-[11px] text-foreground/80">{v.paymentMethod}</span>,
+      defaultVisible: false,
+    },
+    {
+      key: "status", label: "Status", width: 130,
+      accessor: (v) => v.status,
+      render: (v) => (
+        <span className={`inline-flex items-center gap-1 text-[10px] font-medium border rounded-full px-2 py-0.5 ${statusStyles[v.status]}`}>
+          <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
+          {v.status}
+        </span>
+      ),
+    },
+  ];
 
   return (
     <div className="flex-1 flex flex-col min-h-0 min-w-0 bg-background">
