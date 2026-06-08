@@ -23,6 +23,7 @@ import {
 import TopBar from "./TopBar";
 import { DataTable, DataTableColumn } from "@/components/data-table/DataTable";
 import RowActions from "@/components/data-table/RowActions";
+import FilterDropdown from "@/components/data-table/FilterDropdown";
 import {
   Sheet,
   SheetContent,
@@ -109,6 +110,8 @@ const suggestionStyles: Record<AiSuggestion, string> = {
 export default function PaymentsContent() {
   const [tab, setTab] = useState<TabKey>("queue");
   const [methodFilter, setMethodFilter] = useState<Method | "All">("All");
+  const [approverFilter, setApproverFilter] = useState<string>("All approvers");
+  const [dueWindowFilter, setDueWindowFilter] = useState<string>("Any time");
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [runSheetOpen, setRunSheetOpen] = useState(false);
 
@@ -338,18 +341,21 @@ export default function PaymentsContent() {
               ))}
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <button className="flex items-center gap-1.5 text-sm border border-border rounded-lg px-3 py-1.5 hover:bg-secondary transition-colors text-foreground">
-                <Filter className="h-3.5 w-3.5" />
-                Approver
-                <ChevronDown className="h-3 w-3" />
-              </button>
-              <button className="flex items-center gap-1.5 text-sm border border-border rounded-lg px-3 py-1.5 hover:bg-secondary transition-colors text-foreground">
-                <Filter className="h-3.5 w-3.5" />
-                Due window
-                <ChevronDown className="h-3 w-3" />
-              </button>
+              <FilterDropdown
+                label="Approver"
+                value={approverFilter}
+                onChange={setApproverFilter}
+                options={["All approvers", "Jane Doe", "Marcus Liu", "Priya Patel", "Sam Chen", "Unassigned"]}
+              />
+              <FilterDropdown
+                label="Due window"
+                value={dueWindowFilter}
+                onChange={setDueWindowFilter}
+                options={["Any time", "Overdue", "Due today", "Next 7 days", "Next 30 days", "Beyond 30 days"]}
+              />
             </div>
           </div>
+
 
 
           {tab === "transactions" ? (
@@ -598,6 +604,7 @@ const txStatusStyles: Record<TxStatus, string> = {
 function TransactionsView() {
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [statusFilter, setStatusFilter] = useState<TxStatus | "All">("All");
+  const [accountFilter, setAccountFilter] = useState<string>("All accounts");
 
 
   const toggleRow = (i: number) => {
@@ -730,14 +737,18 @@ function TransactionsView() {
           })}
         </div>
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-1.5 text-sm border border-border rounded-lg px-3 py-1.5 hover:bg-secondary transition-colors text-foreground">
-            <Filter className="h-3.5 w-3.5" /> Account <ChevronDown className="h-3 w-3" />
-          </button>
+          <FilterDropdown
+            label="Account"
+            value={accountFilter}
+            onChange={setAccountFilter}
+            options={["All accounts", "Operating · 4421", "Payroll · 9087", "Reserve · 2210", "AmEx Platinum"]}
+          />
           <button className="flex items-center gap-1.5 text-sm border border-border rounded-lg px-3 py-1.5 hover:bg-secondary transition-colors text-foreground">
             <RefreshIcon /> Sync now
           </button>
         </div>
       </div>
+
 
       <DataTable<Transaction>
         storageKey="ap-payments-transactions"

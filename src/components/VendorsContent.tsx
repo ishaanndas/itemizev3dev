@@ -660,6 +660,7 @@ function AddVendorPanel({ onClose }: { onClose: () => void }) {
 function EditVendorPanel({ vendor, onClose }: { vendor: Vendor; onClose: () => void }) {
   const [tab, setTab] = useState<"overview" | "aliases" | "payment" | "activity">("overview");
   const [acceptedAliases, setAcceptedAliases] = useState<Set<string>>(new Set());
+  const [status, setStatus] = useState<VendorStatus>(vendor.status);
 
   return (
     <>
@@ -671,9 +672,9 @@ function EditVendorPanel({ vendor, onClose }: { vendor: Vendor; onClose: () => v
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
               <SheetTitle className="text-base truncate">{vendor.name}</SheetTitle>
-              <span className={`inline-flex items-center gap-1 text-xs font-medium border rounded-full px-2 py-0.5 ${statusStyles[vendor.status]}`}>
+              <span className={`inline-flex items-center gap-1 text-xs font-medium border rounded-full px-2 py-0.5 ${statusStyles[status]}`}>
                 <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
-                {vendor.status}
+                {status}
               </span>
               <HealthPill score={vendor.aiHealth} />
             </div>
@@ -752,7 +753,11 @@ function EditVendorPanel({ vendor, onClose }: { vendor: Vendor; onClose: () => v
             <Field label="Status">
               <div className="inline-flex items-center gap-0.5 p-0.5 rounded-md bg-secondary border border-border">
                 {(["Active", "Needs review", "Inactive"] as VendorStatus[]).map(s => (
-                  <button key={s} className={`text-xs font-medium px-2.5 py-1 rounded transition-colors ${vendor.status === s ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+                  <button
+                    key={s}
+                    onClick={() => setStatus(s)}
+                    className={`text-xs font-medium px-2.5 py-1 rounded transition-colors ${status === s ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                  >
                     {s}
                   </button>
                 ))}
