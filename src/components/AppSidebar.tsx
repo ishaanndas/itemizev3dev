@@ -109,9 +109,7 @@ const apNavigation: NavGroup[] = [
     collapsible: true,
     defaultOpen: true,
     items: [
-      { name: "Pay Documents", icon: CreditCard, href: "/payments" },
-      { name: "Transactions", icon: ArrowRightLeft },
-      { name: "Payment Activity", icon: Activity },
+      { name: "Payments", icon: CreditCard, href: "/payments" },
       { name: "Spend Management", icon: PieChart },
       { name: "Bank Connections", icon: Landmark },
     ],
