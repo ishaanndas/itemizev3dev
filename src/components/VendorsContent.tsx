@@ -425,10 +425,15 @@ export default function VendorsContent() {
                     <tr
                       key={v.id}
                       onClick={() => openEdit(v)}
-                      className="border-b border-border last:border-0 hover:bg-secondary/40 cursor-pointer transition-colors"
+                      className={`border-b border-border last:border-0 hover:bg-secondary/40 cursor-pointer transition-colors ${selectedIds.has(v.id) ? "bg-primary/5" : ""}`}
                     >
                       <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
-                        <input type="checkbox" className="rounded border-border" />
+                        <input
+                          type="checkbox"
+                          className="rounded border-border"
+                          checked={selectedIds.has(v.id)}
+                          onChange={() => toggleSelect(v.id)}
+                        />
                       </td>
                       <td className="px-3 py-2.5">
                         <div className="flex items-center gap-2 min-w-0">
