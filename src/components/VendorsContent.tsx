@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import {
   Sparkles,
   Plus,
-  Search,
+  
   Upload,
   Download,
   Building2,
@@ -24,7 +24,7 @@ import {
   Landmark,
   Shield,
   Lock,
-  MoreHorizontal,
+  
   GitMerge,
   ArrowRight,
 } from "lucide-react";
