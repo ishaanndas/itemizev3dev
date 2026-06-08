@@ -234,10 +234,11 @@ export default function PaymentsContent() {
   const methodFilters: (Method | "All")[] = ["All", "ACH", "Wire", "Check", "Card", "Virtual Card"];
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-background">
+    <div className="flex-1 flex flex-col min-h-0 min-w-0 bg-background">
       <TopBar />
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-7xl mx-auto px-6 py-6 min-w-0">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 min-w-0">
+
           {/* Header */}
           <div className="flex flex-wrap items-start justify-between gap-3 mb-5">
             <div className="min-w-0">
