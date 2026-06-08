@@ -253,7 +253,7 @@ export default function WorkflowListContent() {
               <RowActions
                 primary={{
                   label: "Edit",
-                  icon: Pencil,
+                  icon: <Pencil className="h-3.5 w-3.5" />,
                   onClick: () => navigate(`/workflows/${wf.id}`),
                 }}
               />
