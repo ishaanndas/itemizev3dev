@@ -536,11 +536,6 @@ export default function VendorsContent() {
             renderRowActions={(v) => (
               <RowActions
                 primary={{ label: "Edit", icon: <Pencil className="h-3.5 w-3.5" />, onClick: () => openEdit(v) }}
-                more={[
-                  { label: "View documents", icon: <FileText className="h-3.5 w-3.5" />, onClick: () => openEdit(v) },
-                  { label: "Merge with…", icon: <GitMerge className="h-3.5 w-3.5" />, onClick: () => openMerge([v]) },
-                  { label: "Delete vendor", icon: <Trash2 className="h-3.5 w-3.5" />, destructive: true, onClick: () => {} },
-                ]}
               />
             )}
           />
