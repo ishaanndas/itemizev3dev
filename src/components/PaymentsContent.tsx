@@ -237,16 +237,16 @@ export default function PaymentsContent() {
     <div className="flex-1 flex flex-col min-h-0 bg-background">
       <TopBar />
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-7xl mx-auto px-6 py-6">
+        <div className="max-w-7xl mx-auto px-6 py-6 min-w-0">
           {/* Header */}
-          <div className="flex items-start justify-between mb-5">
-            <div>
+          <div className="flex flex-wrap items-start justify-between gap-3 mb-5">
+            <div className="min-w-0">
               <h1 className="text-2xl font-bold text-foreground tracking-tight">Payments</h1>
               <p className="text-sm text-muted-foreground mt-1">
                 Pay approved invoices, schedule runs, and monitor activity across your bank and card accounts.
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <button className="flex items-center gap-1.5 text-sm border border-border rounded-lg px-3 py-2 hover:bg-secondary transition-colors text-foreground">
                 <Building2 className="h-3.5 w-3.5" />
                 Bank accounts
@@ -260,6 +260,7 @@ export default function PaymentsContent() {
               </button>
             </div>
           </div>
+
 
           {/* AI insight banner */}
           <button
@@ -290,13 +291,14 @@ export default function PaymentsContent() {
           </button>
 
           {/* Compact stat row */}
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 mb-4">
             <StatTile label="Ready to pay" value={fmtUSD(123_540.18)} sub="42 invoices" accent="text-foreground" />
             <StatTile label="Scheduled" value={fmtUSD(58_200.00)} sub="3 runs" accent="text-violet-600 dark:text-violet-400" />
             <StatTile label="Processing" value={fmtUSD(9_440.69)} sub="6 in flight" accent="text-amber-600 dark:text-amber-400" />
             <StatTile label="Paid (MTD)" value={fmtUSD(412_801.22)} sub="184 payments" accent="text-emerald-600 dark:text-emerald-400" />
             <StatTile label="Discounts captured" value={fmtUSD(3_842.10)} sub="MTD · +$612 vs last" accent="text-emerald-600 dark:text-emerald-400" icon={<TrendingDown className="h-3 w-3" />} />
           </div>
+
 
           {/* Tabs */}
           <div className="flex items-center gap-1 border-b border-border mb-4 overflow-x-auto">
@@ -320,8 +322,8 @@ export default function PaymentsContent() {
           </div>
 
           {/* Filter pills */}
-          <div className="flex items-center justify-between gap-2 mb-3">
-            <div className="flex items-center gap-1 bg-secondary/60 border border-border rounded-lg p-1">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <div className="flex flex-wrap items-center gap-1 bg-secondary/60 border border-border rounded-lg p-1">
               {methodFilters.map(f => (
                 <button
                   key={f}
@@ -334,7 +336,7 @@ export default function PaymentsContent() {
                 </button>
               ))}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <button className="flex items-center gap-1.5 text-sm border border-border rounded-lg px-3 py-1.5 hover:bg-secondary transition-colors text-foreground">
                 <Filter className="h-3.5 w-3.5" />
                 Approver
@@ -347,6 +349,7 @@ export default function PaymentsContent() {
               </button>
             </div>
           </div>
+
 
           <DataTable<Invoice>
             storageKey="ap-payments"
