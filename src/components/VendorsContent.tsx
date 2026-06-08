@@ -477,11 +477,11 @@ export default function VendorsContent() {
               <div className="flex items-center gap-1.5">
                 <button
                   onClick={() => openMerge([])}
-                  className="text-xs font-medium px-2.5 py-1.5 rounded-md border border-border bg-card hover:bg-secondary transition-colors inline-flex items-center gap-1"
+                  className="text-sm font-medium px-2.5 py-1.5 rounded-md border border-border bg-card hover:bg-secondary transition-colors inline-flex items-center gap-1"
                 >
                   <GitMerge className="h-3 w-3" /> Review duplicates
                 </button>
-                <button className="text-xs font-medium px-2.5 py-1.5 rounded-md bg-violet-600 text-white hover:bg-violet-700 transition-colors inline-flex items-center gap-1">
+                <button className="text-sm font-medium px-2.5 py-1.5 rounded-md bg-violet-600 text-white hover:bg-violet-700 transition-colors inline-flex items-center gap-1">
                   <Sparkles className="h-3 w-3" /> Review all suggestions
                 </button>
               </div>
@@ -506,16 +506,16 @@ export default function VendorsContent() {
             toolbarLeft={
               selectedRows.size > 0 ? (
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold text-foreground tabular-nums">{selectedRows.size} selected</span>
+                  <span className="text-sm font-semibold text-foreground tabular-nums">{selectedRows.size} selected</span>
                   <button
                     onClick={() => openMerge()}
                     disabled={selectedRows.size < 2}
-                    className="text-xs font-medium px-2.5 py-1.5 rounded-md bg-primary text-primary-foreground hover:opacity-90 transition-opacity inline-flex items-center gap-1 disabled:opacity-50"
+                    className="text-sm font-medium px-2.5 py-1.5 rounded-md bg-primary text-primary-foreground hover:opacity-90 transition-opacity inline-flex items-center gap-1 disabled:opacity-50"
                   >
                     <GitMerge className="h-3 w-3" /> Merge {selectedRows.size >= 2 ? selectedRows.size : ""}
                   </button>
-                  <button className="text-xs font-medium px-2.5 py-1.5 rounded-md border border-border bg-card hover:bg-secondary transition-colors">Set inactive</button>
-                  <button onClick={() => setSelectedRows(new Set())} className="text-xs text-muted-foreground hover:text-foreground">Clear</button>
+                  <button className="text-sm font-medium px-2.5 py-1.5 rounded-md border border-border bg-card hover:bg-secondary transition-colors">Set inactive</button>
+                  <button onClick={() => setSelectedRows(new Set())} className="text-sm text-muted-foreground hover:text-foreground">Clear</button>
                 </div>
               ) : (
                 <div className="flex items-center gap-0.5 p-0.5 rounded-md bg-secondary/60 border border-border">
@@ -608,7 +608,7 @@ function AddVendorPanel({ onClose }: { onClose: () => void }) {
             <div className="flex items-start gap-2">
               <Sparkles className="h-3.5 w-3.5 text-amber-700 dark:text-amber-400 mt-0.5 shrink-0" />
               <div className="min-w-0 flex-1">
-                <div className="text-xs font-semibold text-foreground">Possible duplicate detected</div>
+                <div className="text-sm font-semibold text-foreground">Possible duplicate detected</div>
                 <div className="text-xs text-muted-foreground mt-0.5">AI matched this name to {aiInferred.similarVendors.length} existing vendor(s):</div>
                 <div className="flex items-center gap-1 mt-1.5 flex-wrap">
                   {aiInferred.similarVendors.map(v => (
@@ -729,7 +729,7 @@ function EditVendorPanel({ vendor, onClose }: { vendor: Vendor; onClose: () => v
                 <div className="flex items-start gap-2">
                   <AlertCircle className="h-3.5 w-3.5 text-amber-700 dark:text-amber-400 mt-0.5 shrink-0" />
                   <div className="min-w-0 flex-1">
-                    <div className="text-xs font-semibold text-foreground">AI detected {vendor.aiHealthIssues.length} issue(s)</div>
+                    <div className="text-sm font-semibold text-foreground">AI detected {vendor.aiHealthIssues.length} issue(s)</div>
                     <ul className="text-xs text-muted-foreground mt-1 space-y-0.5">
                       {vendor.aiHealthIssues.map(i => (
                         <li key={i} className="flex items-center gap-1.5"><span className="h-1 w-1 rounded-full bg-amber-500" /> {i}</li>
@@ -781,7 +781,7 @@ function EditVendorPanel({ vendor, onClose }: { vendor: Vendor; onClose: () => v
                 <div className="flex items-center justify-between gap-2 mb-2">
                   <div className="flex items-center gap-1.5">
                     <Sparkles className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
-                    <span className="text-xs font-semibold text-foreground">AI-suggested aliases</span>
+                    <span className="text-sm font-semibold text-foreground">AI-suggested aliases</span>
                     <span className="text-xs text-muted-foreground">({vendor.suggestedAliases.length})</span>
                   </div>
                   <button className="text-xs font-medium text-violet-700 dark:text-violet-400 hover:underline">Accept all</button>
@@ -1081,7 +1081,7 @@ function MergeVendorsPanel({ seed, onClose }: { seed: Vendor[]; onClose: () => v
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-xs font-semibold text-foreground truncate">{v.name}</span>
+                      <span className="text-sm font-semibold text-foreground truncate">{v.name}</span>
                       {isPrimary && (
                         <span className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-primary text-primary-foreground">Primary</span>
                       )}

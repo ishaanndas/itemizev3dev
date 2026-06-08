@@ -329,7 +329,7 @@ export default function PaymentsContent() {
                 <button
                   key={f}
                   onClick={() => setMethodFilter(f)}
-                  className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                  className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
                     methodFilter === f ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
@@ -381,14 +381,14 @@ export default function PaymentsContent() {
                     </span>
                     <button
                       onClick={() => setRunSheetOpen(true)}
-                      className="text-xs font-medium px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center gap-1.5"
+                      className="text-sm font-medium px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center gap-1.5"
                     >
                       <Send className="h-3 w-3" /> Pay {selectedRows.size}
                     </button>
-                    <button className="text-xs font-medium px-3 py-1.5 rounded-md border border-border hover:bg-secondary transition-colors flex items-center gap-1.5">
+                    <button className="text-sm font-medium px-3 py-1.5 rounded-md border border-border hover:bg-secondary transition-colors flex items-center gap-1.5">
                       <CalendarClock className="h-3 w-3" /> Schedule
                     </button>
-                    <button className="text-xs font-medium px-3 py-1.5 rounded-md border border-border hover:bg-secondary transition-colors flex items-center gap-1.5">
+                    <button className="text-sm font-medium px-3 py-1.5 rounded-md border border-border hover:bg-secondary transition-colors flex items-center gap-1.5">
                       <Pause className="h-3 w-3" /> Hold
                     </button>
                   </div>
@@ -698,7 +698,7 @@ function TransactionsView() {
               <div className="text-xs text-muted-foreground">AI updated vendor banking and validated routing for {failedCount} record{failedCount === 1 ? "" : "s"}.</div>
             </div>
           </div>
-          <button className="text-xs font-medium px-3 py-1.5 rounded-md bg-destructive text-destructive-foreground hover:opacity-90 transition-opacity flex items-center gap-1.5 shrink-0">
+          <button className="text-sm font-medium px-3 py-1.5 rounded-md bg-destructive text-destructive-foreground hover:opacity-90 transition-opacity flex items-center gap-1.5 shrink-0">
             <RefreshIcon /> Retry all
           </button>
         </div>
@@ -719,7 +719,7 @@ function TransactionsView() {
               <button
                 key={s}
                 onClick={() => setStatusFilter(s)}
-                className={`px-3 py-1 text-xs font-medium rounded-md transition-colors inline-flex items-center gap-1.5 ${
+                className={`px-3 py-1 text-sm font-medium rounded-md transition-colors inline-flex items-center gap-1.5 ${
                   statusFilter === s ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
@@ -755,13 +755,13 @@ function TransactionsView() {
           selected.size > 0 ? (
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">{selected.size} selected</span>
-              <button className="text-xs font-medium px-3 py-1.5 rounded-md border border-border hover:bg-secondary transition-colors flex items-center gap-1.5">
+              <button className="text-sm font-medium px-3 py-1.5 rounded-md border border-border hover:bg-secondary transition-colors flex items-center gap-1.5">
                 <RefreshIcon /> Retry
               </button>
-              <button className="text-xs font-medium px-3 py-1.5 rounded-md border border-border hover:bg-secondary transition-colors flex items-center gap-1.5">
+              <button className="text-sm font-medium px-3 py-1.5 rounded-md border border-border hover:bg-secondary transition-colors flex items-center gap-1.5">
                 <RefreshIcon /> Sync
               </button>
-              <button className="text-xs font-medium px-3 py-1.5 rounded-md border border-destructive/30 text-destructive hover:bg-destructive/10 transition-colors flex items-center gap-1.5">
+              <button className="text-sm font-medium px-3 py-1.5 rounded-md border border-destructive/30 text-destructive hover:bg-destructive/10 transition-colors flex items-center gap-1.5">
                 <X className="h-3 w-3" /> Void
               </button>
             </div>
