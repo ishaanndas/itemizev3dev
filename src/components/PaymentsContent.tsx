@@ -826,58 +826,98 @@ const activityKindMeta: Record<ActivityKind, { icon: JSX.Element; color: string;
 };
 
 function ActivityView() {
-  const [kindFilter, setKindFilter] = useState<ActivityKind | "all">("all");
+  const [vendorQ, setVendorQ] = useState("");
+  const [txIdQ, setTxIdQ] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [action, setAction] = useState<ActivityKind | "all">("all");
+  const [source, setSource] = useState<"all" | ActivityEvent["source"]>("all");
   const [search, setSearch] = useState("");
 
   const filtered = activityEvents.filter((e) => {
-    const matchKind = kindFilter === "all" || e.kind === kindFilter;
     const q = search.toLowerCase();
-    const matchSearch =
-      !q ||
-      e.message.toLowerCase().includes(q) ||
-      e.actor.toLowerCase().includes(q) ||
-      e.ref?.toLowerCase().includes(q);
-    return matchKind && matchSearch;
+    return (
+      (action === "all" || e.kind === action) &&
+      (source === "all" || e.source === source) &&
+      (!vendorQ || e.message.toLowerCase().includes(vendorQ.toLowerCase()) || e.actor.toLowerCase().includes(vendorQ.toLowerCase())) &&
+      (!txIdQ || (e.ref ?? "").toLowerCase().includes(txIdQ.toLowerCase())) &&
+      (!q || e.message.toLowerCase().includes(q) || e.actor.toLowerCase().includes(q) || (e.ref ?? "").toLowerCase().includes(q))
+    );
   });
 
-  // Group by date
   const groups = filtered.reduce<Record<string, ActivityEvent[]>>((acc, e) => {
     (acc[e.date] = acc[e.date] || []).push(e);
     return acc;
   }, {});
 
-  const kinds: { key: ActivityKind | "all"; label: string; count: number }[] = [
-    { key: "all", label: "All", count: activityEvents.length },
-    { key: "ai", label: "AI actions", count: activityEvents.filter(e=>e.kind==="ai").length },
-    { key: "payment", label: "Payments", count: activityEvents.filter(e=>e.kind==="payment").length },
-    { key: "approval", label: "Approvals", count: activityEvents.filter(e=>e.kind==="approval").length },
-    { key: "vendor", label: "Vendor", count: activityEvents.filter(e=>e.kind==="vendor").length },
-    { key: "sync", label: "Sync", count: activityEvents.filter(e=>e.kind==="sync").length },
-  ];
+  const reset = () => {
+    setVendorQ(""); setTxIdQ(""); setFromDate(""); setToDate(""); setAction("all"); setSource("all"); setSearch("");
+  };
+  const activeFilters = [vendorQ, txIdQ, fromDate, toDate, search].filter(Boolean).length + (action !== "all" ? 1 : 0) + (source !== "all" ? 1 : 0);
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-        <div className="flex flex-wrap items-center gap-1 bg-secondary/60 border border-border rounded-lg p-1">
-          {kinds.map((k) => (
-            <button
-              key={k.key}
-              onClick={() => setKindFilter(k.key)}
-              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors inline-flex items-center gap-1.5 ${
-                kindFilter === k.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {k.label}
-              <span className="text-[10px] tabular-nums opacity-70">{k.count}</span>
-            </button>
-          ))}
+      <div className="rounded-lg border border-border bg-card p-3 mb-3">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2 text-xs font-medium text-foreground">
+            <Filter className="h-3.5 w-3.5 text-muted-foreground" /> Filters
+            {activeFilters > 0 && (
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                {activeFilters} active
+              </span>
+            )}
+          </div>
+          {activeFilters > 0 && (
+            <button onClick={reset} className="text-xs text-muted-foreground hover:text-foreground">Clear</button>
+          )}
         </div>
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search message, actor, reference…"
-          className="text-sm border border-border rounded-lg px-3 py-1.5 bg-background w-full sm:w-72 placeholder:text-muted-foreground"
-        />
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+          <FilterField label="Vendor">
+            <input value={vendorQ} onChange={(e)=>setVendorQ(e.target.value)} placeholder="Vendor name" className="filter-input" />
+          </FilterField>
+          <FilterField label="Transaction ID">
+            <input value={txIdQ} onChange={(e)=>setTxIdQ(e.target.value)} placeholder="tx id" className="filter-input font-mono" />
+          </FilterField>
+          <FilterField label="From">
+            <input type="date" value={fromDate} onChange={(e)=>setFromDate(e.target.value)} className="filter-input" />
+          </FilterField>
+          <FilterField label="To">
+            <input type="date" value={toDate} onChange={(e)=>setToDate(e.target.value)} className="filter-input" />
+          </FilterField>
+          <FilterField label="Action">
+            <select value={action} onChange={(e)=>setAction(e.target.value as ActivityKind | "all")} className="filter-input">
+              <option value="all">All</option>
+              <option value="ai">AI</option>
+              <option value="payment">Payment</option>
+              <option value="approval">Approval</option>
+              <option value="vendor">Vendor</option>
+              <option value="sync">Sync</option>
+              <option value="system">System</option>
+            </select>
+          </FilterField>
+          <FilterField label="Source">
+            <select value={source} onChange={(e)=>setSource(e.target.value as "all" | ActivityEvent["source"])} className="filter-input">
+              <option value="all">All</option>
+              <option value="Itemize">Itemize</option>
+              <option value="AI">AI</option>
+              <option value="Bank">Bank</option>
+              <option value="ERP">ERP</option>
+            </select>
+          </FilterField>
+        </div>
+        <div className="mt-2">
+          <FilterField label="Search">
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="message / payment / tx"
+              className="filter-input"
+            />
+          </FilterField>
+        </div>
+        <div className="mt-2 text-[11px] text-muted-foreground">
+          Showing <span className="tabular-nums text-foreground font-medium">{filtered.length}</span> of {activityEvents.length} events
+        </div>
       </div>
 
       <div className="rounded-lg border border-border bg-card overflow-hidden">
