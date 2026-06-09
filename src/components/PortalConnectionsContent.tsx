@@ -718,6 +718,7 @@ export default function PortalConnectionsContent() {
   const [runOpen, setRunOpen] = useState(false);
   const [credConn, setCredConn] = useState<Connection | null>(null);
   const [credOpen, setCredOpen] = useState(false);
+  const [newOpen, setNewOpen] = useState(false);
 
   const openHistory = (c: Connection) => {
     setHistoryConn(c);
