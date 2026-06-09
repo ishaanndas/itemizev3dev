@@ -772,7 +772,7 @@ export default function PortalConnectionsContent() {
                 <RefreshCw className="h-4 w-4" />
                 Refresh
               </Button>
-              <Button size="default">
+              <Button size="default" onClick={() => setNewOpen(true)}>
                 <Plus className="h-4 w-4" />
                 New Connection
               </Button>
