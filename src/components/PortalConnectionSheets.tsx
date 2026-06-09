@@ -512,3 +512,365 @@ export function InlineError({ message }: { message: string }) {
     </div>
   );
 }
+
+// ─────────────────────────────────────────────────────────────
+// NewConnectionSheet — side-panel create flow
+// ─────────────────────────────────────────────────────────────
+
+const TENANTS = [
+  { id: "itemize", name: "Itemize Inc.", plan: "Enterprise" },
+  { id: "acme", name: "Acme Corp", plan: "Growth" },
+  { id: "northwind", name: "Northwind Trading", plan: "Starter" },
+  { id: "globex", name: "Globex Industries", plan: "Enterprise" },
+];
+
+const PORTAL_PRESETS = [
+  { id: "custom", name: "Custom URL", url: "", icon: "🔗" },
+  { id: "comcast", name: "Comcast Business", url: "https://business.comcast.com", icon: "📡" },
+  { id: "verizon", name: "Verizon", url: "https://www.verizon.com/business", icon: "📶" },
+  { id: "att", name: "AT&T", url: "https://www.att.com/business", icon: "📞" },
+  { id: "pge", name: "PG&E", url: "https://www.pge.com", icon: "⚡" },
+  { id: "conedison", name: "Con Edison", url: "https://www.coned.com", icon: "💡" },
+];
+
+const OBJECTIVES = ["Invoices", "Statements", "Receipts", "Usage reports", "Contracts"];
+
+export function NewConnectionSheet({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+}) {
+  const [tenant, setTenant] = useState<string>("");
+  const [preset, setPreset] = useState<string>("custom");
+  const [name, setName] = useState("");
+  const [url, setUrl] = useState("");
+  const [flowId, setFlowId] = useState("");
+  const [objective, setObjective] = useState("Invoices");
+  const [timeout, setTimeout] = useState(600);
+  const [maxSteps, setMaxSteps] = useState(50);
+  const [cloudBrowser, setCloudBrowser] = useState(true);
+  const [creating, setCreating] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setTenant("");
+      setPreset("custom");
+      setName("");
+      setUrl("");
+      setFlowId("");
+      setObjective("Invoices");
+      setTimeout(600);
+      setMaxSteps(50);
+      setCloudBrowser(true);
+      setCreating(false);
+    }
+  }, [open]);
+
+  const handlePreset = (id: string) => {
+    setPreset(id);
+    const p = PORTAL_PRESETS.find((x) => x.id === id);
+    if (p && p.id !== "custom") {
+      setUrl(p.url);
+      if (!name) setName(p.name);
+    }
+  };
+
+  const canCreate = tenant && name.trim() && url.trim();
+
+  const submit = () => {
+    if (!canCreate) return;
+    setCreating(true);
+    window.setTimeout(() => onOpenChange(false), 900);
+  };
+
+  const tenantObj = TENANTS.find((t) => t.id === tenant);
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent className="w-full sm:max-w-xl overflow-y-auto p-0 flex flex-col">
+        {/* Header */}
+        <div className="px-6 pt-6 pb-5 border-b border-border shrink-0">
+          <SheetHeader className="text-left">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <PlugZap className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <SheetTitle className="text-lg">New connection</SheetTitle>
+                <SheetDescription className="text-xs">
+                  Set up a vendor portal so we can pull bills automatically.
+                </SheetDescription>
+              </div>
+            </div>
+          </SheetHeader>
+        </div>
+
+        {/* Body */}
+        <div className="flex-1 px-6 py-6 space-y-7">
+          {/* Tenant */}
+          <section className="space-y-2">
+            <div className="flex items-baseline justify-between">
+              <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Tenant
+              </Label>
+              <span className="text-[11px] text-muted-foreground">Required</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {TENANTS.map((t) => {
+                const active = tenant === t.id;
+                return (
+                  <button
+                    key={t.id}
+                    onClick={() => setTenant(t.id)}
+                    className={cn(
+                      "text-left rounded-lg border p-3 transition-all",
+                      active
+                        ? "border-primary bg-primary/5 ring-1 ring-primary/30"
+                        : "border-border bg-card hover:border-primary/40 hover:bg-secondary/40",
+                    )}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-medium text-foreground truncate">{t.name}</p>
+                      {active && <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />}
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">{t.plan}</p>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* Portal */}
+          <section className="space-y-3">
+            <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Portal
+            </Label>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="preset" className="text-xs text-foreground">
+                Known portal
+              </Label>
+              <div className="flex gap-1.5 flex-wrap">
+                {PORTAL_PRESETS.map((p) => {
+                  const active = preset === p.id;
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => handlePreset(p.id)}
+                      className={cn(
+                        "inline-flex items-center gap-1.5 px-2.5 h-8 rounded-full border text-xs font-medium transition-colors",
+                        active
+                          ? "border-primary bg-primary/10 text-foreground"
+                          : "border-border bg-card text-muted-foreground hover:text-foreground hover:bg-secondary",
+                      )}
+                    >
+                      <span className="text-sm leading-none">{p.icon}</span>
+                      {p.name}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Pick a known vendor to prefill the URL, or use a custom one.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="cname" className="text-xs text-foreground">
+                  Connection name <span className="text-rose-500">*</span>
+                </Label>
+                <Input
+                  id="cname"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. Acme Corp Portal"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="curl" className="text-xs text-foreground">
+                  Portal URL <span className="text-rose-500">*</span>
+                </Label>
+                <div className="relative">
+                  <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input
+                    id="curl"
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    placeholder="https://portal.vendor.com"
+                    className="pl-9 font-mono text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Automation */}
+          <section className="space-y-3">
+            <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Automation
+            </Label>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="flow" className="text-xs text-foreground">
+                Flow ID <span className="text-muted-foreground font-normal">(AWP)</span>
+              </Label>
+              <Input
+                id="flow"
+                value={flowId}
+                onChange={(e) => setFlowId(e.target.value)}
+                placeholder="AWP flow identifier"
+                className="font-mono text-sm"
+              />
+              <p className="text-[11px] text-muted-foreground">
+                Leave blank to let the agent figure it out from the portal layout.
+              </p>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs text-foreground">Objective</Label>
+              <div className="flex flex-wrap gap-1.5">
+                {OBJECTIVES.map((o) => {
+                  const active = objective === o;
+                  return (
+                    <button
+                      key={o}
+                      onClick={() => setObjective(o)}
+                      className={cn(
+                        "px-2.5 h-7 rounded-md border text-xs font-medium transition-colors",
+                        active
+                          ? "border-primary bg-primary/10 text-foreground"
+                          : "border-border bg-card text-muted-foreground hover:text-foreground hover:bg-secondary",
+                      )}
+                    >
+                      {o}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[11px] text-muted-foreground">What the bot should retrieve.</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="to" className="text-xs text-foreground">
+                  Timeout
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="to"
+                    type="number"
+                    min={60}
+                    max={3600}
+                    value={timeout}
+                    onChange={(e) => setTimeout(Number(e.target.value))}
+                    className="pr-12 tabular-nums"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-muted-foreground">
+                    sec
+                  </span>
+                </div>
+                <p className="text-[11px] text-muted-foreground">60 – 3600s</p>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="ms" className="text-xs text-foreground">
+                  Max steps
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="ms"
+                    type="number"
+                    min={1}
+                    max={500}
+                    value={maxSteps}
+                    onChange={(e) => setMaxSteps(Number(e.target.value))}
+                    className="pr-14 tabular-nums"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-muted-foreground">
+                    steps
+                  </span>
+                </div>
+                <p className="text-[11px] text-muted-foreground">1 – 500</p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setCloudBrowser((v) => !v)}
+              className={cn(
+                "w-full flex items-start gap-3 rounded-lg border p-3 text-left transition-colors",
+                cloudBrowser
+                  ? "border-primary/40 bg-primary/5"
+                  : "border-border bg-card hover:bg-secondary/40",
+              )}
+            >
+              <div
+                className={cn(
+                  "mt-0.5 h-4 w-7 rounded-full p-0.5 transition-colors shrink-0",
+                  cloudBrowser ? "bg-primary" : "bg-muted",
+                )}
+              >
+                <div
+                  className={cn(
+                    "h-3 w-3 rounded-full bg-white transition-transform",
+                    cloudBrowser ? "translate-x-3" : "translate-x-0",
+                  )}
+                />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-foreground">Use cloud browser</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  AWP runs this connection in the cloud. Turn off only if the vendor requires a local
+                  browser.
+                </p>
+              </div>
+            </button>
+          </section>
+
+          {/* AI hint */}
+          <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 flex gap-2.5">
+            <Sparkles className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+            <div className="text-xs">
+              <p className="font-medium text-foreground">AI will validate this connection</p>
+              <p className="text-muted-foreground mt-0.5">
+                After you create it, we'll do a test run and report whether sign-in, navigation, and
+                document discovery worked.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="shrink-0 border-t border-border bg-background/95 backdrop-blur px-6 py-3 flex items-center justify-between gap-3">
+          <p className="text-[11px] text-muted-foreground">
+            {tenantObj ? (
+              <>Will be created under <span className="font-medium text-foreground">{tenantObj.name}</span></>
+            ) : (
+              "Select a tenant to continue"
+            )}
+          </p>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button onClick={submit} disabled={!canCreate || creating}>
+              {creating ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Creating…
+                </>
+              ) : (
+                <>
+                  <PlugZap className="h-4 w-4" />
+                  Create connection
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}

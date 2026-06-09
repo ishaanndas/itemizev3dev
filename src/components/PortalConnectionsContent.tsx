@@ -44,7 +44,7 @@ import {
 } from "@/components/ui/sheet";
 import { DataTable, DataTableColumn } from "@/components/data-table/DataTable";
 import RowActions from "@/components/data-table/RowActions";
-import { RunSheet, CredentialsSheet } from "./PortalConnectionSheets";
+import { RunSheet, CredentialsSheet, NewConnectionSheet } from "./PortalConnectionSheets";
 import { cn } from "@/lib/utils";
 
 type Status = "healthy" | "attention" | "disconnected";
@@ -718,6 +718,7 @@ export default function PortalConnectionsContent() {
   const [runOpen, setRunOpen] = useState(false);
   const [credConn, setCredConn] = useState<Connection | null>(null);
   const [credOpen, setCredOpen] = useState(false);
+  const [newOpen, setNewOpen] = useState(false);
 
   const openHistory = (c: Connection) => {
     setHistoryConn(c);
@@ -771,7 +772,7 @@ export default function PortalConnectionsContent() {
                 <RefreshCw className="h-4 w-4" />
                 Refresh
               </Button>
-              <Button size="default">
+              <Button size="default" onClick={() => setNewOpen(true)}>
                 <Plus className="h-4 w-4" />
                 New Connection
               </Button>
@@ -952,6 +953,7 @@ export default function PortalConnectionsContent() {
       <HistorySheet conn={historyConn} open={historyOpen} onOpenChange={setHistoryOpen} />
       <RunSheet conn={runConn} open={runOpen} onOpenChange={setRunOpen} />
       <CredentialsSheet conn={credConn} open={credOpen} onOpenChange={setCredOpen} />
+      <NewConnectionSheet open={newOpen} onOpenChange={setNewOpen} />
     </div>
   );
 }
