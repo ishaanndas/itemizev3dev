@@ -44,7 +44,7 @@ import {
 } from "@/components/ui/sheet";
 import { DataTable, DataTableColumn } from "@/components/data-table/DataTable";
 import RowActions from "@/components/data-table/RowActions";
-import { RunSheet, CredentialsSheet } from "./PortalConnectionSheets";
+import { RunSheet, CredentialsSheet, NewConnectionSheet } from "./PortalConnectionSheets";
 import { cn } from "@/lib/utils";
 
 type Status = "healthy" | "attention" | "disconnected";
