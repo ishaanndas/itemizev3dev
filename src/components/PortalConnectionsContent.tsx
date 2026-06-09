@@ -953,6 +953,7 @@ export default function PortalConnectionsContent() {
       <HistorySheet conn={historyConn} open={historyOpen} onOpenChange={setHistoryOpen} />
       <RunSheet conn={runConn} open={runOpen} onOpenChange={setRunOpen} />
       <CredentialsSheet conn={credConn} open={credOpen} onOpenChange={setCredOpen} />
+      <NewConnectionSheet open={newOpen} onOpenChange={setNewOpen} />
     </div>
   );
 }
