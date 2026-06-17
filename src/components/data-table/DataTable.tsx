@@ -621,7 +621,7 @@ export function DataTable<T>({
                       reorder(from, to);
                     }}
                     className={cn(
-                      "group/th border-b bg-secondary px-3 py-3 text-sm font-medium uppercase tracking-wider text-muted-foreground",
+                      "group/th border-b bg-secondary px-3 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground",
                       index < visibleColumns.length - 1 && "border-r border-border/40",
                       col.align === "right" && "text-right",
                       col.align === "center" && "text-center",
