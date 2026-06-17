@@ -517,7 +517,7 @@ export default function ExceptionReviewContent() {
           <div className="mb-6 rounded-xl border border-primary/20 bg-gradient-to-br from-primary/[0.05] via-primary/[0.02] to-transparent p-4">
             <div className="flex items-center gap-3">
               <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                <Brain className="h-4.5 w-4.5" />
+                <Brain className="h-4 w-4" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-semibold text-foreground">
