@@ -555,7 +555,7 @@ export function DataTable<T>({
             <tr>
               {selectable && (
                 <th
-                  className="sticky left-0 z-30 border-b border-r border-border bg-secondary px-3 py-3 text-left"
+                  className="sticky left-0 z-30 border-b border-r border-border bg-secondary px-3 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground"
                   style={{ boxShadow: "1px 0 0 0 hsl(var(--border))" }}
                 >
                   <input
