@@ -481,10 +481,10 @@ export default function ExceptionReviewContent() {
   ];
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-background">
+    <div className="flex-1 flex flex-col min-h-0 min-w-0 bg-background">
       <TopBar />
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="max-w-7xl mx-auto px-6 py-8 min-w-0">
           {/* Breadcrumb */}
           <nav className="text-xs text-muted-foreground mb-3 flex items-center gap-1.5">
             <span>Accounts Payable</span>
