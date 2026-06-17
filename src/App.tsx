@@ -44,6 +44,7 @@ const App = () => (
               <Route path="/documents" element={<Documents />} />
               <Route path="/pending-review" element={<PendingReview />} />
               <Route path="/returned" element={<Returned />} />
+              <Route path="/exception-review" element={<ExceptionReview />} />
               <Route path="/portal-connections" element={<PortalConnections />} />
               <Route path="/my-tasks" element={<MyTasks />} />
               <Route path="/analytics" element={<Analytics />} />
