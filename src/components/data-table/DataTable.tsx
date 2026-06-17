@@ -689,7 +689,7 @@ export function DataTable<T>({
 
               {renderRowActions && (
                 <th
-                  className="sticky right-0 z-30 border-b border-l border-border bg-secondary px-3 py-3 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground"
+                  className="sticky right-0 z-30 border-b border-l border-border bg-secondary px-3 py-3 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground"
                   style={{ boxShadow: "-1px 0 0 0 hsl(var(--border))" }}
                 >
                   Actions
