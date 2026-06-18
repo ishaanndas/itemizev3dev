@@ -536,8 +536,8 @@ export default function ExceptionReviewContent() {
 
           {/* Stat cards (clickable) */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
-            <StatCard
-              icon={<FileText className="h-4 w-4" />}
+          <StatCard
+              icon={<FileText className="h-3.5 w-3.5" />}
               tint="primary"
               label="Documents needing review"
               value={totalCount}
@@ -545,7 +545,7 @@ export default function ExceptionReviewContent() {
               onClick={() => setActiveCategory("all")}
             />
             <StatCard
-              icon={<ShieldAlert className="h-4 w-4" />}
+              icon={<ShieldAlert className="h-3.5 w-3.5" />}
               tint="orange"
               label="With PO match exceptions"
               value={poExceptions}
@@ -553,7 +553,7 @@ export default function ExceptionReviewContent() {
               onClick={() => setActiveCategory("po")}
             />
             <StatCard
-              icon={<ListChecks className="h-4 w-4" />}
+              icon={<ListChecks className="h-3.5 w-3.5" />}
               tint="rose"
               label="With invoice exceptions"
               value={invoiceExceptions}
@@ -657,13 +657,13 @@ function StatCard({
         active ? "ring-2 ring-primary/30 border-primary/30" : ""
       }`}
     >
-      <div className="flex items-center gap-3">
-        <div className={`h-9 w-9 rounded-lg flex items-center justify-center ${tints[tint]}`}>
+      <div className="flex items-center gap-2">
+        <div className={`h-7 w-7 rounded-lg flex items-center justify-center ${tints[tint]}`}>
           {icon}
         </div>
         <div className="min-w-0 flex-1">
-          <div className="text-xs font-medium text-muted-foreground">{label}</div>
-          <div className="text-2xl font-bold tabular-nums text-foreground mt-0.5">
+          <div className="text-[11px] font-medium text-muted-foreground">{label}</div>
+          <div className="text-lg font-bold tabular-nums text-foreground mt-0">
             {value}
           </div>
         </div>
