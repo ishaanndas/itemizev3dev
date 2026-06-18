@@ -536,8 +536,8 @@ export default function ExceptionReviewContent() {
 
           {/* Stat cards (clickable) */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
-            <StatCard
-              icon={<FileText className="h-4 w-4" />}
+          <StatCard
+              icon={<FileText className="h-3.5 w-3.5" />}
               tint="primary"
               label="Documents needing review"
               value={totalCount}
@@ -545,7 +545,7 @@ export default function ExceptionReviewContent() {
               onClick={() => setActiveCategory("all")}
             />
             <StatCard
-              icon={<ShieldAlert className="h-4 w-4" />}
+              icon={<ShieldAlert className="h-3.5 w-3.5" />}
               tint="orange"
               label="With PO match exceptions"
               value={poExceptions}
@@ -553,7 +553,7 @@ export default function ExceptionReviewContent() {
               onClick={() => setActiveCategory("po")}
             />
             <StatCard
-              icon={<ListChecks className="h-4 w-4" />}
+              icon={<ListChecks className="h-3.5 w-3.5" />}
               tint="rose"
               label="With invoice exceptions"
               value={invoiceExceptions}
