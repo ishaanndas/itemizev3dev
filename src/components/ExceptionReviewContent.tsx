@@ -657,13 +657,13 @@ function StatCard({
         active ? "ring-2 ring-primary/30 border-primary/30" : ""
       }`}
     >
-      <div className="flex items-center gap-3">
-        <div className={`h-9 w-9 rounded-lg flex items-center justify-center ${tints[tint]}`}>
+      <div className="flex items-center gap-2">
+        <div className={`h-7 w-7 rounded-lg flex items-center justify-center ${tints[tint]}`}>
           {icon}
         </div>
         <div className="min-w-0 flex-1">
-          <div className="text-xs font-medium text-muted-foreground">{label}</div>
-          <div className="text-2xl font-bold tabular-nums text-foreground mt-0.5">
+          <div className="text-[11px] font-medium text-muted-foreground">{label}</div>
+          <div className="text-lg font-bold tabular-nums text-foreground mt-0">
             {value}
           </div>
         </div>
