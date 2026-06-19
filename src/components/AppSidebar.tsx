@@ -260,68 +260,92 @@ const cashNavigation: NavGroup[] = [
   },
 ];
 
+const PRODUCTS: { id: Product; name: string; description: string; icon: LucideIcon; short: string }[] = [
+  { id: "ap", name: "Accounts Payable", description: "Bills, approvals & payments", icon: FileText, short: "AP" },
+  { id: "cash", name: "Cash Application", description: "Receivables & reconciliation", icon: Banknote, short: "AR" },
+];
+
 function ProductSwitcher({ collapsed }: { collapsed: boolean }) {
   const { product, setProduct } = useProduct();
   const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const current = PRODUCTS.find((p) => p.id === product) ?? PRODUCTS[0];
 
   const handleSwitch = (next: Product) => {
     setProduct(next);
+    setOpen(false);
     navigate(next === "cash" ? "/cash" : "/");
   };
 
   if (collapsed) {
     return (
-      <div className="flex flex-col items-center gap-1 px-2 py-2 border-b border-border/60">
-        {(["ap", "cash"] as Product[]).map((p) => (
-          <Tooltip key={p} delayDuration={0}>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => handleSwitch(p)}
-                className={`h-7 w-7 rounded-md text-[10px] font-bold transition-colors ${
-                  product === p
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-secondary text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {p === "ap" ? "AP" : "AR"}
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right" sideOffset={8}>
-              <p>{p === "ap" ? "Accounts Payable" : "Cash Application"}</p>
-            </TooltipContent>
-          </Tooltip>
-        ))}
+      <div className="flex justify-center px-2 py-2 border-b border-border/60">
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <button className="h-8 w-8 rounded-md bg-primary text-primary-foreground text-[10px] font-bold transition-colors hover:opacity-90 flex items-center justify-center">
+                  {current.short}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right" sideOffset={8}>
+                <p>{current.name}</p>
+              </TooltipContent>
+            </Tooltip>
+          </PopoverTrigger>
+          <PopoverContent side="right" align="start" sideOffset={8} className="w-[240px] p-1.5">
+            <ProductMenu current={product} onSelect={handleSwitch} />
+          </PopoverContent>
+        </Popover>
       </div>
     );
   }
 
   return (
     <div className="px-3 py-2.5 border-b border-border/60 shrink-0">
-      <div className="flex items-center gap-1 p-1 rounded-lg bg-secondary/70 border border-border/60">
-        <button
-          onClick={() => handleSwitch("ap")}
-          className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-semibold transition-all ${
-            product === "ap"
-              ? "bg-card text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          <FileText className="h-3 w-3" />
-          Accounts Payable
-        </button>
-        <button
-          onClick={() => handleSwitch("cash")}
-          className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-semibold transition-all ${
-            product === "cash"
-              ? "bg-card text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          <Banknote className="h-3 w-3" />
-          Cash App
-        </button>
-      </div>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <button className="w-full flex items-center justify-between px-3 py-[7px] rounded-lg border border-border/70 hover:bg-secondary/60 transition-colors text-sm">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="h-5 w-5 rounded bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <current.icon className="h-3 w-3" />
+              </div>
+              <span className="font-medium text-foreground truncate">{current.name}</span>
+            </div>
+            <ChevronsUpDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent align="start" sideOffset={6} className="w-[240px] p-1.5">
+          <ProductMenu current={product} onSelect={handleSwitch} />
+        </PopoverContent>
+      </Popover>
     </div>
+  );
+}
+
+function ProductMenu({ current, onSelect }: { current: Product; onSelect: (p: Product) => void }) {
+  return (
+    <>
+      <div className="px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+        Products
+      </div>
+      {PRODUCTS.map((p) => (
+        <button
+          key={p.id}
+          onClick={() => onSelect(p.id)}
+          className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-secondary text-left"
+        >
+          <div className="h-6 w-6 rounded bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <p.icon className="h-3.5 w-3.5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-medium text-foreground truncate">{p.name}</div>
+            <div className="text-[11px] text-muted-foreground truncate">{p.description}</div>
+          </div>
+          {p.id === current && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
+        </button>
+      ))}
+    </>
   );
 }
 
