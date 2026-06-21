@@ -455,30 +455,6 @@ export default function AppSidebar({ activePage }: { activePage?: string }) {
 
       <ProductSwitcher collapsed={collapsed} />
 
-      {!collapsed ? (
-        <div className="px-3 pt-2 shrink-0">
-          <a
-            href="/style-guide"
-            className={`nav-item ${activePage === "Style Guide" ? "nav-item-active" : ""}`}
-          >
-            <div className="flex items-center gap-2.5 min-w-0">
-              <Palette className={`h-[15px] w-[15px] shrink-0 ${activePage === "Style Guide" ? "text-primary" : "text-muted-foreground"}`} />
-              <span className="truncate">Style Guide</span>
-            </div>
-          </a>
-        </div>
-      ) : (
-        <div className="flex justify-center py-2 shrink-0">
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <a href="/style-guide" className={`flex h-9 w-9 items-center justify-center rounded-lg ${activePage === "Style Guide" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-secondary/80 hover:text-foreground"}`}>
-                <Palette className="h-[16px] w-[16px]" />
-              </a>
-            </TooltipTrigger>
-            <TooltipContent side="right" sideOffset={8}><p>Style Guide</p></TooltipContent>
-          </Tooltip>
-        </div>
-      )}
 
       {!collapsed && (
         <div className="px-3 py-2.5 border-b border-border/60 shrink-0">
@@ -491,6 +467,32 @@ export default function AppSidebar({ activePage }: { activePage?: string }) {
           <NavGroupSection key={group.label} group={group} activePage={activePage} collapsed={collapsed} />
         ))}
       </div>
+
+      {!collapsed ? (
+        <div className="px-3 py-2 shrink-0 border-t border-border/60">
+          <a
+            href="/style-guide"
+            className={`nav-item ${activePage === "Style Guide" ? "nav-item-active" : ""}`}
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <Palette className={`h-[15px] w-[15px] shrink-0 ${activePage === "Style Guide" ? "text-primary" : "text-muted-foreground"}`} />
+              <span className="truncate">Style Guide</span>
+            </div>
+          </a>
+        </div>
+      ) : (
+        <div className="flex justify-center py-2 shrink-0 border-t border-border/60">
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <a href="/style-guide" className={`flex h-9 w-9 items-center justify-center rounded-lg ${activePage === "Style Guide" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-secondary/80 hover:text-foreground"}`}>
+                <Palette className="h-[16px] w-[16px]" />
+              </a>
+            </TooltipTrigger>
+            <TooltipContent side="right" sideOffset={8}><p>Style Guide</p></TooltipContent>
+          </Tooltip>
+        </div>
+      )}
     </aside>
+
   );
 }
