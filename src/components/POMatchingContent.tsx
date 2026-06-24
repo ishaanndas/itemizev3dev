@@ -705,7 +705,7 @@ export default function POMatchingContent() {
         </div>
       </div>
 
-      <POMatchingSheet match={active} open={open} onOpenChange={setOpen} />
+      <POMatchReviewSheet match={active} open={open} onOpenChange={setOpen} />
     </div>
   );
 }
