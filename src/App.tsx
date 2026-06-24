@@ -18,6 +18,7 @@ import WorkflowManagement from "./pages/WorkflowManagement.tsx";
 import WorkflowBuilder from "./pages/WorkflowBuilder.tsx";
 import Payments from "./pages/Payments.tsx";
 import Vendors from "./pages/Vendors.tsx";
+import POMatching from "./pages/POMatching.tsx";
 import CashDashboard from "./pages/CashDashboard.tsx";
 import CashPayments from "./pages/CashPayments.tsx";
 import CashOpenAR from "./pages/CashOpenAR.tsx";
@@ -53,6 +54,7 @@ const App = () => (
               <Route path="/workflows/:id" element={<WorkflowBuilder />} />
               <Route path="/payments" element={<Payments />} />
               <Route path="/vendors" element={<Vendors />} />
+              <Route path="/po-matching" element={<POMatching />} />
               {/* Cash Application MVD */}
               <Route path="/cash" element={<CashDashboard />} />
               <Route path="/cash/payments" element={<CashPayments />} />
