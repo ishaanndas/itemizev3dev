@@ -322,6 +322,14 @@ export default function ExceptionReviewContent() {
 
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState<ExceptionRow | null>(null);
+  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
+  const toggleRow = useCallback((i: number) => {
+    setSelectedRows((prev) => {
+      const next = new Set(prev);
+      next.has(i) ? next.delete(i) : next.add(i);
+      return next;
+    });
+  }, []);
 
   const filtered = useMemo(() => {
     return exceptions.filter((e) => {
@@ -598,6 +606,29 @@ export default function ExceptionReviewContent() {
             rowKey={(e) => e.id}
             searchable
             searchPlaceholder="Search documents, vendors, severity..."
+            selectable
+            selectedRows={selectedRows}
+            onToggleRow={toggleRow}
+            onToggleAll={() =>
+              setSelectedRows((prev) =>
+                prev.size === filtered.length ? new Set() : new Set(filtered.map((_, i) => i)),
+              )
+            }
+            toolbarLeft={
+              selectedRows.size > 0 ? (
+                <div className="flex items-center gap-2">
+                  <button className="text-xs font-medium px-3 py-1.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90">
+                    Resolve {selectedRows.size}
+                  </button>
+                  <button className="text-xs font-medium px-3 py-1.5 rounded-lg border border-border hover:bg-secondary text-foreground">
+                    Assign
+                  </button>
+                  <button className="text-xs font-medium px-3 py-1.5 rounded-lg border border-border hover:bg-secondary text-destructive">
+                    Reject
+                  </button>
+                </div>
+              ) : null
+            }
             onRowClick={openSheet}
             renderRowActions={(e) => (
               <RowActions
