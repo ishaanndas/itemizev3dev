@@ -16,7 +16,7 @@ import TopBar from "./TopBar";
 import { DataTable, DataTableColumn } from "@/components/data-table/DataTable";
 import RowActions from "@/components/data-table/RowActions";
 import FilterDropdown from "@/components/data-table/FilterDropdown";
-import POMatchingSheet from "./POMatchingSheet";
+import POMatchReviewSheet from "./POMatchReviewSheet";
 
 export type MatchStatus = "Auto-matched" | "Needs review" | "Variance" | "Unmatched" | "Approved";
 export type MatchType = "3-way" | "2-way" | "Manual";
