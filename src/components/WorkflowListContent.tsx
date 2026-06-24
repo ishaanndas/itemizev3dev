@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useCallback, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, ShieldCheck, MoreHorizontal, Users, Clock, Pencil, Trash2, Copy, Search, LayoutGrid, Table as TableIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -71,6 +71,14 @@ export default function WorkflowListContent() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [viewMode, setViewMode] = useState<ViewMode>("table");
+  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
+  const toggleRow = useCallback((i: number) => {
+    setSelectedRows((prev) => {
+      const next = new Set(prev);
+      next.has(i) ? next.delete(i) : next.add(i);
+      return next;
+    });
+  }, []);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -248,6 +256,29 @@ export default function WorkflowListContent() {
             columns={columns}
             data={filtered}
             rowKey={(wf) => wf.id}
+            selectable
+            selectedRows={selectedRows}
+            onToggleRow={toggleRow}
+            onToggleAll={() =>
+              setSelectedRows((prev) =>
+                prev.size === filtered.length ? new Set() : new Set(filtered.map((_, i) => i)),
+              )
+            }
+            toolbarLeft={
+              selectedRows.size > 0 ? (
+                <div className="flex items-center gap-2">
+                  <button className="text-xs font-medium px-3 py-1.5 rounded-lg border border-border hover:bg-secondary text-foreground">
+                    Activate
+                  </button>
+                  <button className="text-xs font-medium px-3 py-1.5 rounded-lg border border-border hover:bg-secondary text-foreground">
+                    Duplicate
+                  </button>
+                  <button className="text-xs font-medium px-3 py-1.5 rounded-lg border border-border hover:bg-secondary text-destructive">
+                    Delete {selectedRows.size}
+                  </button>
+                </div>
+              ) : null
+            }
             onRowClick={(wf) => navigate(`/workflows/${wf.id}`)}
             renderRowActions={(wf) => (
               <RowActions

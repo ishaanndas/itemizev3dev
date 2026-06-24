@@ -1,3 +1,4 @@
+import { useCallback, useState } from "react";
 import { Download, FileSpreadsheet, Clock, CheckCircle2, ScrollText, Eye } from "lucide-react";
 import TopBar from "./TopBar";
 import { formatUSD } from "./cash/data";
@@ -104,6 +105,17 @@ const historyColumns: DataTableColumn<PostingFile>[] = [
 ];
 
 export default function CashPostingFilesContent() {
+  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
+  const toggleRow = useCallback((i: number) => {
+    setSelectedRows((prev) => {
+      const next = new Set(prev);
+      next.has(i) ? next.delete(i) : next.add(i);
+      return next;
+    });
+  }, []);
+  const toggleAll = useCallback(() => {
+    setSelectedRows((prev) => (prev.size === files.length ? new Set() : new Set(files.map((_, i) => i))));
+  }, []);
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-background">
       <TopBar />
@@ -190,6 +202,22 @@ export default function CashPostingFilesContent() {
             columns={historyColumns}
             data={files}
             rowKey={(f) => f.batchId}
+            selectable
+            selectedRows={selectedRows}
+            onToggleRow={toggleRow}
+            onToggleAll={toggleAll}
+            toolbarLeft={
+              selectedRows.size > 0 ? (
+                <div className="flex items-center gap-2">
+                  <button className="text-xs font-medium px-3 py-1.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90">
+                    Download {selectedRows.size}
+                  </button>
+                  <button className="text-xs font-medium px-3 py-1.5 rounded-lg border border-border hover:bg-secondary text-foreground">
+                    Re-send to bank
+                  </button>
+                </div>
+              ) : null
+            }
             renderRowActions={(f) => (
               <RowActions
                 review={{ label: "View batch", onClick: () => {}, icon: <Eye className="h-3.5 w-3.5" /> }}
