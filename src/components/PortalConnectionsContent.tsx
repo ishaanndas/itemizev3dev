@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   Globe,
   CheckCircle2,
@@ -719,6 +719,14 @@ export default function PortalConnectionsContent() {
   const [credConn, setCredConn] = useState<Connection | null>(null);
   const [credOpen, setCredOpen] = useState(false);
   const [newOpen, setNewOpen] = useState(false);
+  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
+  const toggleRow = useCallback((i: number) => {
+    setSelectedRows((prev) => {
+      const next = new Set(prev);
+      next.has(i) ? next.delete(i) : next.add(i);
+      return next;
+    });
+  }, []);
 
   const openHistory = (c: Connection) => {
     setHistoryConn(c);
@@ -852,6 +860,29 @@ export default function PortalConnectionsContent() {
               storageKey="portal-connections"
               data={filtered}
               rowKey={(c) => c.id}
+              selectable
+              selectedRows={selectedRows}
+              onToggleRow={toggleRow}
+              onToggleAll={() =>
+                setSelectedRows((prev) =>
+                  prev.size === filtered.length ? new Set() : new Set(filtered.map((_, i) => i)),
+                )
+              }
+              toolbarLeft={
+                selectedRows.size > 0 ? (
+                  <div className="flex items-center gap-2">
+                    <button className="text-xs font-medium px-3 py-1.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90">
+                      Sync {selectedRows.size}
+                    </button>
+                    <button className="text-xs font-medium px-3 py-1.5 rounded-lg border border-border hover:bg-secondary text-foreground">
+                      Pause
+                    </button>
+                    <button className="text-xs font-medium px-3 py-1.5 rounded-lg border border-border hover:bg-secondary text-destructive">
+                      Remove
+                    </button>
+                  </div>
+                ) : null
+              }
               columns={[
                 {
                   key: "name",
